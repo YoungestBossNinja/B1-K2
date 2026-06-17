@@ -14,7 +14,8 @@ show running-config
 
 Verwachting
 
-Als er een ACL is ingesteld tussen de VLAN’s moet er bij het uitvoeren van het running-config commando onder de betreffende interfaces van de VLAN’s het volgende te zien zijn dat begint met “ip acces-group  <?> <?>”. (Zie voorbeeld hieronder)
+Als er een ACL is ingesteld tussen de VLAN’s moet er bij het uitvoeren van het running-config commando onder de betreffende interfaces van de VLAN’s het volgende te zien zijn dat begint met “ip acces-group  <?> <?>”. 
+(Zie voorbeeld hieronder)
 
 interface Vlan90 
   mac-address 00e0.8f14.5502
@@ -29,11 +30,17 @@ interface Vlan90
 
 Advies
 
-Een ACL is een verkeersfilter dat op een routeringsinterface wordt geplaatst. In dit netwerk wordt ACL 110 inbound toegepast op VLAN 20 (HR-netwerk 192.168.20.0/24). Dat betekent dat elk pakketje dat vanuit HR de router binnenkomt eerst langs deze ACL moet voordat het naar een ander VLAN (zoals Productie op 192.168.10.0/24) mag.
+Een ACL is een verkeersfilter dat op een routeringsinterface wordt geplaatst. 
+In dit netwerk wordt ACL 110 inbound toegepast op VLAN 20 (HR-netwerk 192.168.20.0/24). 
+Dat betekent dat elk pakketje dat vanuit HR de router binnenkomt eerst langs deze ACL moet voordat het naar een ander VLAN (zoals Productie op 192.168.10.0/24) mag.
 
-Het is goed dat deze ACL is ingezet, omdat hiermee wordt voorkomen dat HR-medewerkers via een webbrowser (HTTP op poort 80 en HTTPS op poort 443) toegang krijgen tot webservers in het Productienetwerk. Dit is een belangrijk beveiligingsprincipe: medewerkers van HR hebben geen functionele noodzaak om de productie-webservers te benaderen. Door dit verkeer te blokkeren, wordt het risico verkleind dat een HR-medewerker per ongeluk of kwaadwillend vertrouwelijke productiegegevens inziet of systemen beschadigt.
+Het is goed dat deze ACL is ingezet, omdat hiermee wordt voorkomen dat HR-medewerkers via een webbrowser (HTTP op poort 80 en HTTPS op poort 443) toegang krijgen tot webservers in het Productienetwerk. 
+Dit is een belangrijk beveiligingsprincipe: medewerkers van HR hebben geen functionele noodzaak om de productie-webservers te benaderen. 
+Door dit verkeer te blokkeren, wordt het risico verkleind dat een HR-medewerker per ongeluk of kwaadwillend vertrouwelijke productiegegevens inziet of systemen beschadigt.
 
-Echter er is een groot risico: op VLAN 30 (Gasten-netwerk 192.168.30.0/24) is helemaal geen ACL toegepast. Omdat een ACL niet standaard aanstaat, betekent dit dat al het verkeer van gasten naar alle andere VLAN's is toegestaan. Een gast kan bijvoorbeeld:
+Echter er is een groot risico: op VLAN 30 (Gasten-netwerk 192.168.30.0/24) is helemaal geen ACL toegepast. Omdat een ACL niet standaard aanstaat, betekent dit dat al het verkeer van gasten naar alle andere VLAN's is toegestaan. 
+Een gast kan bijvoorbeeld:
+
 - Een ping doen naar 192.168.10.1 (de router) en 192.168.10.10 (een productieserver)
 - Een verbinding maken via SMB (poort 445) naar HR-bestandsservers in 192.168.20.0/24
 - Via SSH (poort 22) inloggen op netwerkapparaten in het Productienetwerk
