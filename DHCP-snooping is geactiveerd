@@ -1,0 +1,288 @@
+Omschrijving
+
+DHCP-snooping is een beveiligingsfunctie op switches die ervoor zorgt dat alleen vertrouwde DHCP-servers DHCP-aanbiedingen (DHCPOFFER) mogen doen op het netwerk.
+
+Simpel gezegd: Een DHCP-server wijst automatisch IP-adressen toe aan computers. 
+Een kwaadwillende gebruiker kan echter een valse DHCP-server op het netwerk aansluiten en zo valse IP-adressen uitdelen. 
+DHCP-snooping voorkomt dit door DHCP-verkeer te filteren.
+
+
+Uivoering (old one)
+
+Je moet op de poort zitten waar op de DHCP-server verbonden zit.
+Vervolgens doe je het volgende commando: ip dhcp snooping trust <--- de commando
+
+Voer dan “end” in.
+
+Daarna voer je het commando: show ip dhcp snooping <--- de commando
+
+Vervolgens door op enter te drukken ga je over allen poorten heen en kan je zien of het aanstaat als je bij de poort komt die aangesloten is op de DHCP-server moet er yes staan.
+
+
+
+FastEthernet0/1                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/2                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/3                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/4                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/5                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/6                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/7                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/8                  no        no              unlimited
+  Custom circuit-Ids:
+FastEthernet0/9                  no        no              unlimited
+  Custom circuit-Ids:
+GigabitEthernet0/1               yes       yes             unlimited <------------------------- HIER STAAT YES DUS OMCIRKELEN
+  Custom circuit-Ids:
+GigabitEthernet0/2               no       no               unlimited
+  Custom circuit-Ids:
+
+
+
+
+
+
+Uivoering
+
+! Controleer of DHCP-snooping globaal is ingeschakeld
+Switch# show ip dhcp snooping
+
+! Bekijk of DHCP-snooping op specifieke VLAN's actief is
+Switch# show ip dhcp snooping vlan
+
+! Controleer welke poorten trusted/untrusted zijn
+Switch# show ip dhcp snooping interface fastEthernet 0/1
+
+! Bekijk de bindingstabel (welke IP's aan welke MAC's zijn toegekend)
+Switch# show ip dhcp snooping binding
+
+! Controleer of er DHCP-snooping statistieken zijn (hoeveel verkeer is geblokkeerd)
+Switch# show ip dhcp snooping statistics
+
+
+
+
+Staat het aan?
+
+
+Switch# show ip dhcp snooping
+Switch DHCP snooping is enabled
+DHCP snooping is configured on following VLANs:
+10,20
+DHCP snooping is operational on following VLANs:
+10,20
+DHCP snooping is configured on the following L3 Interfaces:
+
+Insertion of option 82 is enabled
+   circuit-id format: vlan-mod-port
+   remote-id format: MAC
+Option 82 on untrusted port is not allowed
+Verification of hwaddr field is enabled
+Verification of giaddr field is enabled
+DHCP snooping trust/rate is configured on the following Interfaces:
+
+Interface                    Trusted    Rate limit (pps)
+---------------------------- -------    ----------------
+FastEthernet0/1              yes        unlimited
+FastEthernet0/2              no         10
+FastEthernet0/3              no         10
+FastEthernet0/4              no         10
+FastEthernet0/5              no         10
+
+Switch DHCP snooping is enabled - DHCP-snooping staat aan
+
+DHCP-snooping is actief op VLAN 10 en 20
+
+FastEthernet0/1 is trusted (hier zit de DHCP-server)
+
+FastEthernet0/2 t/m 0/5 zijn untrusted (hier zitten gebruikers)
+
+
+
+
+
+Advies
+
+DHCP-snooping is een beveiligingsfunctie die DHCP-verkeer filtert op basis van trusted en untrusted poorten.
+
+Hoe werkt het:
+- DHCP-snooping onderscheidt vertrouwde poorten (trusted) waar DHCP-servers op zitten en onvertrouwde poorten (untrusted) waar eindgebruikers op zitten.
+- Op onvertrouwde poorten worden alleen DHCP-aanvragen (DHCPDISCOVER) doorgelaten. DHCP-aanbiedingen (DHCPOFFER) vanaf deze poorten worden geblokkeerd.
+- Hierdoor kan een gebruiker geen valse DHCP-server op het netwerk aansluiten.
+- DHCP-snooping houdt ook een bindingstabel bij van welke MAC-adressen welke IP-adressen hebben gekregen.
+
+Het is goed dat DHCP-snooping is ingeschakeld op deze switch en actief is op VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24).
+
+FastEthernet0/1 is correct geconfigureerd als trusted omdat hier de legitieme DHCP-server op is aangesloten (met IP-adres 192.168.10.5/24).
+FastEthernet0/2 t/m FastEthernet0/5 zijn correct geconfigureerd als untrusted omdat hier gebruikers op zitten.
+
+De bindingstabel toont dat DHCP correct werkt: 
+de gebruikers in VLAN 10 krijgen IP-adressen uit het bereik 192.168.10.0/24 en gebruikers in VLAN 20 krijgen IP-adressen uit het bereik 192.168.20.0/24.
+
+
+Dit voorkomt dat een kwaadwillende gebruiker in VLAN 10 of VLAN 20 een valse DHCP-server aansluit en daarmee:
+
+        Valse IP-adressen uitdeelt aan andere gebruikers
+
+        Zichzelf als default gateway opgeeft
+
+        Internetverkeer onderschept of omleidt naar valse websites
+
+        ARP-spoofing mogelijk maakt (man-in-the-middle)
+
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. DHCP-snooping is correct ingeschakeld op VLAN 10 en VLAN 20 met de juiste trusted en untrusted poorten.
+
+
+
+
+Impact
+
+Geen impact. DHCP-snooping werkt correct en beschermt het netwerk tegen valse DHCP-servers. 
+Alle gebruikers in VLAN 10 en VLAN 20 krijgen correcte IP-adressen van de legitieme DHCP-server op FastEthernet0/1 (192.168.10.5/24).
+
+
+
+
+Samenvatting
+
+DHCP-snooping is correct ingeschakeld op de switch en actief op VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24). 
+FastEthernet0/1 is trusted (DHCP-server op 192.168.10.5/24) en FastEthernet0/2 t/m 0/5 zijn untrusted (gebruikerspoorten). 
+De bindingstabel toont dat IP-adressen correct worden toegewezen. Het netwerk is beschermd tegen valse DHCP-servers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+STAAT HET NIET AAN?
+
+
+Switch# show ip dhcp snooping
+Switch DHCP snooping is disabled
+DHCP snooping is configured on following VLANs:
+<none>
+DHCP snooping is operational on following VLANs:
+<none>
+DHCP snooping is configured on the following L3 Interfaces:
+
+Insertion of option 82 is disabled
+Option 82 on untrusted port is not allowed
+Verification of hwaddr field is disabled
+Verification of giaddr field is disabled
+DHCP snooping trust/rate is configured on the following Interfaces:
+
+Interface                    Trusted    Rate limit (pps)
+---------------------------- -------    ----------------
+
+
+Let op: Switch DHCP snooping is disabled - DHCP-snooping staat uit.
+
+
+
+
+
+Bevinding:
+
+Uit show ip dhcp snooping blijkt dat DHCP-snooping niet is ingeschakeld op de switch.
+
+De output is: Switch DHCP snooping is disabled.
+
+Er zijn geen VLAN's geconfigureerd voor DHCP-snooping.
+Er is geen bindingstabel (show ip dhcp snooping binding geeft DHCP Snooping is not enabled).
+
+
+
+
+Advies
+
+DHCP-snooping is een beveiligingsfunctie die DHCP-verkeer filtert op basis van trusted en untrusted poorten.
+
+Hoe werkt het:
+- DHCP-snooping onderscheidt vertrouwde poorten (trusted) waar DHCP-servers op zitten en onvertrouwde poorten (untrusted) waar eindgebruikers op zitten.
+- Op onvertrouwde poorten worden alleen DHCP-aanvragen (DHCPDISCOVER) doorgelaten. DHCP-aanbiedingen (DHCPOFFER) vanaf deze poorten worden geblokkeerd.
+- Hierdoor kan een gebruiker geen valse DHCP-server op het netwerk aansluiten.
+
+Het is niet goed dat DHCP-snooping ontbreekt op deze switch. Zonder DHCP-snooping kan een kwaadwillende gebruiker in VLAN 10 of VLAN 20 een valse DHCP-server aansluiten op zijn werkplek.
+
+Wat kan een hacker doen?
+1. Een laptop met DHCP-server aansluiten op FastEthernet0/2
+2. De laptop stuurt DHCP-aanbiedingen (DHCPOFFER) naar andere gebruikers in VLAN 10
+3. Gebruikers krijgen een vals IP-adres en een valse default gateway (de hacker)
+4. Al het internetverkeer gaat via de hacker (man-in-the-middle)
+5. De hacker kan wachtwoorden, bankgegevens en andere gevoelige informatie onderscheppen
+
+In VLAN 20 (HR) kan een hacker op dezelfde manier personeelsgegevens en vertrouwelijke HR-documenten onderscheppen.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+DHCP-snooping is niet ingeschakeld op de switch.
+
+Hierdoor zijn zowel VLAN 10 (Productie, 192.168.10.0/24) als VLAN 20 (HR, 192.168.20.0/24) onbeschermd tegen valse DHCP-servers.
+
+Gebruikers kunnen zonder belemmering een valse DHCP-server aansluiten op poorten zoals FastEthernet0/2, 0/3, 0/4 en 0/5.
+
+
+
+Impact
+
+Impact: Hoog
+
+Een kwaadwillende gebruiker in VLAN 10 (Productie) kan op FastEthernet0/2 een laptop met DHCP-server aansluiten.
+
+Gevolgen:
+- Andere gebruikers in VLAN 10 krijgen valse IP-adressen van deze laptop
+- De laptop geeft zichzelf op als default gateway (bijv. 192.168.10.254)
+- Al het internetverkeer van de gebruikers gaat via de hacker
+- De hacker kan wachtwoorden, bankgegevens, e-mails en bedrijfsgegevens onderscheppen
+- HR-gebruikers in VLAN 20 hebben dezelfde kwetsbaarheid
+- Dit kan leiden tot datalekken, identiteitsfraude en reputatieschade voor het bedrijf
+
+De impact is hoog omdat:
+- Zowel productie- als HR-netwerken getroffen worden
+- Gevoelige gegevens (personeelsinformatie, productiedata) kunnen worden gestolen
+- De aanval is moeilijk te detecteren omdat gebruikers gewoon internet blijven gebruiken
+
+
+
+Samenvatting
+
+DHCP-snooping is niet ingeschakeld op de switch. Hierdoor zijn VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24) onbeschermd tegen valse DHCP-servers.
+
+Een kwaadwillende gebruiker kan een valse DHCP-server aansluiten op FastEthernet0/2 en daarmee:
+- Valse IP-adressen uitdelen aan andere gebruikers
+- Zichzelf opgeven als default gateway
+- Al het internetverkeer onderscheppen (man-in-the-middle)
+- Gevoelige gegevens stelen zoals wachtwoorden en personeelsinformatie
+
+Advies:
+1. Schakel DHCP-snooping globaal in met ip dhcp snooping
+2. Activeer DHCP-snooping op VLAN 10 en VLAN 20 met ip dhcp snooping vlan 10,20
+3. Configureer de poort van de DHCP-server als trusted met ip dhcp snooping trust op FastEthernet0/1
+4. Zet alle gebruikerspoorten als untrusted (standaard)
+5. Overweeg IP Source Guard in te schakelen op de untrusted poorten met ip verify source
+6. Overweeg Dynamic ARP Inspection (DAI) in te schakelen om ARP-spoofing te voorkomen
+
+Controleer na configuratie met show ip dhcp snooping en show ip dhcp snooping binding of alles correct werkt.
