@@ -1,0 +1,221 @@
+Omschrijving
+
+Startup-config is de configuratie die in het NVRAM (Non-Volatile Random Access Memory) van een router of switch wordt opgeslagen.
+Dit is een speciaal geheugen dat zijn inhoud niet verliest wanneer het apparaat wordt uitgeschakeld of opnieuw wordt opgestart.
+
+Simpel gezegd: De startup-config is het configuratiebestand dat een router of switch bij het opstarten laadt. 
+Het is als het ware het "vaste geheugen" van het apparaat. Zonder startup-config moet de beheerder bij elke herstart de hele configuratie opnieuw invoeren.
+
+
+
+
+Uitvoering (old one) 
+
+Als je wil zien of de startup-config aanwezig is kun je met het volgende commando zien of er een start-up config aanwezig is.
+
+dir nvram:
+
+
+
+Uivoering
+
+! Controleer of er een startup-config bestaat
+Router# show startup-config
+
+! Of kijk of het bestand bestaat in de flash
+Router# show flash
+
+
+
+
+
+Als startup-config aanwezig is zie je het volgende
+
+Using 1843 out of 32768 bytes <-------------------------------- dit toont hoeveel bytes er worden gebruikt
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname R1
+!
+interface FastEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ ip address 192.168.2.1 255.255.255.0
+ duplex auto
+ speed auto
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.254
+!
+end
+
+
+
+In show flash zie je het volgende
+
+-#- --length-- -----date/time------ path
+1   1843       Jan 1 2000 00:01:52 startup-config <--------------------------------- er staat ok startup-config
+2   5898240    Jan 1 2000 00:02:10 c1900-universalk9-mz.SPA.154-3.M4.bin
+...
+
+
+
+
+
+
+Advies
+
+De startup-config is de configuratie die in het NVRAM van de router is opgeslagen. 
+Wanneer de router opstart, laadt hij deze configuratie als de running-config. 
+Zonder startup-config zou de router bij elke herstart een lege configuratie laden (setup-mode) en zou het netwerk niet functioneren.
+
+Het is goed dat de startup-config aanwezig is op R1. Dit betekent dat de router na een herstart of stroomuitval automatisch zijn volledige configuratie hervat met:
+- IP-adressen op FastEthernet0/0 (192.168.1.1/24) en FastEthernet0/1 (192.168.2.1/24)
+- De standaardroute naar 192.168.1.254 voor internettoegang
+
+Hierdoor blijft het netwerk (VLAN 10 op 192.168.1.0/24 en VLAN 20 op 192.168.2.0/24) na een herstart gewoon bereikbaar. 
+Er hoeft niet handmatig opnieuw geconfigureerd te worden.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. De startup-config is aanwezig en bevat de juiste configuratie.
+
+
+
+Impact
+
+Geen impact. De router kan na een herstart zijn configuratie laden. Het netwerk blijft beschikbaar.
+
+
+
+Samenvatting
+
+De startup-config is aanwezig op R1. De configuratie bevat de correcte IP-adressen en een standaardroute. 
+Na een herstart laadt de router automatisch deze configuratie. 
+Het netwerk blijft functioneren zonder handmatig ingrijpen.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ALS STARTUP-CONFIG NIET AAWEZIG IS ZIE JE HET VOLGENDE
+
+
+startup-config is not present
+
+%No startup-config file found
+
+
+
+
+In show flash
+
+-#- --length-- -----date/time------ path
+1   5898240    Jan 1 2000 00:02:10 c1900-universalk9-mz.SPA.154-3.M4.bin
+...
+
+
+
+
+
+
+Bevinding
+
+Uit show startup-config blijkt dat de startup-config niet aanwezig is.
+
+De output is: startup-config is not present
+
+In show flash is geen startup-config bestand zichtbaar. 
+Alleen het IOS-bestand c1900-universalk9-mz.SPA.154-3.M4.bin staat in de flash.
+
+
+
+
+
+
+Advies
+
+De startup-config is de configuratie die in het NVRAM van de router wordt opgeslagen. Wanneer de router opstart, laadt hij deze configuratie automatisch als de running-config. 
+Zonder startup-config moet een beheerder bij elke herstart handmatig de configuratie invoeren via de console of de router gaat in setup-mode (een vraaggestuurde installatiewizard).
+
+Het is niet goed dat de startup-config ontbreekt op R1. Dit betekent dat bij een:
+- Stroomstoring
+- Router herstart (door reload commando)
+- Stroomuitval in de serverruimte
+
+de router opstart zonder configuratie. 
+De interfaces FastEthernet0/0 en FastEthernet0/1 hebben dan geen IP-adressen (192.168.1.1/24 en 192.168.2.1/24). 
+Hierdoor verliezen alle gebruikers in VLAN 10 (192.168.1.0/24) en VLAN 20 (192.168.2.0/24) hun verbinding met elkaar en met het internet. 
+De netwerkbeheerder moet dan fysiek naar de router toe om de configuratie opnieuw in te typen of via TFTP te laden. 
+Dit kan leiden tot lange uitvaltijden, vooral als de router op een afgelegen locatie staat.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+De startup-config op R1 is niet aanwezig.
+
+Hierdoor wordt bij een herstart de configuratie niet automatisch geladen. De router moet handmatig geconfigureerd worden of gaat in setup-mode.
+
+De interfaces FastEthernet0/0 en FastEthernet0/1 hebben geen opgeslagen IP-configuratie voor VLAN 10 (192.168.1.0/24) en VLAN 20 (192.168.2.0/24). 
+Ook de standaardroute naar 192.168.1.254 is niet opgeslagen.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Bij een stroomstoring of geplande herstart van R1:
+- De router start op zonder configuratie (setup-mode).
+- FastEthernet0/0 heeft geen IP-adres 192.168.1.1/24 meer.
+- FastEthernet0/1 heeft geen IP-adres 192.168.2.1/24 meer.
+- De standaardroute naar 192.168.1.254 is verdwenen.
+
+Gevolgen:
+- Alle PC's in VLAN 10 (192.168.1.0/24) kunnen niet meer communiceren met VLAN 20 (192.168.2.0/24).
+- Alle PC's in VLAN 20 kunnen niet meer bij de productieservers in VLAN 10.
+- Internetverkeer werkt niet omdat de standaardroute ontbreekt.
+- Een netwerkbeheerder moet fysiek naar de router (of via console) om de configuratie opnieuw in te voeren.
+
+Dit kan leiden tot urenlange uitval van het hele netwerk, afhankelijk van hoe snel een beheerder ter plaatse kan zijn. 
+Dit is vooral kritisch omdat R1 de enige router is tussen de VLAN's en het internet.
+
+
+
+Samenvatting
+
+De startup-config op R1 is niet aanwezig. Hierdoor wordt bij een herstart de configuratie niet automatisch geladen. 
+De interfaces FastEthernet0/0 (VLAN 10, 192.168.1.0/24) en FastEthernet0/1 (VLAN 20, 192.168.2.0/24) hebben dan geen IP-adressen en de standaardroute naar 192.168.1.254 ontbreekt.
+
+Dit leidt bij een stroomstoring tot volledige netwerkuitval omdat de router handmatig opnieuw geconfigureerd moet worden.
+
+Advies: Sla de huidige running-config op als startup-config met het commando copy running-config startup-config. 
+Controleer daarna met show startup-config of de configuratie correct is opgeslagen. 
+Overweeg ook een back-up van de configuratie te maken via TFTP (copy startup-config tftp:) zodat de configuratie snel hersteld kan worden als de router defect raakt.
+
+
+
+
+
+
+
