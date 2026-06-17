@@ -1,0 +1,299 @@
+Omschrijving
+
+FTP (File Transfer Protocol) is een protocol dat wordt gebruikt om bestanden over te zetten tussen een client en een server . 
+Een FTP-server heeft gebruikersaccounts met bepaalde rechten, zoals lezen, schrijven of volledige controle .
+
+Het anonymous account is een speciale gebruikersaccount op een FTP-server die geen wachtwoord vereist . 
+Iedereen die verbinding maakt met de FTP-server, kan inloggen met de gebruikersnaam anonymous (of ftp) en een willekeurig wachtwoord (bijvoorbeeld het e-mailadres of gewoon anonymous) .
+
+Standaard rechten van anonymous:
+
+    Lezen (Read): Bestanden bekijken en downloaden
+    Lijsten (List): De inhoud van mappen weergeven
+    Meestal GEEN schrijfrechten: Kan geen bestanden uploaden of verwijderen 
+
+Waarom is het belangrijk om anonymous account uit te zetten?
+
+    Onbeveiligde toegang: Iedereen kan zonder wachtwoord verbinding maken
+    Geen authenticatie: Geen controle over wie toegang heeft tot bestanden
+    Gegevensdiefstal: Een aanvaller kan alle bestanden downloaden die toegankelijk zijn voor anonymous
+    Het verspreiden van malware: Als schrijfrechten zijn ingeschakeld (wat zelden gebeurt), kan een aanvaller schadelijke bestanden uploaden 
+
+
+
+Uivoering
+
+! Open de server configuratie
+- Klik op de server (bijv. CentralServer)
+- Ga naar het tabblad Services
+- Klik op FTP
+- Bekijk de User Setup sectie
+
+
+n Packet Tracer zie je de FTP-gebruikers in een lijst:
+Username	          Password	          Permissions
+
+anonymous	          anonymous	          Read and List
+administrator	      cisco	Full          Permission
+(andere gebruikers)	...	                ...
+
+    Let op: De anonymous gebruiker staat in deze lijst.
+
+
+
+
+
+Als anonymous account WEL is disabled
+
+
+in de User Setup sectie van de FTP-configuratie is het account anonymous niet zichtbaar. Je ziet dan bijvoorbeeld alleen:
+Username	          Password	          Permissions
+administrator	      cisco	              Full Permission
+
+of er staan alleen accounts met specifieke gebruikersnamen.
+
+Of alternatief: Het anonymous account is geconfigureerd met minimale rechten 
+(alleen Read en List, wat in de praktijk vaak wordt beschouwd als "uit" omdat het geen schrijfrechten heeft) .
+
+
+
+Als je probeert in te loggen met anonymous (vanaf een PC):
+
+PC> ftp 192.168.1.100
+Trying to connect to 192.168.1.100...
+%Error: Connection refused by remote host
+
+of
+
+User Access Verification
+Username: anonymous
+Password: 
+%Error: Access denied
+
+
+
+
+
+Advies
+
+Het FTP anonymous account is een standaard gebruikersaccount dat geen wachtwoord vereist . 
+Iedereen die verbinding maakt met de FTP-server kan inloggen met anonymous en een willekeurig wachtwoord.
+
+Het is goed dat het anonymous account is uitgeschakeld op deze FTP-server.
+
+Waarom is dit belangrijk?
+- Als het anonymous account is ingeschakeld, kan een aanvaller zonder authenticatie verbinding maken met de FTP-server
+- De aanvaller kan bestanden lezen en downloaden (Read and List permissies)
+- Als er per ongeluk schrijfrechten zijn ingesteld, kan de aanvaller schadelijke bestanden uploaden
+
+In dit netwerk:
+- De FTP-server (192.168.1.100) wordt gebruikt voor bestandsoverdrachten
+- Alleen de administrator account (wachtwoord: cisco, volledige rechten) is beschikbaar
+- Dit betekent dat alleen beheerders met het juiste wachtwoord bestanden kunnen lezen, schrijven of verwijderen
+- Onbevoegde gebruikers, bijvoorbeeld een hacker in VLAN 10 (Productie, 192.168.10.0/24) of VLAN 30 (Gasten, 192.168.30.0/24), kunnen geen verbinding maken met de FTP-server
+
+Hierdoor worden vertrouwelijke bestanden op de server beschermd tegen:
+- Onbevoegde toegang (datalekken)
+- Het wijzigen of verwijderen van belangrijke configuratiebestanden
+- Het uploaden van malware (bijv. ransomware) via de FTP-server
+
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Het anonymous account is correct uitgeschakeld op de FTP-server.
+
+
+
+
+Impact
+
+Geen impact. Alleen beheerders met de administrator account hebben toegang tot de FTP-server. Het netwerk is beschermd tegen onbeveiligde FTP-toegang.
+
+
+
+Samenvatting
+
+Het FTP anonymous account is correct uitgeschakeld op de FTP-server (192.168.1.100). 
+Alleen de administrator account (wachtwoord: cisco, volledige rechten) is beschikbaar. 
+Onbevoegde gebruikers in VLAN 10 (Productie, 192.168.10.0/24) en VLAN 30 (Gasten, 192.168.30.0/24) kunnen geen verbinding maken met de FTP-server. 
+Hierdoor zijn bestanden op de server beschermd tegen diefstal, wijziging of malware-infecties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als anonymous account NIET is disabled 
+
+In de User Setup sectie van de FTP-configuratie is het account anonymous zichtbaar:
+Username	              Password	              Permissions
+anonymous	              anonymous	              Read and List
+administrator	          cisco	Full              Permission
+
+Let op: Het anonymous account staat in de lijst met gebruikers.
+
+
+
+Als je inlogt met anonymous (vanaf een PC):
+
+PC> ftp 192.168.1.100
+Trying to connect to 192.168.1.100...
+Connected to 192.168.1.100.
+220 FTP server ready.
+User Access Verification
+Username: anonymous
+Password: anonymous
+230 User logged in.
+ftp> dir
+200 Port command successful.
+150 Opening ASCII mode data connection for /bin/ls.
+-rw-r--r--  1 root  root  1024 Jan 1 00:01 README.txt
+-rw-r--r--  1 root  root  2048 Jan 1 00:02 config.txt
+...
+226 Transfer complete.
+ftp>
+
+Let op: Je kunt inloggen met anonymous en de inhoud van de FTP-server bekijken.
+
+
+
+
+
+Bevinding
+
+Uit de FTP-configuratie op de server blijkt dat het anonymous account wel aanwezig is in de User Setup.
+
+De volgende gebruikersaccounts zijn aanwezig:
+- anonymous (wachtwoord: anonymous, rechten: Read and List)
+- administrator (wachtwoord: cisco, volledige rechten)
+
+Het account anonymous staat wel in de lijst.
+
+Test vanuit PC:
+- ftp 192.168.1.100 -> Verbinding is succesvol met anonymous als gebruikersnaam
+- dir toont de inhoud van de FTP-map
+
+
+
+
+Advies
+
+Het FTP anonymous account is een standaard gebruikersaccount dat geen wachtwoord vereist . 
+Iedereen die verbinding maakt met de FTP-server kan inloggen met anonymous en een willekeurig wachtwoord.
+
+Het is niet goed dat het anonymous account is ingeschakeld op deze FTP-server.
+
+Waarom is dit een probleem?
+- Het anonymous account heeft Read and List permissies
+- Een aanvaller kan zonder wachtwoord verbinding maken en bestanden lezen en downloaden
+- Als er per ongeluk schrijfrechten zijn ingesteld (bijv. per ongeluk in de configuratie), kan de aanvaller schadelijke bestanden uploaden
+
+In dit netwerk:
+- De FTP-server (192.168.1.100) bevindt zich in VLAN 10 (Productie, 192.168.10.0/24)
+- Iedereen in VLAN 10, VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24) kan via FTP verbinding maken met anonymous
+- Een aanvaller in VLAN 30 (Gasten) kan:
+- Verbinding maken met de FTP-server zonder wachtwoord
+- Alle bestanden in de FTP-hoofdmap lezen en downloaden
+- Mogelijk gevoelige bestanden zoals configuratiebestanden, documenten of scripts stelen
+- Als schrijfrechten zijn ingeschakeld: malware uploaden naar de server
+
+Specifiek risico voor VLAN 30 (Gasten):
+- Gasten hebben normaal gesproken alleen internettoegang, maar de FTP-server is nog steeds bereikbaar
+- Een gastgebruiker kan anoniem verbinding maken en vertrouwelijke bedrijfsbestanden downloaden
+- Dit is een datalek en in strijd met het beveiligingsbeleid
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Het FTP anonymous account is ingeschakeld op de FTP-server (192.168.1.100).
+
+Het account anonymous (wachtwoord: anonymous) heeft Read and List permissies.
+
+Dit betekent dat iedereen in het netwerk (inclusief gasten in VLAN 30) zonder wachtwoord verbinding kan maken en bestanden kan lezen/downloaden.
+
+De afwijking is dat het anonymous account niet is uitgeschakeld, terwijl dit de best practice is voor FTP-beveiliging.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Het anonymous account is ingeschakeld met Read and List permissies:
+
+1. Gegevensdiefstal:
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan verbinding maken via ftp 192.168.1.100
+- Inloggen met anonymous / anonymous (geen wachtwoord vereist)
+- dir gebruiken om de inhoud van de FTP-map te bekijken
+- get gebruiken om alle bestanden te downloaden (bijv. get config.txt, get backup.zip)
+- Als de FTP-server configuratiebestanden, HR-documenten of productiedata bevat, kan de aanvaller deze stelen
+
+2. Uitbreiding van aanvalsoppervlak:
+- De aanvaller kan de inhoud van de FTP-server analyseren op gevoelige informatie
+- Wachtwoorden of API-sleutels in configuratiebestanden kunnen worden gestolen
+- Dit kan leiden tot verdere aanvallen op andere systemen
+
+3. Potentieel voor malwareverspreiding:
+- Als de anonymous account per ongeluk schrijfrechten heeft (wat de standaard niet is, maar kan voorkomen), kan de aanvaller schadelijke bestanden uploaden
+- Andere gebruikers kunnen deze bestanden downloaden en hun systemen infecteren
+
+4. Compliance-risico:
+- AVG, ISO 27001 of PCI-DSS vereisen dat toegang tot gevoelige gegevens wordt beveiligd
+- Onbeveiligde FTP-toegang (zonder authenticatie) is een schending van deze vereisten
+
+De impact is hoog omdat:
+- Alle gebruikers in het netwerk (inclusief gasten) toegang hebben tot de FTP-server
+- Gevoelige gegevens kunnen worden gestolen (datalek)
+- Dit kan leiden tot reputatieschade, boetes en juridische gevolgen
+
+
+
+Samenvatting
+
+Het FTP anonymous account is ingeschakeld op de FTP-server (192.168.1.100). Het account anonymous (wachtwoord: anonymous, permissies: Read and List) is aanwezig in de User Setup.
+
+Gevolgen:
+- Iedereen in VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24) kan zonder wachtwoord verbinding maken
+- Bestanden op de FTP-server kunnen worden gelezen en gedownload
+- Dit kan leiden tot datalekken van vertrouwelijke bedrijfsinformatie
+
+Advies:
+1. Schakel het anonymous account uit:
+- Ga naar de FTP-configuratie van de server (Config > Services > FTP)
+- Selecteer de anonymous gebruiker en klik op - (verwijder)
+
+2. Gebruik specifieke gebruikersaccounts:
+- Maak accounts aan voor gebruikers die FTP nodig hebben
+- Gebruik sterke wachtwoorden (bijv. 12+ tekens, mix van letters, cijfers, symbolen)
+- Geef minimale rechten (alleen wat nodig is)
+
+3. Overweeg SFTP (SSH File Transfer Protocol):
+- SFTP gebruikt SSH voor encryptie en authenticatie
+- Dit is veiliger dan FTP omdat alle data versleuteld wordt
+
+4. Beperk toegang tot de FTP-server:
+- Gebruik een ACL om alleen verkeer van specifieke IP-adressen toe te staan
+- Bijv. alleen toegang vanaf beheerderssubnetten
+
+5. Test na configuratie:
+- Probeer vanaf een PC in VLAN 30 in te loggen met anonymous
+- De verbinding moet worden geweigerd (%Error: Connection refused of Access denied)
+- Probeer in te loggen met een legitieme account om te controleren of die nog werkt
+
+Na het verwijderen van het anonymous account controleer je de User Setup om te bevestigen dat anonymous niet meer in de lijst staat.
