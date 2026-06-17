@@ -1,0 +1,323 @@
+Omschrijving
+
+Event logging is een functie op routers en switches die gebeurtenissen (events) vastlegt in een logbestand. 
+Dit kunnen systeemgebeurtenissen zijn, foutmeldingen, waarschuwingen of informatieve berichten over wat er in het netwerk gebeurt.
+
+Simpel gezegd: Event logging is als een dagboek van de router of switch. 
+Alles wat er gebeurt - van een interface die omhoog gaat tot een foutmelding of een beveiligingswaarschuwing - wordt opgeschreven. 
+De netwerkbeheerder kan dit dagboek later teruglezen om problemen op te lossen of te onderzoeken wat er is gebeurd.
+
+De router/switch heeft verschillende niveaus van logging (0=t/m 7):
+
+    0 - Emergencies: Systeem is onbruikbaar
+    1 - Alerts: Onmiddellijke actie nodig
+    2 - Critical: Kritieke fouten
+    3 - Errors: Foutmeldingen
+    4 - Warnings: Waarschuwingen
+    5 - Notifications: Normale maar belangrijke gebeurtenissen
+    6 - Informational: Informatieve berichten
+    7 - Debugging: Debug-informatie (zeer gedetailleerd)
+
+Logs kunnen worden opgeslagen op:
+
+    Console: Direct zichtbaar op de console-poort
+    Terminal: Zichtbaar via Telnet/SSH-sessie
+    Buffered: In het geheugen van de router (RAM)
+    Syslog-server: Naar een externe server gestuurd
+
+
+
+Uivoering
+
+! Bekijk de algemene logging-configuratie
+Router# show logging
+
+! Bekijk de actuele logberichten
+Router# show logging | include 
+
+! Bekijk of logging in de configuratie staat
+Router# show running-config | include logging
+
+
+
+
+Als Event Logging WEL is enabled
+
+Router# show logging
+Syslog logging: enabled (0 messages dropped, 0 flushes, 0 overruns)
+    Console logging: level debugging, 25 messages logged
+    Monitor logging: level debugging, 0 messages logged
+    Buffer logging: level debugging, 45 messages logged
+    Trap logging: level informational, 10 message lines logged
+    Logging to 192.168.1.100 (udp port 514, audit disabled,
+              authentication disabled), 10 message lines logged,
+              0 lines rate-limited
+
+Log Buffer (50000 bytes):
+*Jun 17 10:23:45.123: %LINK-3-UPDOWN: Interface FastEthernet0/0, changed state to up
+*Jun 17 10:23:46.456: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to up
+*Jun 17 10:24:12.789: %SYS-5-CONFIG_I: Configured from console by admin on console
+*Jun 17 10:25:30.123: %DHCP-4-NO_ADDRESS: DHCP pool [PRODUCTIE] has no available addresses
+*Jun 17 10:30:15.456: %SYS-5-RESTART: System restarted --
+
+
+Let op:
+
+    Syslog logging: enabled - Event logging staat aan
+    Console logging: level debugging - Logs worden naar de console gestuurd
+    Buffer logging: level debugging - Logs worden in het geheugen opgeslagen
+    Logging to 192.168.1.100 - Logs worden naar een syslog-server gestuurd
+    Er is een Log Buffer met logberichten
+
+
+
+
+In show running-config | include logging:
+
+
+Router# show running-config | include logging
+logging buffered debugging
+logging console debugging
+logging host 192.168.1.100
+logging trap informational
+
+
+
+
+Event logging is een functie die gebeurtenissen (events) vastlegt in een logbestand. 
+Dit kunnen systeemgebeurtenissen zijn, foutmeldingen, waarschuwingen of informatieve berichten over wat er in het netwerk gebeurt.
+
+Het is goed dat Event logging is ingeschakeld op R1 met de volgende instellingen:
+
+1. Buffer logging (level debugging):
+- Logs worden opgeslagen in het geheugen (RAM) van de router
+- Niveau debugging (7) vangt alle berichten, inclusief debug-informatie
+- De buffer is 50000 bytes groot, wat voldoende is voor ongeveer 45 berichten
+- Dit is nuttig voor realtime probleemoplossing zonder dat een externe server nodig is
+
+2. Console logging (level debugging):
+- Logs worden direct weergegeven op de console-poort
+- Dit is handig voor een beheerder die fysiek bij de router staat
+- Nadeel: kan de console vertragen bij veel debug-berichten, maar dit is acceptabel voor debugging
+
+3. Syslog-server (trap logging, level informational):
+- Logs worden naar een centrale syslog-server gestuurd (192.168.1.100)
+- Niveau informational (6) stuurt alle belangrijke berichten (geen debug)
+- Dit is essentieel voor:
+- Centrale monitoring van meerdere apparaten
+- Langdurige opslag van logs (niet alleen in het vluchtige RAM)
+- Beveiligingsaudits (logs blijven bewaard ook na een herstart)
+- Snelle detectie van problemen (de syslog-server kan alerts sturen)
+
+Voorbeeld van wat er wordt gelogd:
+- Interface FastEthernet0/0 die omhoog gaat (%LINK-3-UPDOWN)
+- Configuratiewijzigingen door beheerders (%SYS-5-CONFIG_I)
+- DHCP-waarschuwingen (%DHCP-4-NO_ADDRESS)
+- Systeemherstart (%SYS-5-RESTART)
+
+Hierdoor kan de netwerkbeheerder:
+- Problemen opsporen wanneer een gebruiker geen verbinding heeft
+- Beveiligingsincidenten onderzoeken (wie heeft de configuratie gewijzigd?)
+- Trends analyseren (bijv. hoeveel DHCP-problemen er zijn)
+- Aantonen wat er is gebeurd tijdens een netwerkstoring
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Event logging is correct ingeschakeld met buffer logging, console logging en een syslog-server.
+
+
+
+Impact
+
+Geen impact. Event logging werkt correct en biedt inzicht in netwerkgebeurtenissen. De syslog-server op 192.168.1.100 verzamelt centraal alle logs.
+
+
+
+Samenvatting
+
+Event logging is correct ingeschakeld op R1. 
+Logs worden lokaal opgeslagen in de buffer (50000 bytes, niveau debugging) en worden gestuurd naar een centrale syslog-server (192.168.1.100, niveau informational). 
+Ook worden logs weergegeven op de console. Hierdoor kan de netwerkbeheerder problemen opsporen, beveiligingsincidenten onderzoeken en trends analyseren. 
+De configuratie voldoet aan de best practice.
+
+
+
+
+
+
+
+
+
+
+
+Als Event Logging NIET is enabled
+
+In show logging:
+
+Router# show logging
+Syslog logging: disabled
+    Console logging: disabled
+    Monitor logging: disabled
+    Buffer logging: disabled
+    Trap logging: disabled
+
+Log Buffer (0 bytes):
+
+Let op: Syslog logging: disabled - Event logging staat uit.
+
+
+
+
+In show running-config | include logging:
+
+Router# show running-config | include logging
+(geen output - niets te zien)
+
+Let op: Er zijn geen logging-commando's in de configuratie.
+
+
+
+
+Bevinding
+
+Uit show logging blijkt dat Event logging niet is ingeschakeld op de router R1.
+
+Logging-instellingen:
+- Syslog logging: disabled - Logging staat uit
+- Console logging: disabled
+- Buffer logging: disabled
+- Trap logging: disabled
+
+Log Buffer:
+- Grootte: 0 bytes
+- Bevat 0 logberichten
+
+In show running-config | include logging is geen enkele logging-configuratie zichtbaar.
+
+
+
+Advies
+
+Event logging is een functie die gebeurtenissen (events) vastlegt in een logbestand. 
+Dit kunnen systeemgebeurtenissen zijn, foutmeldingen, waarschuwingen of informatieve berichten over wat er in het netwerk gebeurt.
+
+Het is niet goed dat Event logging ontbreekt op R1.
+
+Waarom is dit een probleem?
+
+1. Geen zicht op netwerkproblemen:
+- Als een interface uitvalt (FastEthernet0/1), wordt dit niet gelogd
+- Een beheerder kan de oorzaak niet achterhalen omdat er geen loggeschiedenis is
+- Probleemoplossing wordt tijdrovend en moeilijk
+
+2. Geen beveiligingscontrole:
+- Als een hacker probeert in te loggen via SSH/Telnet, wordt dit niet geregistreerd
+- Een beheerder die een fout maakt (bijv. per ongeluk de verkeerde route instelt), wordt niet gelogd
+- Beveiligingsincidenten kunnen niet worden onderzocht
+
+3. Geen audits:
+- Bij een netwerkstoring kan de beheerder niet aantonen wat er is gebeurd
+- Er is geen bewijslast voor incidenten
+- Compliance (bijv. ISO 27001, AVG) is niet mogelijk zonder logging
+
+4. Geen centrale monitoring:
+- Er is geen syslog-server geconfigureerd
+- Logs worden nergens centraal verzameld
+- Problemen worden pas ontdekt wanneer gebruikers klagen (reactief) in plaats van proactief
+
+Voorbeelden van situaties die niet worden gelogd:
+- Interface FastEthernet0/0 die uitvalt (%LINK-3-UPDOWN)
+- DHCP-server die geen adressen meer heeft (%DHCP-4-NO_ADDRESS)
+- Verkeerde inlogpogingen op de router (%SEC-6-IPACCESSLOGP)
+- Configuratiewijzigingen (%SYS-5-CONFIG_I)
+- OSPF-buur die wegvalt (%OSPF-5-ADJCHG)
+
+Zonder deze logs is de netwerkbeheerder blind voor wat er in het netwerk gebeurt.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Event logging is niet ingeschakeld op R1.
+
+De volgende logging-functies zijn uit:
+- Syslog logging: disabled
+- Console logging: disabled
+- Buffer logging: disabled
+- Trap logging: disabled
+
+Er is geen syslog-server geconfigureerd.
+De logbuffer is 0 bytes en bevat geen logberichten.
+
+Dit is een afwijking omdat logging essentieel is voor netwerkbeheer en beveiliging.
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het ontbreken van Event logging:
+
+1. Probleemoplossing is onmogelijk:
+- Als FastEthernet0/0 (192.168.1.1/24) uitvalt, is er geen log van de oorzaak
+- De beheerder weet niet of het een fysiek probleem is, een configuratiefout of een aanval
+- Dit leidt tot lange uitvaltijden omdat de oorzaak handmatig moet worden gezocht
+
+2. Beveiligingsincidenten blijven onopgemerkt:
+- Een hacker die de router probeert te kraken via SSH, laat geen sporen achter
+- Een medewerker die ongeautoriseerd de configuratie wijzigt, wordt niet geregistreerd
+- Een DoS-aanval (Denial of Service) wordt niet gedetecteerd
+- Datalekken kunnen niet worden onderzocht omdat er geen logs zijn
+
+3. Geen proactief beheer:
+- De beheerder kan geen trends zien (bijv. toenemend aantal fouten)
+- Problemen worden pas ontdekt wanneer gebruikers klagen (reactief)
+- Geen waarschuwingen voor kritieke gebeurtenissen (bijv. DHCP-pool die bijna vol is)
+
+4. Compliance-risico:
+- Veel bedrijven moeten logs bewaren vanwege AVG, ISO 27001 of PCI-DSS
+- Zonder logging kan het bedrijf niet aantonen dat het voldoet aan deze eisen
+- Dit kan leiden tot boetes of reputatieschade
+
+De impact is hoog omdat:
+- Netwerkstoringen niet kunnen worden onderzocht
+- Beveiligingsincidenten niet kunnen worden gedetecteerd of onderzocht
+- Compliance in gevaar komt
+- Uitvaltijd toeneemt omdat problemen langer duren om op te lossen
+
+
+
+Samenvatting
+
+Event logging is niet ingeschakeld op R1. 
+Logging staat volledig uit: geen console logging, geen buffer logging, geen syslog-server. 
+Hierdoor worden alle gebeurtenissen (interface-storingen, configuratiewijzigingen, DHCP-problemen, beveiligingsincidenten) niet vastgelegd.
+
+Gevolgen:
+- Probleemoplossing is onmogelijk zonder logs
+- Beveiligingsincidenten blijven onopgemerkt en kunnen niet worden onderzocht
+- Geen proactief beheer (trends, waarschuwingen)
+- Compliance-risico (AVG, ISO 27001)
+
+Advies:
+1. Schakel buffer logging in:
+- logging buffered informational
+- Buffer grootte: logging buffered 50000
+2. Schakel console logging in:
+- logging console warnings (alleen waarschuwingen en hoger, anders vertraagt het de console)
+3. Configureer een syslog-server:
+- logging host 192.168.1.100
+- logging trap informational
+4. Stel logging synchronous in voor leesbare output:
+- logging synchronous onder de console-lijn
+5. Controleer timestamps:
+- service timestamps log datetime msec localtime (voor tijdstippen in logs)
+
+Na configuratie controleer je met show logging of de logging is ingeschakeld en of er logberichten verschijnen.
+
+
