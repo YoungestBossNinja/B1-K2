@@ -1,0 +1,368 @@
+Omschrijving
+
+DHCP (Dynamic Host Configuration Protocol) is een protocol dat automatisch IP-adressen toekent aan apparaten in een netwerk. 
+Een DHCP-server heeft een adrespool (een bereik van IP-adressen) waaruit hij adressen kan uitdelen aan clients.
+
+Simpel gezegd: De DHCP-server is als een kledingkast met een beperkt aantal jassen. Als er meer mensen komen dan er jassen zijn, blijven sommigen zonder jas (zonder IP-adres). 
+Daarom moet de adrespool groot genoeg zijn voor alle apparaten die ooit verbinding kunnen maken.
+
+Waarom is dit belangrijk?
+
+    Als er te weinig adressen zijn, kunnen nieuwe gebruikers geen verbinding maken
+
+    Dit kan gebeuren door:
+      Te veel apparaten (meer dan de pool aankan)
+      Lange lease-tijden (adressen komen niet snel vrij)
+      Vergeten adressen uit de pool te verwijderen (bijvoorbeeld voor printers/servers)
+      Dit leidt tot uitval en productiviteitsverlies
+
+
+
+
+Uitvoering
+
+! Bekijk de DHCP-configuratie op de router
+Router# show running-config | include dhcp
+Router# show running-config | begin ip dhcp
+
+! Of kijk naar de specifieke DHCP-pool
+Router# show ip dhcp pool
+
+! Bekijk welke adressen zijn toegewezen (bindingen)
+Router# show ip dhcp binding
+
+! Bekijk of er nog adressen beschikbaar zijn
+Router# show ip dhcp pool [naam]
+
+! Tel het aantal apparaten in het subnet (eigen berekening)
+Router# show ip arp | include 192.168.10.
+
+
+
+Als er voldoende IP-adressen gereserveerd zijn zie je
+
+In show ip dhcp pool:
+
+
+Router# show ip dhcp pool
+
+Pool DHCP_PRODUCTIE :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0
+ Total addresses                : 100
+ Leased addresses               : 45
+ Pending event                  : none
+ 1 subnet is currently in the pool :
+ Current index        : 192.168.10.135
+ IP address size      : 0/32
+  Start address 1     : 192.168.10.100
+  End address         : 192.168.10.199
+
+Pool DHCP_HR :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0
+ Total addresses                : 50
+ Leased addresses               : 22
+ Pending event                  : none
+ 1 subnet is currently in the pool :
+ Current index        : 192.168.20.125
+ IP address size      : 0/32
+  Start address 1     : 192.168.20.100
+  End address         : 192.168.20.149
+
+
+Let op:
+
+    DHCP_PRODUCTIE: 100 adressen totaal, 45 in gebruik, 55 beschikbaar
+
+    DHCP_HR: 50 adressen totaal, 22 in gebruik, 28 beschikbaar
+
+
+
+
+
+In show DHCP-Binding zie je
+
+Router# show ip dhcp binding
+IP address          Client-ID/              Lease expiration        Type
+                    Hardware address
+192.168.10.100      0001.4321.ABCD          Jun 17 2026 12:00 PM    Automatic
+192.168.10.101      0001.4321.ABCE          Jun 17 2026 12:15 PM    Automatic
+192.168.10.102      0001.4321.ABCF          Jun 17 2026 12:30 PM    Automatic
+...
+(45 bindingen totaal)
+
+
+
+
+
+
+Advies
+
+DHCP heeft een adrespool nodig om IP-adressen automatisch toe te kennen aan clients. 
+Als de pool te klein is, kunnen nieuwe clients geen IP-adres krijgen en hebben ze geen netwerkverbinding.
+
+Het is goed dat er voldoende IP-adressen zijn gereserveerd in beide DHCP-pools:
+
+VLAN 10 (Productie, 192.168.10.0/24):
+- Er zijn 100 adressen beschikbaar in de pool (192.168.10.100 - 192.168.10.199)
+- Er zijn 45 adressen in gebruik
+- Er zijn 55 adressen beschikbaar voor nieuwe apparaten
+- Er is 55% groeiruimte
+
+VLAN 20 (HR, 192.168.20.0/24):
+- Er zijn 50 adressen beschikbaar in de pool (192.168.20.100 - 192.168.20.149)
+- Er zijn 22 adressen in gebruik
+- Er zijn 28 adressen beschikbaar voor nieuwe apparaten
+- Er is 56% groeiruimte
+
+Omdat er voldoende vrije adressen zijn, kunnen nieuwe gebruikers, printers of andere apparaten zonder problemen verbinding maken. 
+Zelfs tijdens piekuren (bijvoorbeeld 's ochtends als alle medewerkers inloggen) is er voldoende capaciteit.
+
+De DHCP-server kan ook lease-tijden verlengen zonder dat de pool uitgeput raakt. De huidige lease-tijd is 24 uur (86400 seconden), wat standaard is. 
+Zelfs als alle 45 productie-apparaten tegelijk hun lease zouden vernieuwen, zijn er nog 55 adressen beschikbaar.
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Beide DHCP-pools hebben voldoende vrije adressen.
+
+
+
+Impact
+
+Geen impact. Alle 45 apparaten in VLAN 10 en 22 apparaten in VLAN 20 hebben een IP-adres. 
+Nieuwe apparaten kunnen zonder problemen verbinding maken. Het netwerk functioneert correct.
+
+
+
+Samenvatting
+
+De DHCP-pools voor VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24) hebben voldoende IP-adressen gereserveerd. 
+In VLAN 10 zijn 45 van de 100 adressen in gebruik (45% bezet) en in VLAN 20 zijn 22 van de 50 adressen in gebruik (44% bezet). 
+Er is voldoende groeiruimte voor nieuwe apparaten. Het netwerk kan zonder problemen uitbreiden.
+
+
+
+
+
+
+
+
+
+
+ZIJN ER NIET VOLDOENDE IP-ADRESSEN GERESERVEERD?
+
+
+Router# show ip dhcp pool
+
+Pool DHCP_PRODUCTIE :
+ Utilization mark (high/low)    : 100 / 0
+ Subnet size (first/next)       : 0 / 0
+ Total addresses                : 30
+ Leased addresses               : 30
+ Pending event                  : none
+ 1 subnet is currently in the pool :
+ Current index        : 192.168.10.129
+ IP address size      : 0/32
+  Start address 1     : 192.168.10.100
+  End address         : 192.168.10.129
+
+Let op:
+
+    30 adressen totaal, 30 in gebruik, 0 beschikbaar
+
+    De pool is volledig uitgeput!
+
+
+
+
+In show DHCP-BINDING
+
+Router# show ip dhcp binding
+IP address          Client-ID/              Lease expiration        Type
+                    Hardware address
+192.168.10.100      0001.4321.ABCD          Jun 17 2026 12:00 PM    Automatic
+192.168.10.101      0001.4321.ABCE          Jun 17 2026 12:15 PM    Automatic
+...
+(30 bindingen)
+
+
+
+
+
+Als een client geen address krijgt
+
+PC> ipconfig /renew
+DHCP request failed. No DHCP servers available.
+
+De client krijgt geen IP-adres omdat de pool vol is.
+
+
+
+
+
+
+
+Bevinding
+
+Uit show ip dhcp pool blijkt dat er onvoldoende IP-adressen zijn gereserveerd:
+
+DHCP_PRODUCTIE (VLAN 10 - 192.168.10.0/24):
+- Totaal adressen: 30 (192.168.10.100 t/m 192.168.10.129)
+- In gebruik: 30
+- Beschikbaar: 0
+- % bezet: 100%
+
+DHCP_HR (VLAN 20 - 192.168.20.0/24):
+- Totaal adressen: 20 (192.168.20.100 t/m 192.168.20.119)
+- In gebruik: 20
+- Beschikbaar: 0
+- % bezet: 100%
+
+Beide DHCP-pools zijn volledig uitgeput.
+
+In de logs (show logging | include DHCP) zijn foutmeldingen zichtbaar:
+%DHCP-4-NO_ADDRESS: DHCP pool DHCP_PRODUCTIE has no available addresses.
+%DHCP-4-NO_ADDRESS: DHCP pool DHCP_HR has no available addresses.
+
+
+
+
+
+Advies
+
+DHCP heeft een adrespool nodig om IP-adressen automatisch toe te kennen aan clients. 
+Als de pool te klein is, kunnen nieuwe clients geen IP-adres krijgen en hebben ze geen netwerkverbinding.
+
+Het is niet goed dat er onvoldoende IP-adressen zijn gereserveerd in beide DHCP-pools:
+
+VLAN 10 (Productie, 192.168.10.0/24):
+- Er zijn maar 30 adressen beschikbaar in de pool (192.168.10.100 - 192.168.10.129)
+- Alle 30 adressen zijn in gebruik
+- Er zijn 0 adressen beschikbaar voor nieuwe apparaten
+- De pool is 100% vol
+
+VLAN 20 (HR, 192.168.20.0/24):
+- Er zijn maar 20 adressen beschikbaar in de pool (192.168.20.100 - 192.168.20.119)
+- Alle 20 adressen zijn in gebruik
+- Er zijn 0 adressen beschikbaar voor nieuwe apparaten
+- De pool is 100% vol
+
+Dit betekent dat nieuwe apparaten geen IP-adres kunnen krijgen. Stel je voor:
+- Een nieuwe medewerker begint op de productieafdeling en sluit zijn laptop aan
+- De laptop vraagt een IP-adres aan via DHCP
+- De DHCP-server heeft geen vrije adressen meer
+- De laptop krijgt een APIPA-adres (169.254.x.x) of helemaal geen adres
+- De medewerker kan niet werken omdat hij geen netwerkverbinding heeft
+
+Ook kunnen tijdelijke apparaten (bijvoorbeeld laptops van bezoekers of externe consultants) geen verbinding maken. Dit leidt tot productiviteitsverlies en frustratie.
+
+De oorzaak kan zijn:
+- De pool is te klein gekozen bij de initiële configuratie
+- Het aantal apparaten is gegroeid zonder de pool aan te passen
+- Er zijn reserveringen gemaakt voor apparaten (printers, servers) die adressen uit de pool gebruiken
+- De lease-tijd is te lang (bijv. 7 dagen), waardoor adressen niet snel vrijkomen
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+De DHCP-pools voor VLAN 10 en VLAN 20 zijn onvoldoende groot:
+
+1. VLAN 10 (Productie, 192.168.10.0/24):
+- Pool: 192.168.10.100 - 192.168.10.129 (30 adressen)
+- In gebruik: 30 adressen
+- Beschikbaar: 0 adressen
+- 100% bezet
+
+2. VLAN 20 (HR, 192.168.20.0/24):
+- Pool: 192.168.20.100 - 192.168.20.119 (20 adressen)
+- In gebruik: 20 adressen
+- Beschikbaar: 0 adressen
+- 100% bezet
+
+In de logs staan foutmeldingen:
+- %DHCP-4-NO_ADDRESS: DHCP pool DHCP_PRODUCTIE has no available addresses.
+- %DHCP-4-NO_ADDRESS: DHCP pool DHCP_HR has no available addresses.
+
+Nieuwe apparaten kunnen geen IP-adres meer krijgen.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+VLAN 10 (Productie, 192.168.10.0/24):
+- De pool heeft 30 adressen en is 100% vol
+- Een nieuwe medewerker op de productieafdeling (bijvoorbeeld op FastEthernet0/3) kan geen IP-adres krijgen
+- De laptop krijgt een APIPA-adres (169.254.x.x)
+- De medewerker heeft geen toegang tot:
+- Productieservers (192.168.10.10 - 192.168.10.20)
+- Internet (via de router 192.168.10.1)
+- E-mail en andere bedrijfsapplicaties
+- De medewerker kan niet werken, wat leidt tot productiviteitsverlies
+
+VLAN 20 (HR, 192.168.20.0/24):
+- De pool heeft 20 adressen en is 100% vol
+- Een nieuwe HR-medewerker of een externe consultant kan geen IP-adres krijgen
+- De gebruiker heeft geen toegang tot HR-systemen (192.168.20.10 - 192.168.20.20)
+- Personeelsgegevens kunnen niet worden geraadpleegd of bijgewerkt
+
+Algemene gevolgen:
+- Nieuwe apparaten (laptops, printers, scanners, telefoons) kunnen niet worden toegevoegd
+- Tijdelijke apparaten (bezoekers, externe partijen) kunnen geen verbinding maken
+- Uitbreiding van het bedrijf wordt belemmerd
+- Helpdesk krijgt veel klachten van gebruikers die geen verbinding hebben
+- Netwerkbeheer moet handmatig ingrijpen om adressen vrij te maken
+
+De impact is hoog omdat:
+- Productie-afdeling kan niet werken (verlies van omzet)
+- HR-afdeling kan geen personeelszaken afhandelen
+- Uitbreiding van het netwerk is geblokkeerd totdat de pool wordt vergroot
+
+
+
+
+Samenvatting
+
+De DHCP-pools voor VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24) zijn onvoldoende groot. Beide pools zijn 100% vol:
+
+- VLAN 10: 30 van de 30 adressen in gebruik (192.168.10.100 - 192.168.10.129)
+- VLAN 20: 20 van de 20 adressen in gebruik (192.168.20.100 - 192.168.20.119)
+
+Nieuwe apparaten kunnen geen IP-adres meer krijgen en hebben daardoor geen netwerkverbinding. In de logs staan foutmeldingen over het ontbreken van vrije adressen.
+
+Advies:
+1. Vergroot de DHCP-pools:
+- VLAN 10: Vergroot de pool naar 192.168.10.50 - 192.168.10.199 (150 adressen) zodat er voldoende ruimte is voor uitbreiding
+- VLAN 20: Vergroot de pool naar 192.168.20.50 - 192.168.20.149 (100 adressen) zodat er voldoende ruimte is voor uitbreiding
+
+2. Gebruik exclusieve adressen voor vaste apparaten:
+- Reserveer adressen voor printers, servers en andere vaste apparaten buiten de DHCP-pool (bijv. 192.168.10.1 - 192.168.10.49)
+- Gebruik exclusions met ip dhcp excluded-address 192.168.10.1 192.168.10.49
+
+3. Verlaag de lease-tijd:
+- Zet de lease-tijd op 8 uur (28800 seconden) in plaats van 24 uur, zodat adressen sneller vrijkomen
+- Gebruik lease 0 8 0 in de DHCP-pool
+
+4. Controleer of er adressen verloren zijn:
+- Kijk of er bindingen zijn van apparaten die niet meer bestaan (oude laptops, testapparaten)
+- Gebruik clear ip dhcp binding * om alle bindingen te wissen (alleen als dit veilig is)
+
+5. Monitor de pool regelmatig:
+- Gebruik show ip dhcp pool om het gebruik te monitoren
+- Stel een alert in wanneer de pool voor 80% vol is
+
+Na het vergroten van de pool controleer je met show ip dhcp pool of er voldoende vrije adressen zijn.
+
+
+
+
