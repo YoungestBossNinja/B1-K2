@@ -1,0 +1,82 @@
+Omschrijving
+
+Een ACL is een lijst met regels die bepaalt welk verkeer er wordt toegestaan of geblokkeerd tussen VLAN’s.
+
+
+
+
+Uitvoering
+
+show running-config
+
+
+
+
+Verwachting
+
+Als er een ACL is ingesteld tussen de VLAN’s moet er bij het uitvoeren van het running-config commando onder de betreffende interfaces van de VLAN’s het volgende te zien zijn dat begint met “ip acces-group  <?> <?>”. (Zie voorbeeld hieronder)
+
+interface Vlan90 
+  mac-address 00e0.8f14.5502
+  ip-address 192.168.90.1 255.255.255.0
+  ip access-group 10 in                           <------------ deze regel heb je nodig dus OMCIRKEL het ook op je foto i think
+!
+
+
+
+
+
+
+Advies
+
+Een ACL is een verkeersfilter dat op een routeringsinterface wordt geplaatst. In dit netwerk wordt ACL 110 inbound toegepast op VLAN 20 (HR-netwerk 192.168.20.0/24). Dat betekent dat elk pakketje dat vanuit HR de router binnenkomt eerst langs deze ACL moet voordat het naar een ander VLAN (zoals Productie op 192.168.10.0/24) mag.
+
+Het is goed dat deze ACL is ingezet, omdat hiermee wordt voorkomen dat HR-medewerkers via een webbrowser (HTTP op poort 80 en HTTPS op poort 443) toegang krijgen tot webservers in het Productienetwerk. Dit is een belangrijk beveiligingsprincipe: medewerkers van HR hebben geen functionele noodzaak om de productie-webservers te benaderen. Door dit verkeer te blokkeren, wordt het risico verkleind dat een HR-medewerker per ongeluk of kwaadwillend vertrouwelijke productiegegevens inziet of systemen beschadigt.
+
+Echter er is een groot risico: op VLAN 30 (Gasten-netwerk 192.168.30.0/24) is helemaal geen ACL toegepast. Omdat een ACL niet standaard aanstaat, betekent dit dat al het verkeer van gasten naar alle andere VLAN's is toegestaan. Een gast kan bijvoorbeeld:
+- Een ping doen naar 192.168.10.1 (de router) en 192.168.10.10 (een productieserver)
+- Een verbinding maken via SMB (poort 445) naar HR-bestandsservers in 192.168.20.0/24
+- Via SSH (poort 22) inloggen op netwerkapparaten in het Productienetwerk
+
+Dit is in strijd met het beveiligingsbeleid, omdat gasten normaal gesproken alleen internettoegang mogen hebben en geen toegang tot interne bedrijfsnetwerken.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+- VLAN 30 (Gasten, 192.168.30.0/24) heeft geen enkele ACL toegepast, ook niet inbound of outbound.
+- Hierdoor is al het verkeer van gasten naar VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24) onbeperkt toegestaan.
+
+Dit is een afwijking ten opzichte van de standaard beveiligingsrichtlijn die voorschrijft dat gastennetwerken geïsoleerd moeten zijn van bedrijfsnetwerken.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Omdat VLAN 30 geen ACL heeft, kan een gastgebruiker:
+- Netwerkscans uitvoeren op 192.168.10.0/24 om actieve servers te detecteren
+- Pogingen doen om via poort 22 (SSH) of poort 3389 (RDP) in te loggen op productieservers
+- Via poort 445 (SMB) bestanden op HR-systemen benaderen, wat kan leiden tot datalekken van personeelsgegevens
+- Malware verspreiden vanaf een gast-PC naar interne systemen
+
+Hierdoor kan een onbevoegde gebruiker (of een geïnfecteerde gast-PC) het hele interne netwerk compromitteren. 
+Gezien de gasten-VLAN vaak gebruikt wordt door bezoekers, externe partijen of WiFi-gebruikers, is dit een zeer reëel risico.
+
+
+
+
+Samenvatting
+
+De ACL is gedeeltelijk ingezet tussen VLAN's. 
+Alleen VLAN 20 (HR, 192.168.20.0/24) wordt beschermd door ACL 110, die HTTP- en HTTPS-verkeer naar VLAN 10 (Productie, 192.168.10.0/24) blokkeert. 
+Echter, VLAN 30 (Gasten, 192.168.30.0/24) heeft geen enkele ACL, waardoor gasten onbeperkt toegang hebben tot zowel VLAN 10 als VLAN 20. 
+
+Dit vormt een hoog beveiligingsrisico. 
+Het advies is om op VLAN 30 een ACL toe te passen (bijvoorbeeld ACL 120 inbound) die alleen verkeer naar het internet toestaat en al het verkeer naar 192.168.10.0/24 en 192.168.20.0/24 blokkeert. 
+Ook kan overwogen worden om ACL 110 uit te breiden met een deny voor andere protocollen zoals SSH (poort 22) en SMB (poort 445) om HR compleet te isoleren van Productie.
+
