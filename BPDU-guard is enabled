@@ -1,0 +1,182 @@
+Omschrijving
+
+BPDU-guard is een beveiligingsfunctie op switchpoorten die ervoor zorgt
+dat een poort automatisch wordt uitgeschakeld (err-disable) zodra er een BPDU (Bridge Protocol Data Unit) wordt ontvangen.
+
+Simpel gezegd: Een BPDU is een "STP-bericht" dat switches gebruiken om lussen te voorkomen. Normaal gesproken sturen alleen switches BPDU's. 
+Als je een BPDU-guard op een poort zet, dan zegt hij: "Als ik hier een BPDU zie, dan is er iets mis - waarschijnlijk heeft iemand een switch aangesloten waar geen switch mag komen. 
+Ik schakel deze poort direct uit!"
+
+
+
+
+Uivoering
+
+! Controleer of BPDU-guard is ingeschakeld op poorten
+Switch# show running-config | include bpduguard
+
+! Bekijk specifieke interfaces
+Switch# show running-config interface fastEthernet 0/1
+
+! Check of poorten in err-disable staan (BPDU-guard getriggerd)
+Switch# show interfaces status
+
+
+
+Als het aanstaat zie je 
+
+spanning-tree bpduguard enable <---
+
+of
+
+spanning-tree portfast bpduguard default <---
+
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree bpduguard enable <-------------
+
+
+
+
+
+Zo niet? dan zie je niks
+
+interface FastEthernet0/9
+ switchport mode access
+ switchport access vlan 10
+                          <--------- hier hoort te staan dat het enabled is
+
+
+
+
+
+
+Advies
+
+BPDU-guard is een STP-beveiliging die op access-ports wordt gezet. 
+Wanneer een BPDU-guard poort een BPDU ontvangt (bijvoorbeeld omdat een gebruiker een switch aansluit), schakelt de switch de poort uit in err-disable om lussen te voorkomen.
+
+Het is goed dat BPDU-guard is ingeschakeld op FastEthernet 0/1 en FastEthernet 0/5. Dit zijn access-ports voor gebruikers in VLAN 10 (Productie, 192.168.10.0/24). 
+Mocht een gebruiker hier een switch aansluiten, dan wordt de poort direct uitgeschakeld en kan er geen STP-lus ontstaan die het hele netwerk platlegt.
+
+Er zijn geen poorten in err-disable, dus BPDU-guard is nog niet getriggerd - dit betekent dat gebruikers zich correct gedragen en geen ongeautoriseerde switches aansluiten.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. BPDU-guard is correct ingeschakeld op de access-ports.
+
+
+
+Impact
+
+Geen impact, BPDU-guard werkt correct. Het netwerk is beschermd tegen ongeautoriseerde switches. 
+Mocht een gebruiker toch een switch aansluiten, dan wordt alleen die ene poort uitgeschakeld en blijft de rest van het netwerk functioneren.
+
+
+
+Samenvatting
+
+BPDU-guard is correct ingeschakeld op de access-ports FastEthernet 0/1 en FastEthernet 0/5. 
+Er zijn geen poorten in err-disable status. 
+De beveiliging tegen ongeautoriseerde switches functioneert naar behoren.
+
+
+
+
+
+
+
+BPDU GUARD NIET ENABLED?
+
+
+Advies
+
+BPDU-guard is een STP-beveiliging die op access-ports wordt gezet. 
+Wanneer een BPDU-guard poort een BPDU ontvangt (bijvoorbeeld omdat een gebruiker een switch aansluit), schakelt de switch de poort uit in err-disable om lussen te voorkomen.
+
+Het is niet goed dat BPDU-guard ontbreekt op de access-ports FastEthernet 0/1 en FastEthernet 0/5. Dit zijn poorten voor gebruikers in VLAN 10 (Productie, 192.168.10.0/24). 
+Een gebruiker kan hier zonder gevolgen een switch aansluiten. 
+Die switch gaat BPDU's sturen naar de Core-SW1, waardoor STP de topologie kan herberekenen. 
+Hierdoor kan een lus ontstaan die een broadcast storm veroorzaakt en het hele productienetwerk platlegt.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+BPDU-guard is niet ingeschakeld op FastEthernet 0/1 en FastEthernet 0/5 (en overige access-ports).
+
+De switch heeft geen enkele spanning-tree bpduguard enable in de configuratie staan.
+
+Hierdoor kunnen gebruikers zonder belemmering een switch aansluiten op hun werkplek en het STP-proces verstoren.
+
+
+
+Impact
+
+Impact: Hoog
+
+Een gebruiker op FastEthernet 0/1 (VLAN 10, Productie) kan een switch aansluiten. 
+Die switch stuurt BPDU's met een lagere bridge-priority, waardoor Core-SW1 denkt dat hij niet meer de root-bridge is.
+
+STP herberekent de topologie en kan een andere verbinding blokkeren, bijvoorbeeld de trunk tussen Core-SW1 en Core-SW2. 
+Hierdoor ontstaat een lus in het netwerk, wat leidt tot een broadcast storm. Alle gebruikers in VLAN 10 verliezen hun verbinding en het netwerk kan minutenlang uitvallen.
+
+Ook kan een kwaadwillende gebruiker bewust een switch aansluiten om het netwerk te saboteren.
+
+
+
+
+Samenvatting
+
+BPDU-guard is niet ingeschakeld op de switch. 
+De access-ports FastEthernet 0/1 en FastEthernet 0/5 (gebruikers in VLAN 10, Productie 192.168.10.0/24) hebben geen spanning-tree bpduguard enable in de configuratie.
+
+Hierdoor kunnen gebruikers zonder belemmering een switch aansluiten, wat kan leiden tot STP-lussen en broadcast storms. Dit is een hoog risico voor de netwerkstabiliteit.
+
+Advies: Configureer op alle access-ports spanning-tree bpduguard enable om ongeautoriseerde switches te blokkeren. 
+Overweeg ook errdisable recovery cause bpduguard en errdisable recovery interval 300 zodat poorten automatisch herstellen na 5 minuten.
+
+
+
+
+
+
+
+Situatie	Wat zie je?	Conclusie
+WEL aan	spanning-tree bpduguard enable in configuratie	Geen afwijking - correct geconfigureerd
+
+NIET aan	Geen bpduguard in configuratie	Afwijking - beveiliging ontbreekt
+
+GETRIGGERD	Poort in err-disabled status met bpduguard als oorzaak	BPDU-guard heeft gewerkt - poort moet hersteld worden
+
+
+
+
+
+
+
+
+Note:
+
+Waarom is dit belangrijk?
+
+    Een gebruiker kan per ongeluk (of expres) een switch in een stopcontact doen op zijn werkplek
+
+    Die switch gaat dan BPDU's sturen en kan het hele STP-netwerk in de war schoppen
+
+    Er kunnen lussen ontstaan die het hele netwerk platleggen (broadcast storm)
+
+    BPDU-guard voorkomt dit door de poort direct uit te zetten
+
+Waar wordt BPDU-guard toegepast?
+
+    Alleen op access-ports (poorten waar eindgebruikers op zitten, niet op andere switches)
+
+    Nooit op trunk-ports (daar moet STP juist kunnen werken)
