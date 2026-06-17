@@ -1,0 +1,60 @@
+Omschrijving
+
+Een back-up van een netwerkdevice is een kopie van de configuratie van dat apparaat (bijvoorbeeld een router of switch). 
+Dit configuratiebestand bevat alle instellingen zoals IP-adressen, VLAN's, routes, ACL's en wachtwoorden.
+
+Simpel gezegd: Een back-up is als een reservekopie van de "hersenen" van een router of switch. 
+Als het apparaat kapot gaat of de configuratie per ongeluk wordt gewist, kan de back-up worden gebruikt om het apparaat snel terug te zetten naar de juiste staat. 
+Zonder back-up moet de netwerkbeheerder alles handmatig opnieuw configureren, wat veel tijd kost en foutgevoelig is.
+
+Waarom zijn back-ups belangrijk?
+
+    Disaster Recovery: Bij een defect apparaat kan de configuratie snel worden hersteld
+    Tijdwinst: Herstellen vanaf een back-up is veel sneller dan handmatig configureren
+    Foutherstel: Als een beheerder per ongeluk een foutieve configuratie opslaat, kan de vorige versie worden teruggezet
+    Standaardisatie: Nieuwe apparaten kunnen snel worden voorzien van de juiste configuratie
+
+
+
+
+
+Uitvoering
+
+! Open de server configuratie in Packet Tracer
+- Klik op de server (bijv. FTPServer)
+- Ga naar het tabblad Services
+- Klik op FTP
+- Bekijk de lijst met bestanden in de FTP-map
+
+! Of gebruik de PC om de FTP-server te bekijken
+PC> ftp 192.168.1.100
+Username: administrator
+Password: cisco
+ftp> dir
+
+Let op: Je kunt ook de Desktop > FTP Client gebruiken op een PC om verbinding te maken met de FTP-server.
+
+
+
+Check op device configuratie bestanden:
+
+ftp> dir
+200 Port command successful.
+150 Opening ASCII mode data connection for /bin/ls.
+-rw-r--r--  1 root  root  1843 Jan 1 00:01 R1-startup-config.cfg
+-rw-r--r--  1 root  root  2034 Jan 1 00:02 R2-startup-config.cfg
+-rw-r--r--  1 root  root  1520 Jan 1 00:03 SW1-startup-config.cfg
+-rw-r--r--  1 root  root  1689 Jan 1 00:04 SW2-startup-config.cfg
+-rw-r--r--  1 root  root  2100 Jan 1 00:05 Core-SW-startup-config.cfg
+...
+226 Transfer complete.
+
+Let op: Back-up bestanden herken je aan de .cfg of .txt extensie en de bestandsnaam die het apparaat aangeeft.
+
+
+
+
+
+
+Als er back-ups AANWEZIG zijn
+
