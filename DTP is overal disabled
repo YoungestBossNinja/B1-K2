@@ -1,0 +1,280 @@
+Omschrijving
+
+DTP (Dynamic Trunking Protocol) is een Cisco-proprietair protocol dat automatisch onderhandelt of een switchpoort een access-port of een trunk-port moet worden .
+
+Simpel gezegd: DTP is als een "automatische onderhandelaar" tussen twee switches. 
+Wanneer je twee switches met elkaar verbindt, sturen ze DTP-berichten naar elkaar om te bepalen of de verbinding een trunk moet worden (voor meerdere VLAN's) of een access-poort (voor één VLAN).
+
+
+
+
+Als DTP overal disabled is
+
+
+Switch# show interfaces fastEthernet 0/1 switchport
+Name: Fa0/1
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: Off <---------------------------------
+
+
+Let op: Negotiation of Trunking: Off betekent dat DTP is uitgeschakeld
+
+
+
+In show running-config | include switchport mode:
+
+interface FastEthernet0/1
+ switchport mode access
+interface FastEthernet0/2
+ switchport mode access
+interface FastEthernet0/3
+ switchport mode access
+...
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport nonegotiate
+interface GigabitEthernet0/2
+ switchport mode trunk
+ switchport nonegotiate
+
+
+Let op:
+
+    Access-poorten hebben switchport mode access (DTP is dan automatisch uit)
+
+    Trunk-poorten hebben switchport mode trunk én switchport nonegotiate (DTP uitgezet)
+
+
+
+In show interfaces trunk:
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       on           802.1q         trunking      1
+Gi0/2       on           802.1q         trunking      1
+
+Let op: Alleen de handmatig geconfigureerde trunks zijn zichtbaar. Er zijn geen onverwachte trunks die via DTP zijn gevormd.
+
+
+
+
+
+
+Advies
+
+
+DTP (Dynamic Trunking Protocol) is een Cisco-protocol dat automatisch onderhandelt of een poort een trunk of access-poort moet worden . 
+DTP is standaard ingeschakeld op Cisco-switches (meestal in dynamic auto modus) .
+
+Het is goed dat DTP overal is uitgeschakeld op deze switch:
+
+Waarom is dit belangrijk?
+- Een aanvaller kan een switch aansluiten op een poort met DTP aan en een trunk onderhandelen
+- De aanvaller krijgt dan toegang tot alle VLAN's (VLAN hopping)
+- Dit kan leiden tot datalekken en netwerkcompromittering
+
+Hoe is het uitgezet?
+- Access-poorten: Door switchport mode access te gebruiken is DTP automatisch uitgeschakeld . Een access-poort kan geen trunk worden, ongeacht wat de andere kant doet.
+- Trunk-poorten: Door switchport mode trunk en switchport nonegotiate te gebruiken, stuurt de poort geen DTP-berichten meer . 
+De trunk is handmatig geconfigureerd en kan niet door een andere switch worden beïnvloed.
+
+Dit voorkomt dat een ongeautoriseerde switch (bijvoorbeeld een hacker die een switch aansluit op een vrije netwerkaansluiting) een trunk kan vormen en toegang krijgt tot:
+- VLAN 10 (Productie, 192.168.10.0/24)
+- VLAN 20 (HR, 192.168.20.0/24)
+- VLAN 30 (Gasten, 192.168.30.0/24)
+
+De enige trunks die bestaan zijn de geplande trunks tussen de switches (GigabitEthernet 0/1 en 0/2). Deze zijn handmatig geconfigureerd en veilig.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. DTP is correct uitgeschakeld op alle poorten.
+
+
+
+Impact
+
+Geen impact. DTP is uitgeschakeld, wat de veiligheid van het netwerk vergroot. De handmatig geconfigureerde trunks (Gi0/1 en Gi0/2) functioneren normaal.
+
+
+
+Samenvatting
+
+DTP is correct uitgeschakeld op alle poorten van de switch. 
+Access-poorten (FastEthernet 0/1 t/m 0/24) gebruiken switchport mode access waardoor DTP automatisch uit is . 
+Trunk-poorten (GigabitEthernet 0/1 en 0/2) gebruiken switchport mode trunk én switchport nonegotiate waardoor er geen DTP-berichten worden verstuurd . 
+Hierdoor kan een ongeautoriseerde switch geen trunk vormen en krijgt deze geen toegang tot VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) of VLAN 30 (Gasten, 192.168.30.0/24). 
+Het netwerk is beschermd tegen VLAN hopping-aanvallen.
+
+
+
+
+
+
+
+
+
+
+ALS DTP NIET OVERAL DISABLED IS
+
+in show interfaces fastEthernet 0/24 switchport (default):
+
+Switch# show interfaces fastEthernet 0/24 switchport
+Name: Fa0/24
+Switchport: Enabled
+Administrative Mode: dynamic auto
+Operational Mode: static access
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: On
+
+Let op: Administrative Mode: dynamic auto en Negotiation of Trunking: On - DTP staat aan
+
+
+
+In show running-config | include switchport mode:
+
+interface FastEthernet0/24
+ switchport mode dynamic auto
+interface FastEthernet0/23
+ switchport mode dynamic desirable
+interface GigabitEthernet0/1
+ switchport mode trunk
+
+Let op:
+
+    Geen switchport nonegotiate op de trunk-poort
+
+    Access-poorten hebben dynamic auto of dynamic desirable in plaats van access
+
+
+
+In show interfaces trunk (onverwachte trunk):
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       desirable    802.1q         trunking      1
+Fa0/24      auto         802.1q         trunking      1   <-- ONVERWACHTE TRUNK!
+
+Let op: FastEthernet0/24 is een trunk geworden via DTP, terwijl dat niet de bedoeling was!
+
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat DTP niet overal is uitgeschakeld:
+
+Access-poorten met DTP aan:
+- FastEthernet 0/24 heeft switchport mode dynamic auto
+- In show interfaces switchport staat Negotiation of Trunking: On
+- DTP staat aan op deze poort
+
+Trunk-poort zonder nonegotiate:
+- GigabitEthernet 0/1 heeft switchport mode trunk maar geen switchport nonegotiate
+- In show interfaces switchport staat Negotiation of Trunking: On
+- DTP staat aan op deze trunk-poort
+
+show interfaces trunk toont naast de handmatige trunks ook een onverwachte trunk:
+- FastEthernet 0/24 is een trunk geworden via DTP met een aangrenzende switch!
+
+
+
+
+Advies
+
+DTP (Dynamic Trunking Protocol) is een Cisco-protocol dat automatisch onderhandelt of een poort een trunk of access-poort moet worden . DTP is standaard ingeschakeld op Cisco-switches .
+
+Het is niet goed dat DTP niet overal is uitgeschakeld:
+
+Probleem 1: FastEthernet 0/24 met dynamic auto
+- Deze poort staat in dynamic auto modus, wat betekent dat hij passief wacht op DTP-onderhandeling
+- Als een andere switch met dynamic desirable of trunk wordt aangesloten, wordt deze poort automatisch een trunk
+- Dit is een beveiligingsrisico omdat een aanvaller een switch kan aansluiten en toegang krijgt tot alle VLAN's
+
+Probleem 2: GigabitEthernet 0/1 zonder nonegotiate
+- Deze poort is een trunk, maar heeft geen switchport nonegotiate
+- Hierdoor stuurt de poort nog steeds DTP-berichten
+- Een aanvaller kan proberen de trunk-onderhandeling te beïnvloeden
+
+Wat is er al gebeurd?
+- FastEthernet 0/24 is al een trunk geworden via DTP (te zien in show interfaces trunk)
+- Dit betekent dat iemand (of een apparaat) een switch heeft aangesloten die DTP heeft gebruikt om een trunk te vormen
+- Die switch heeft nu toegang tot alle VLAN's op de netwerk!
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+1. FastEthernet 0/24 heeft switchport mode dynamic auto in plaats van switchport mode access
+- DTP staat aan op deze poort (Negotiation of Trunking: On)
+- Deze poort is al een trunk geworden via DTP (show interfaces trunk toont Fa0/24 als trunk)
+
+2. GigabitEthernet 0/1 heeft switchport mode trunk maar geen switchport nonegotiate
+- DTP staat aan op deze trunk-poort (Negotiation of Trunking: On)
+
+Dit zijn afwijkingen omdat de best practice voorschrijft dat DTP overal moet worden uitgeschakeld 
+
+
+
+Impact
+
+Impact: Hoog
+
+Door FastEthernet 0/24 met DTP aan:
+- Deze poort is al een trunk geworden via DTP
+- De aangesloten switch heeft toegang tot alle VLAN's:
+- VLAN 10 (Productie, 192.168.10.0/24)
+- VLAN 20 (HR, 192.168.20.0/24)
+- VLAN 30 (Gasten, 192.168.30.0/24)
+- Een aanvaller op die switch kan:
+- Verkeer onderscheppen tussen VLAN's
+- VLAN hopping uitvoeren en toegang krijgen tot gevoelige systemen
+- ARP-spoofing uitvoeren op meerdere VLAN's
+- Gegevens stelen van productie- en HR-systemen
+
+Door GigabitEthernet 0/1 zonder nonegotiate:
+- De trunk-poort stuurt nog DTP-berichten
+- Een aanvaller kan proberen de trunk-onderhandeling te beïnvloeden
+- Dit verhoogt het risico op man-in-the-middle-aanvallen
+
+De impact is hoog omdat:
+- Een ongeautoriseerde switch al toegang heeft tot alle VLAN's
+- Gevoelige HR- en productiegegevens kunnen worden gestolen
+- De aanvaller kan het hele netwerk compromitteren
+
+
+
+
+Samenvatting
+
+DTP is niet overal uitgeschakeld op de switch.
+
+Afwijkingen:
+1. FastEthernet 0/24 staat in dynamic auto modus en is al een trunk geworden via DTP - een ongeautoriseerde switch heeft toegang tot alle VLAN's
+2. GigabitEthernet 0/1 is een trunk maar heeft geen switchport nonegotiate - DTP-berichten worden nog verstuurd
+
+Advies:
+1. FastEthernet 0/24: Zet de poort in access modus met switchport mode access. Hierdoor wordt DTP uitgeschakeld en kan de poort geen trunk meer worden .
+2. GigabitEthernet 0/1: Voeg switchport nonegotiate toe aan de trunk-poort om DTP-berichten uit te schakelen .
+3. Controleer alle poorten: Gebruik show interfaces switchport om te controleren of Negotiation of Trunking: Off staat op alle poorten.
+4. Verwijder de ongeautoriseerde trunk: Haal de switch van FastEthernet 0/24 en voer shutdown en no shutdown uit op de poort na het wijzigen naar access-mode.
+
+Na configuratie controleer je met show interfaces trunk of er geen onverwachte trunks meer zijn en met show interfaces switchport of DTP overal is uitgeschakeld (Negotiation of Trunking: Off).
+
+
+
+
+
+
+
