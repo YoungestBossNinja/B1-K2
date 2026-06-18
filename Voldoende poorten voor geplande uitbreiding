@@ -1,0 +1,399 @@
+omschrijving
+
+Een netwerk wordt vaak uitgebreid: er komen nieuwe medewerkers, nieuwe afdelingen of nieuwe apparaten bij. 
+Het is belangrijk dat er voldoende fysieke poorten beschikbaar zijn op de switches om deze uitbreiding op te vangen.
+
+Simpel gezegd: Voldoende poorten voor geplande uitbreiding betekent dat je switches genoeg vrije poorten hebben om 
+nieuwe apparaten aan te sluiten zonder dat je nieuwe switches moet kopen of bestaande configuraties moet aanpassen.
+
+Waarom is dit belangrijk?
+
+    Toekomstbestendigheid: Het netwerk kan groeien zonder dat er nieuwe hardware moet worden aangeschaft
+    Kostenbesparing: Geen onverwachte investeringen in nieuwe switches
+    Flexibiliteit: Nieuwe medewerkers kunnen direct aan de slag
+    Planning: De netwerkbeheerder kan vooruit plannen
+
+Hoe bepaal je of er voldoende poorten zijn?
+
+    Tel het aantal gebruikte poorten op elke switch
+    Tel het aantal vrije poorten op elke switch
+    Bepaal de geplande uitbreiding (aantal nieuwe gebruikers/apparaten)
+    Controleer of het aantal vrije poorten groter of gelijk is aan de geplande uitbreiding
+
+
+
+
+uitvoering
+
+cisco
+
+! Bekijk de status van alle poorten
+Switch# show interfaces status
+
+! Bekijk welke poorten in gebruik zijn (connected)
+Switch# show interfaces status | include connected
+
+! Bekijk welke poorten vrij zijn (notconnect of disabled)
+Switch# show interfaces status | include notconnect|disabled
+
+! Bekijk de configuratie van vrije poorten
+Switch# show running-config | include interface
+
+Wat je moet controleren:
+
+    Hoeveel poorten zijn in gebruik? (connected)
+    Hoeveel poorten zijn vrij? (notconnect of disabled)
+    Hoeveel poorten zijn gepland voor uitbreiding? (informatie van de beheerder)
+    Is er voldoende capaciteit? (vrij ≥ gepland)
+
+
+
+
+Als er voldoende poorten zijn
+
+
+In show interfaces status:
+cisco
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1     PC-Productie-1     connected    10         a-full   a-100 10/100BaseTX
+Fa0/2     PC-Productie-2     connected    10         a-full   a-100 10/100BaseTX
+Fa0/3     PC-Productie-3     connected    10         a-full   a-100 10/100BaseTX
+Fa0/4     PC-Productie-4     connected    10         a-full   a-100 10/100BaseTX
+Fa0/5     PC-Productie-5     connected    10         a-full   a-100 10/100BaseTX
+Fa0/6     PC-Productie-6     connected    10         a-full   a-100 10/100BaseTX
+Fa0/7     PC-Productie-7     connected    10         a-full   a-100 10/100BaseTX
+Fa0/8     PC-Productie-8     connected    10         a-full   a-100 10/100BaseTX
+Fa0/9     PC-HR-1            connected    20         a-full   a-100 10/100BaseTX
+Fa0/10    PC-HR-2            connected    20         a-full   a-100 10/100BaseTX
+Fa0/11    PC-HR-3            connected    20         a-full   a-100 10/100BaseTX
+Fa0/12    PC-HR-4            connected    20         a-full   a-100 10/100BaseTX
+Fa0/13    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/14    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/15    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/16    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/17    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/18    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/19    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/20    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/21    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/22    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/23    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/24    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      a-full   a-1000 1000BaseTX
+
+Let op:
+
+connected = poort is in gebruik
+disabled = poort is uitgeschakeld (shutdown) maar beschikbaar voor uitbreiding
+12 poorten in gebruik (Fa0/1-0/12), 12 poorten beschikbaar (Fa0/13-0/24)
+
+
+
+Overzicht per switch:
+cisco
+
+! SW1
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 12 poorten (Fa0/1-0/12)
+Beschikbaar: 12 poorten (Fa0/13-0/24)
+Vrije poorten voor uitbreiding: 12
+
+! SW2
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 12 poorten (Fa0/1-0/12)
+Beschikbaar: 12 poorten (Fa0/13-0/24)
+Vrije poorten voor uitbreiding: 12
+
+! Core-SW
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 4 poorten (Fa0/1-0/2 = servers, Gi0/1-0/2 = trunks)
+Beschikbaar: 20 poorten (Fa0/3-0/24)
+Vrije poorten voor uitbreiding: 20
+
+
+
+
+Advies
+
+Het is belangrijk dat er voldoende fysieke poorten beschikbaar zijn op de switches om nieuwe apparaten aan te sluiten. 
+Het is goed dat er voldoende poorten beschikbaar zijn voor de geplande uitbreiding.
+
+Waarom is dit belangrijk?
+- Toekomstbestendigheid: Het netwerk kan groeien zonder dat er nieuwe switches moeten worden aangeschaft
+- Kostenbesparing: Geen onverwachte investeringen in nieuwe hardware
+- Flexibiliteit: Nieuwe medewerkers kunnen direct aan de slag
+- Planning: De netwerkbeheerder kan vooruit plannen
+
+In dit netwerk:
+- SW1: 12 vrije poorten, gepland 6 nieuwe medewerkers (50% extra capaciteit)
+- SW2: 16 vrije poorten, gepland 4 nieuwe medewerkers (400% extra capaciteit)
+- Core-SW: 22 vrije poorten, geen geplande uitbreiding
+
+Er zijn 50 vrije poorten beschikbaar voor 10 geplande nieuwe medewerkers. 
+De switches hebben voldoende capaciteit voor de geplande uitbreiding. Daarnaast is er nog extra ruimte voor 40 extra poorten voor onvoorziene uitbreidingen.
+
+De vrije poorten zijn in shutdown gezet, wat betekent dat ze veilig zijn en niet per ongeluk kunnen worden gebruikt. 
+Ze kunnen eenvoudig worden geactiveerd met no shutdown wanneer een nieuwe medewerker wordt aangesloten.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Er zijn voldoende poorten beschikbaar voor de geplande uitbreiding.
+
+
+
+Impact
+
+Geen impact. Het netwerk kan de geplande uitbreiding zonder problemen aan.
+
+
+
+Samenvatting
+
+Er zijn voldoende poorten beschikbaar voor de geplande uitbreiding. 
+SW1 heeft 12 vrije poorten voor 6 nieuwe medewerkers, SW2 heeft 16 vrije poorten voor 4 nieuwe medewerkers en Core-SW heeft 22 vrije poorten. 
+Totaal zijn er 50 vrije poorten beschikbaar voor 10 geplande nieuwe medewerkers. Het netwerk kan de geplande uitbreiding zonder problemen aan.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als er NIET voldoende poorten zijn
+
+In show interfaces status:
+cisco
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1     PC-Productie-1     connected    10         a-full   a-100 10/100BaseTX
+Fa0/2     PC-Productie-2     connected    10         a-full   a-100 10/100BaseTX
+Fa0/3     PC-Productie-3     connected    10         a-full   a-100 10/100BaseTX
+Fa0/4     PC-Productie-4     connected    10         a-full   a-100 10/100BaseTX
+Fa0/5     PC-Productie-5     connected    10         a-full   a-100 10/100BaseTX
+Fa0/6     PC-Productie-6     connected    10         a-full   a-100 10/100BaseTX
+Fa0/7     PC-Productie-7     connected    10         a-full   a-100 10/100BaseTX
+Fa0/8     PC-Productie-8     connected    10         a-full   a-100 10/100BaseTX
+Fa0/9     PC-Productie-9     connected    10         a-full   a-100 10/100BaseTX
+Fa0/10    PC-Productie-10    connected    10         a-full   a-100 10/100BaseTX
+Fa0/11    PC-Productie-11    connected    10         a-full   a-100 10/100BaseTX
+Fa0/12    PC-Productie-12    connected    10         a-full   a-100 10/100BaseTX
+Fa0/13    PC-Productie-13    connected    10         a-full   a-100 10/100BaseTX
+Fa0/14    PC-Productie-14    connected    10         a-full   a-100 10/100BaseTX
+Fa0/15    PC-Productie-15    connected    10         a-full   a-100 10/100BaseTX
+Fa0/16    PC-Productie-16    connected    10         a-full   a-100 10/100BaseTX
+Fa0/17    PC-Productie-17    connected    10         a-full   a-100 10/100BaseTX
+Fa0/18    PC-Productie-18    connected    10         a-full   a-100 10/100BaseTX
+Fa0/19    PC-Productie-19    connected    10         a-full   a-100 10/100BaseTX
+Fa0/20    PC-Productie-20    connected    10         a-full   a-100 10/100BaseTX
+Fa0/21    PC-Productie-21    connected    10         a-full   a-100 10/100BaseTX
+Fa0/22    PC-Productie-22    connected    10         a-full   a-100 10/100BaseTX
+Fa0/23    PC-Productie-23    connected    10         a-full   a-100 10/100BaseTX
+Fa0/24    PC-Productie-24    connected    10         a-full   a-100 10/100BaseTX
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      a-full   a-1000 1000BaseTX
+
+Let op:
+
+Alle 24 FastEthernet-poorten zijn in gebruik
+0 vrije poorten beschikbaar
+Alleen trunk-poorten (Gi0/1, Gi0/2) zijn nog beschikbaar, maar die kunnen niet worden gebruikt voor user-poorten omdat ze trunks zijn
+
+Overzicht per switch:
+cisco
+
+! SW1
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 24 poorten (Fa0/1-0/24)
+Beschikbaar: 0 poorten
+Vrije poorten voor uitbreiding: 0
+
+! SW2
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 20 poorten
+Beschikbaar: 4 poorten
+Geplande uitbreiding: 8 nieuwe medewerkers
+TEKORT: 4 poorten
+
+! Core-SW
+Totaal poorten: 24 (Fa0/1-0/24) + 2 (Gi0/1-0/2) = 26 poorten
+In gebruik: 2 poorten (servers) + 2 trunks = 4 poorten
+Beschikbaar: 20 poorten
+
+
+
+
+
+Bevinding
+
+Uit show interfaces status blijkt dat er onvoldoende poorten beschikbaar zijn voor de geplande uitbreiding.
+
+SW1:
+- Totaal FastEthernet-poorten: 24 (Fa0/1-0/24)
+- In gebruik: 24 (Fa0/1-0/24)
+- Beschikbaar: 0
+- Geplande uitbreiding: 6 nieuwe medewerkers in VLAN 10 (Productie)
+- TEKORT: 6 poorten ❌
+
+SW2:
+- Totaal FastEthernet-poorten: 24 (Fa0/1-0/24)
+- In gebruik: 20 (Fa0/1-0/20)
+- Beschikbaar: 4 (Fa0/21-0/24)
+- Geplande uitbreiding: 8 nieuwe medewerkers in VLAN 20 (HR)
+- TEKORT: 4 poorten ❌
+
+Core-SW:
+- Totaal FastEthernet-poorten: 24 (Fa0/1-0/24)
+- In gebruik: 4 (Fa0/1-0/2 = servers, Gi0/1-0/2 = trunks)
+- Beschikbaar: 20 (Fa0/3-0/24)
+- Geplande uitbreiding: 0
+- Voldoende: 20 ≥ 0 ✅
+
+Totaal beschikbare poorten: 0 + 4 + 20 = 24 poorten
+Totaal geplande uitbreiding: 6 + 8 = 14 poorten
+TEKORT: 24 ≥ 14 is onvoldoende omdat SW1 en SW2 lokaal tekorten hebben!
+
+
+
+
+
+Advies
+
+Het is belangrijk dat er voldoende fysieke poorten beschikbaar zijn op de switches om nieuwe apparaten aan te sluiten. 
+Het is niet goed dat er onvoldoende poorten beschikbaar zijn voor de geplande uitbreiding.
+
+Waarom is dit een probleem?
+- Geen groei mogelijk: Nieuwe medewerkers kunnen niet worden aangesloten op de bestaande switches
+- Nieuwe switches nodig: Extra hardware moet worden aangeschaft, wat tijd en geld kost
+- Productiviteitsverlies: Nieuwe medewerkers kunnen niet aan het werk omdat ze geen netwerkverbinding hebben
+- Vertraging: Het aanschaffen en configureren van nieuwe switches duurt dagen of weken
+
+In dit netwerk:
+- SW1: Alle 24 poorten zijn in gebruik. Er is geen enkele vrije poort voor 6 nieuwe medewerkers.
+- SW2: 20 poorten zijn in gebruik, 4 poorten zijn vrij. Er is tekort voor 8 nieuwe medewerkers.
+- Core-SW: 20 poorten zijn vrij, maar dit zijn serverpoorten en kunnen niet zomaar worden gebruikt voor user-poorten.
+
+Specifiek risico:
+- De afdeling Productie (VLAN 10) krijgt 6 nieuwe medewerkers op SW1. Er zijn 0 vrije poorten.
+- De afdeling HR (VLAN 20) krijgt 8 nieuwe medewerkers op SW2. Er zijn 4 vrije poorten, maar 8 nieuwe medewerkers.
+- Zonder extra switches kunnen deze medewerkers geen verbinding maken.
+- Dit leidt tot productiviteitsverlies en vertraging in de bedrijfsvoering.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Er zijn onvoldoende poorten beschikbaar voor de geplande uitbreiding:
+
+SW1:
+- In gebruik: 24 poorten
+- Beschikbaar: 0 poorten
+- Geplande uitbreiding: 6 nieuwe medewerkers
+- TEKORT: 6 poorten
+
+SW2:
+- In gebruik: 20 poorten
+- Beschikbaar: 4 poorten
+- Geplande uitbreiding: 8 nieuwe medewerkers
+- TEKORT: 4 poorten
+
+Core-SW:
+- In gebruik: 4 poorten
+- Beschikbaar: 20 poorten
+- Geplande uitbreiding: 0 nieuwe medewerkers
+- Voldoende
+
+Totaal tekort: 6 + 4 = 10 poorten
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het tekort aan poorten op SW1 en SW2:
+
+1. Nieuwe medewerkers kunnen niet worden aangesloten:
+- De afdeling Productie (VLAN 10) krijgt 6 nieuwe medewerkers op SW1. Er zijn 0 vrije poorten.
+- De afdeling HR (VLAN 20) krijgt 8 nieuwe medewerkers op SW2. Er zijn 4 vrije poorten, maar 8 nieuwe medewerkers.
+- De nieuwe medewerkers kunnen geen verbinding maken met het netwerk.
+- Ze kunnen niet werken: geen e-mail, geen toegang tot netwerkschijven, geen internet, geen bedrijfsapplicaties.
+
+2. Productiviteitsverlies:
+- 14 nieuwe medewerkers kunnen hun werk niet doen.
+- Dit leidt tot productiviteitsverlies en vertraging in de bedrijfsvoering.
+- De afdelingen Productie en HR kunnen hun werk niet naar behoren uitvoeren.
+
+3. Extra kosten:
+- Er moeten nieuwe switches worden aangeschaft om de tekorten op te lossen.
+- Dit kost tijd (leveranciers, configuratie) en geld.
+- SW1 en SW2 moeten worden vervangen door switches met meer poorten (bijv. 48 poorten) of er moeten extra switches worden toegevoegd.
+
+4. Vertraging in uitbreiding:
+- Het aanschaffen en configureren van nieuwe switches kan dagen tot weken duren.
+- De geplande uitbreiding wordt vertraagd.
+- De bedrijfsvoering wordt verstoord.
+
+De impact is hoog omdat:
+- Nieuwe medewerkers niet kunnen werken
+- Productiviteitsverlies direct is
+- Extra kosten en vertraging onvermijdelijk zijn
+
+
+
+Samenvatting
+
+Er zijn onvoldoende poorten beschikbaar voor de geplande uitbreiding.
+
+Tekorten:
+- SW1: 0 vrije poorten, 6 nieuwe medewerkers → TEKORT 6
+- SW2: 4 vrije poorten, 8 nieuwe medewerkers → TEKORT 4
+- Core-SW: 20 vrije poorten, 0 nieuwe medewerkers → Voldoende
+
+Gevolgen:
+- Nieuwe medewerkers kunnen geen verbinding maken
+- Productiviteitsverlies
+- Extra kosten voor nieuwe switches
+- Vertraging in uitbreiding
+
+Advies:
+1. Vervang SW1 door een switch met meer poorten:
+- SW1 heeft 24 poorten en is volledig vol.
+- Vervang SW1 door een 48-poorts switch (bijv. Catalyst 2960-48TT).
+- Dit biedt 24 extra poorten voor toekomstige uitbreidingen.
+
+2. Voeg een extra switch toe naast SW2:
+- SW2 heeft nog 4 vrije poorten, maar er komen 8 nieuwe medewerkers.
+- Voeg een extra 24-poorts switch toe naast SW2.
+- Verbind de nieuwe switch met een trunk naar de Core-SW.
+- Dit biedt 24 extra poorten voor HR.
+
+3. Optimaliseer het gebruik van bestaande poorten:
+- Controleer of er apparaten zijn die kunnen worden verwijderd of verplaatst.
+- Gebruik wireless voor tijdelijke uitbreidingen.
+
+4. Plan toekomstige uitbreidingen tijdig:
+- Houd minimaal 10-20% vrije poorten aan voor onvoorziene uitbreidingen.
+- Bestel nieuwe hardware ruim van tevoren.
+
+5. Documenteer de poortcapaciteit:
+- Houd een register bij van welke poorten in gebruik zijn en welke vrij zijn.
+- Gebruik dit register voor planning van uitbreidingen.
+
+Na het toevoegen van de nieuwe switches controleer je met show interfaces status dat er voldoende vrije poorten zijn voor de geplande uitbreiding.
+
