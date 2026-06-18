@@ -1,0 +1,252 @@
+Omschrijving
+
+De IOS (Internetwork Operating System) is het besturingssysteem dat op Cisco-routers en -switches draait. 
+Het is de software die alle netwerkfunctionaliteiten mogelijk maakt, zoals routing, switching, beveiliging en beheer .
+
+Simpel gezegd: De IOS-versie is als de "firmware" of het "besturingssysteem" van je router of switch. 
+Net zoals een computer Windows of macOS draait, draait een Cisco-apparaat IOS. 
+De versie (bijv. 15.0(1)M4) vertelt je welke features beschikbaar zijn, welke bugs er zijn opgelost en of de software up-to-date en veilig is .
+
+Waarom is het belangrijk om de IOS-versie te controleren?
+
+Beveiligingsupdates: Een verouderde IOS-versie kan kwetsbaarheden bevatten die hackers kunnen misbruiken.
+Functionaliteit: Nieuwe IOS-versies bevatten vaak nieuwe features en ondersteuning voor nieuwere hardware.
+Stabiliteit: Nieuwere versies bevatten bugfixes voor problemen die in oudere versies voorkomen.
+Compatibiliteit: Bij het toevoegen van nieuwe apparaten is het belangrijk dat ze een vergelijkbare of dezelfde IOS-versie draaien.
+Ondersteuning: Cisco biedt alleen technische ondersteuning voor bepaalde IOS-versies.
+
+
+
+
+
+Uitvoering
+
+! Het belangrijkste commando om de IOS-versie te bekijken
+Router# show version
+
+Let op: show version is het standaardcommando om de IOS-versie en hardware-informatie van een Cisco-apparaat te bekijken
+
+
+
+
+Met show version krijg je de volgende informatie :
+Informatie	Beschrijving
+IOS-versie	Bijv. Version 15.0(1)M4
+Feature set	Welke features de IOS ondersteunt (bijv. UNIVERSALK9-M)
+Apparaatmodel	Bijv. Cisco 1941 Router
+System image file	Waar de IOS is opgeslagen (bijv. flash:c880data-universalk9-mz.150-1.M4.bin)
+Uptime	Hoe lang het apparaat al draait
+Reload reason	Waarom het apparaat voor het laatst is herstart
+Processor en RAM	CPU-type en hoeveelheid geheugen
+Interfaces	Fysieke interfaces op het apparaat
+NVRAM en Flash	Opslaggeheugen voor configuratie en IOS
+Configuration register	Instelling die bepaalt hoe het apparaat opstart (fabrieksdefault: 0x2102) 
+
+
+
+
+
+Wat je ziet bij show version
+
+Router# show version
+Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 15.0(1)M4, RELEASE SOFTWARE (fc1)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2010 by Cisco Systems, Inc.
+Compiled Thu 22-Aug-19 17:33 by mcpre
+
+ROM: System Bootstrap, Version 12.4(22r)YB5, RELEASE SOFTWARE (fc1)
+
+Router uptime is 2 weeks, 3 days, 4 hours, 17 minutes
+System returned to ROM by reload
+System image file is "flash:c880data-universalk9-mz.150-1.M4.bin"
+Last reload reason: Reload command
+
+Cisco 881 (MPC8300) processor (revision 1.0) with 236544K/25600K bytes of memory.
+Processor board ID FGL12345678
+MPC8300 CPU at 533Mhz, Implementation 0, Rev 1.0
+
+5 FastEthernet interfaces
+1 Virtual Private Network (VPN) Module
+256K bytes of non-volatile configuration memory.
+31360K bytes of processor board System flash (Read/Write)
+
+Configuration register is 0x2102
+
+
+Let op: De IOS-versie en de feature set zijn direct zichtbaar in de eerste regel na Cisco IOS Software. 
+De locatie van de IOS op de flash (het image-bestand) staat bij System image file is.
+
+
+
+
+Advies
+
+De IOS-versie is de softwareversie van het besturingssysteem van een Cisco-apparaat. 
+Het is belangrijk om deze te controleren om te zien of apparaten up-to-date zijn en of er compatibiliteitsproblemen kunnen ontstaan tussen verschillende apparaten in het netwerk .
+
+In dit netwerk:
+- Alle IOS-images zijn correct opgeslagen in de flash (System image file is ...)
+- Geen van de apparaten heeft een verouderde of onveilige IOS-versie.
+- De routers (R1 en R2) draaien beide versie 15.0(1)M4, wat consistent is en goed is voor compatibiliteit.
+- De switches (SW1 en SW2) draaien beide versie 12.2(52)SE, wat consistent is.
+- De Core-SW draait versie 15.0(2)SE9, wat een nieuwere versie is dan de andere switches. Dit is normaal omdat de Core-SW een ander model is (3560) met meer functionaliteiten (IP Services) .
+
+Waarom is dit goed?
+- Alle apparaten hebben een recente en stabiele IOS-versie .
+- De uptime van alle apparaten is lang (minimaal 1 week), wat aangeeft dat ze stabiel draaien en niet onverwacht opnieuw zijn opgestart .
+- De system image files zijn correct opgeslagen in de flash, wat betekent dat de apparaten bij een herstart automatisch kunnen opstarten .
+- Het configuration register is op alle apparaten 0x2102 (de fabrieksstandaard), wat betekent dat ze opstarten vanaf flash en de startup-config laden vanuit NVRAM .
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. De IOS-versies zijn consistent en up-to-date.
+
+
+
+
+Impact
+
+Geen impact. Alle apparaten draaien stabiele en compatibele IOS-versies. Het netwerk functioneert correct.
+
+
+
+
+Samenvatting
+
+De IOS-versies van alle netwerkapparaten zijn gecontroleerd met show version. 
+R1 en R2 draaien versie 15.0(1)M4, SW1 en SW2 draaien versie 12.2(52)SE, en Core-SW draait versie 15.0(2)SE9. 
+Alle versies zijn stabiel, up-to-date en compatibel met elkaar. De system image files zijn correct opgeslagen in de flash en het configuration register staat op 0x2102 . 
+Het netwerk is goed beschermd tegen softwarekwetsbaarheden en compatibiliteitsproblemen.
+
+
+
+
+
+
+
+
+
+
+
+Wat je NIET moet zien
+
+Situatie	                   Wat zie je?	                                                                       Conclusie
+Verouderde IOS	             Een IOS-versie die niet meer wordt ondersteund door Cisco (bijv. Version 12.0)	     Afwijking - verouderde software, kwetsbaar voor beveiligingslekken
+Inconsistente versies	       Apparaat A draait versie 15.0, Apparaat B draait versie 12.4	                       Afwijking - verschillende versies kunnen compatibiliteitsproblemen veroorzaken
+Geen IOS image in flash	     %Error opening tftp://... of boot: cannot load "flash:"	                           Ernstige afwijking - het apparaat kan niet opstarten omdat de IOS ontbreekt
+
+
+
+
+Bevinding
+
+Uit show version op alle apparaten zijn de volgende IOS-versies gevonden:
+
+R1 (Router 1):
+- IOS Versie: 12.4(15)T1
+- Feature Set: C870-ADVSECURITYK9-M
+- Image: flash:c870-advsecurityk9-mz.124-15.T1.bin
+- Uptime: 1 dag, 3 uur
+
+R2 (Router 2):
+- IOS Versie: 15.0(1)M4
+- Feature Set: C880DATA-UNIVERSALK9-M
+- Image: flash:c880data-universalk9-mz.150-1.M4.bin
+- Uptime: 2 weken
+
+SW1 (Switch 1):
+- IOS Versie: 12.2(52)SE
+- Feature Set: C2960-LANBASE-M
+- Image: flash:c2960-lanbase-mz.122-52.SE.bin
+- Uptime: 3 weken
+
+Core-SW (Core Switch):
+- IOS Versie: 15.0(2)SE9
+- Feature Set: C3560-IPSERVICESK9-M
+- Image: flash:c3560-ipservicesk9-mz.150-2.SE9.bin
+- Uptime: 4 weken
+
+
+
+Advies
+
+De IOS-versie is de softwareversie van het besturingssysteem van een Cisco-apparaat. 
+Het is belangrijk om deze te controleren om te zien of apparaten up-to-date zijn en of er compatibiliteitsproblemen kunnen ontstaan tussen verschillende apparaten in het netwerk .
+
+Afwijking geconstateerd:
+- R1 draait IOS versie 12.4(15)T1, terwijl de andere routers en switches nieuwere versies draaien.
+- IOS 12.4 is een oude versie die mogelijk kwetsbaarheden bevat die in nieuwere versies zijn opgelost .
+- R1 is maar 1 dag en 3 uur up, wat erop kan wijzen dat het apparaat recent opnieuw is opgestart (mogelijk door een crash of configuratiefout) .
+
+Waarom is dit een probleem?
+- Beveiligingsrisico's: Een oude IOS-versie kan bekende kwetsbaarheden bevatten waar hackers misbruik van kunnen maken .
+- Compatibiliteitsproblemen: Oudere IOS-versies ondersteunen mogelijk niet alle features die in nieuwere versies beschikbaar zijn .
+- Stabiliteitsproblemen: De korte uptime van R1 kan duiden op instabiliteit of crashes.
+
+Wat is het risico?
+- Een aanvaller kan via een kwetsbaarheid in IOS 12.4 toegang krijgen tot R1 .
+- R1 is verantwoordelijk voor de inter-VLAN-routing (VLAN 10, 20, 30) en ACL's tussen VLAN's. 
+Als R1 wordt gecompromitteerd, kan de aanvaller al het verkeer tussen VLAN's onderscheppen en gevoelige gegevens stelen.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+- R1 draait een verouderde IOS-versie: 12.4(15)T1.
+- De andere apparaten draaien nieuwere versies (15.0 en 15.0(2)SE9).
+- R1 heeft een korte uptime (1 dag) in vergelijking met de andere apparaten (weken).
+
+Dit wijst op een inconsistentie in softwareversies in het netwerk, wat kan leiden tot beveiligingsrisico's en compatibiliteitsproblemen.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door de verouderde IOS-versie op R1:
+- Een hacker kan via bekende kwetsbaarheden in IOS 12.4 toegang krijgen tot R1 .
+- R1 is verantwoordelijk voor:
+- Routing tussen VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24).
+- Toepassen van ACL's tussen VLAN's.
+- Als R1 wordt gecompromitteerd:
+- Kan de aanvaller al het verkeer tussen VLAN's onderscheppen .
+- Kan de aanvaller ACL's uitschakelen en toegang krijgen tot gevoelige HR- en productiesystemen.
+- Kan de aanvaller verkeer omleiden naar valse websites (man-in-the-middle).
+- De korte uptime (1 dag) kan ook wijzen op instabiliteit, wat kan leiden tot netwerkuitval als R1 opnieuw crasht .
+
+De impact is hoog omdat:
+- R1 een kritiek apparaat is in het netwerk.
+- Een verouderde IOS-versie een bekend beveiligingsrisico is.
+- Een aanvaller via R1 toegang kan krijgen tot alle VLAN's.
+
+
+
+
+Samenvatting
+
+De IOS-versies van alle netwerkapparaten zijn gecontroleerd met show version. 
+R1 draait een verouderde IOS-versie: 12.4(15)T1. De andere apparaten draaien nieuwere versies (15.0 en 15.0(2)SE9). 
+De korte uptime van R1 (1 dag) kan wijzen op instabiliteit.
+
+Advies:
+1. Upgrade de IOS op R1 naar een recente en stabiele versie (bijv. 15.0(1)M4, dezelfde versie als R2) .
+2. Controleer of er voldoende flash-geheugen en RAM is voor de upgrade (zie show version voor geheugeninformatie) .
+3. Maak een back-up van de huidige configuratie van R1 voordat de upgrade wordt uitgevoerd.
+4. Plan een onderhoudsvenster voor de upgrade, omdat R1 tijdens de upgrade opnieuw moet worden opgestart.
+5. Download de nieuwe IOS-image naar de flash van R1 via TFTP of FTP.
+6. Stel de boot-statement in op de nieuwe IOS-image met boot system flash:[nieuwe-image.bin].
+7. Controleer na de upgrade of alle functionaliteiten (ACL's, routing, VLAN's) nog correct werken.
+
+
+
+
+
+
+
