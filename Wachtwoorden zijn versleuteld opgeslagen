@@ -1,0 +1,371 @@
+Omschrijving
+
+Op Cisco-apparaten kunnen wachtwoorden op twee manieren worden opgeslagen in de configuratie:
+Plain text (type 0): Het wachtwoord staat in leesbare tekst in de configuratie. 
+Dit is onveilig omdat iedereen die de configuratie kan lezen, het wachtwoord kan zien.
+
+Versleuteld (type 7 of type 5): Het wachtwoord is versleuteld opgeslagen. 
+Type 7 is een eenvoudige versleuteling (Vigenère-cijfer), type 5 is een MD5-hash (veel veiliger).
+
+Simpel gezegd: Wachtwoorden die versleuteld zijn opgeslagen, zijn als een "gesloten kluis" in de configuratie. 
+Zelfs als iemand de configuratie in handen krijgt, kan hij het wachtwoord niet direct lezen. Het is een belangrijke beveiligingsmaatregel.
+
+Soorten wachtwoordversleuteling:
+Type	Omschrijving	Veilig?
+Type 0	Plain text (onversleuteld)	❌ Onveilig
+Type 7	Vigenère-cijfer (eenvoudig te kraken)	⚠️ Gedeeltelijk
+Type 5	MD5-hash (niet omkeerbaar)	✅ Veilig
+Type 8	SHA-256 (sterker dan MD5)	✅ Zeer veilig
+Type 9	SCRYPT (nog sterker)	✅ Zeer veilig
+
+Waarom is het belangrijk om wachtwoorden te versleutelen?
+
+Configuratie uitlezen: Als een aanvaller de running-config of startup-config kan lezen (bijv. via een TFTP-server of een ongeautoriseerde SSH-sessie), 
+kan hij de wachtwoorden niet direct gebruiken.
+Best practice: Cisco raadt aan om wachtwoorden altijd te versleutelen.
+Service password-encryption: Dit commando versleutelt alle wachtwoorden in de configuratie naar type 7.
+
+
+
+Uitvoering
+
+cisco
+
+! Bekijk de configuratie voor wachtwoorden
+Router# show running-config | include password|secret|username
+
+! Bekijk of service password-encryption is ingeschakeld
+Router# show running-config | include service password-encryption
+
+! Bekijk de console-lijn configuratie
+Router# show running-config | section line con 0
+
+! Bekijk de VTY-lijn configuratie
+Router# show running-config | section line vty
+
+Wat je moet controleren:
+
+    Is service password-encryption ingeschakeld? (versleutelt alle wachtwoorden)
+    Zijn wachtwoorden versleuteld? (type 7 of type 5 in de configuratie)
+    Zijn er wachtwoorden in plain text? (type 0 of geen versleuteling)
+    Wordt enable secret gebruikt in plaats van enable password?
+
+
+
+
+Als wachtwoorden WEL versleuteld zijn
+
+In show running-config | include password|secret|username:
+cisco
+
+Router# show running-config | include password|secret|username
+service password-encryption
+enable secret 5 $1$mERr$9cTjUIEqNurqX/tCv/7e/
+username admin secret 5 $1$mERr$9cTjUIEqNurqX/tCv/7e/
+line con 0
+ password 7 0822455D0A16
+line vty 0 4
+ password 7 0822455D0A16
+
+Let op:
+
+service password-encryption = Alle wachtwoorden worden versleuteld
+enable secret 5 = Het privilege wachtwoord is een MD5-hash (type 5)
+username admin secret 5 = Gebruikersaccount wachtwoord is een MD5-hash (type 5)
+password 7 = Wachtwoorden op console en VTY zijn type 7 (versleuteld)
+
+
+
+In show running-config | include service password-encryption:
+cisco
+
+Router# show running-config | include service password-encryption
+service password-encryption
+
+Let op: service password-encryption is ingeschakeld.
+
+
+
+In show running-config | section line con 0:
+cisco
+
+Router# show running-config | section line con 0
+line con 0
+ password 7 0822455D0A16
+ login
+ exec-timeout 5 0
+ logging synchronous
+
+Let op: password 7 = type 7 versleuteld.
+
+
+
+In show running-config | section line vty:
+cisco
+
+Router# show running-config | section line vty
+line vty 0 4
+ password 7 0822455D0A16
+ login
+ exec-timeout 5 0
+
+Let op: password 7 = type 7 versleuteld.
+
+
+
+Advies
+
+Het versleuteld opslaan van wachtwoorden is een belangrijke beveiligingsmaatregel. 
+Het is goed dat alle wachtwoorden versleuteld zijn opgeslagen op alle routers en switches.
+
+Waarom is dit belangrijk?
+- Configuratie uitlezen: Als een aanvaller de running-config of startup-config kan lezen (bijv. via een TFTP-server of een ongeautoriseerde SSH-sessie), 
+kan hij de wachtwoorden niet direct gebruiken omdat ze versleuteld zijn.
+- Best practice: Cisco raadt aan om wachtwoorden altijd te versleutelen.
+- Service password-encryption: Dit commando versleutelt alle wachtwoorden in de configuratie naar type 7.
+
+In dit netwerk:
+- service password-encryption is ingeschakeld op alle apparaten, waardoor alle wachtwoorden type 7 zijn.
+- enable secret wordt gebruikt in plaats van enable password, wat een MD5-hash (type 5) is en veel veiliger dan type 7.
+- username secret wordt gebruikt voor gebruikersaccounts, ook type 5 (MD5-hash).
+- Console en VTY-wachtwoorden zijn type 7 (versleuteld met service password-encryption).
+
+Dit betekent dat zelfs als een aanvaller de configuratie in handen krijgt, 
+hij de wachtwoorden niet direct kan gebruiken. Hij zou de hashes moeten kraken, wat bij type 5 (MD5) zeer moeilijk is.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Alle wachtwoorden zijn versleuteld opgeslagen.
+
+
+
+Impact
+
+Geen impact. Wachtwoorden zijn veilig opgeslagen.
+
+
+
+Samenvatting
+
+Alle wachtwoorden zijn versleuteld opgeslagen op alle routers en switches. 
+service password-encryption is ingeschakeld op alle apparaten, waardoor console- en VTY-wachtwoorden type 7 zijn. 
+enable secret en username secret worden gebruikt, die type 5 (MD5-hash) zijn. Geen wachtwoorden staan in plain text in de configuratie. 
+Het netwerk voldoet aan de best practice voor wachtwoordbeveiliging.
+
+
+
+
+
+
+
+
+
+
+
+Als wachtwoorden NIET versleuteld zijn
+
+
+In show running-config | include password|secret|username (geen service password-encryption):
+cisco
+
+Router# show running-config | include password|secret|username
+enable password cisco
+username admin password cisco
+line con 0
+ password cisco
+line vty 0 4
+ password cisco
+
+Let op:
+
+Geen service password-encryption aanwezig
+enable password cisco = plain text (type 0, onveilig)
+username admin password cisco = plain text (type 0, onveilig)
+password cisco = plain text (type 0, onveilig)
+Alle wachtwoorden zijn in leesbare tekst!
+
+
+
+In show running-config | include service password-encryption:
+cisco
+
+Router# show running-config | include service password-encryption
+(geen output - niets te zien)
+
+Let op: service password-encryption is niet ingeschakeld.
+
+
+
+In show running-config | section line con 0:
+cisco
+
+Router# show running-config | section line con 0
+line con 0
+ password cisco
+ login
+
+Let op: password cisco = plain text (geen versleuteling).
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat wachtwoorden niet versleuteld zijn opgeslagen op meerdere apparaten.
+
+R1:
+- Geen service password-encryption
+- enable password cisco (plain text, type 0)
+- username admin password cisco (plain text, type 0)
+- password cisco op console (plain text, type 0)
+- password cisco op VTY (plain text, type 0)
+
+SW1:
+- Geen service password-encryption
+- enable password cisco (plain text)
+- password cisco op console (plain text)
+
+Core-SW:
+- Geen service password-encryption
+- enable password cisco (plain text)
+- password cisco op console (plain text)
+
+R2 en SW2:
+- Hebben service password-encryption en enable secret
+
+Er zijn 3 apparaten (R1, SW1, Core-SW) met wachtwoorden in plain text.
+
+
+
+
+
+Advies
+
+Het versleuteld opslaan van wachtwoorden is een belangrijke beveiligingsmaatregel. 
+Het is niet goed dat wachtwoorden niet versleuteld zijn opgeslagen op meerdere apparaten.
+
+Waarom is dit een probleem?
+- Configuratie uitlezen: Een aanvaller die de running-config of startup-config kan lezen (bijv. via een TFTP-server of een ongeautoriseerde SSH-sessie), 
+kan de wachtwoorden direct lezen.
+- Plain text: De wachtwoorden staan in leesbare tekst, bijv. enable password cisco.
+- Eenvoudig misbruik: Een aanvaller kan de wachtwoorden gebruiken om verbinding te maken met het apparaat (bijv. via Telnet, SSH of console).
+- Geen best practice: Cisco raadt aan om wachtwoorden altijd te versleutelen.
+
+In dit netwerk:
+- R1 (192.168.1.1): De hoofdrouter. Het privilege wachtwoord cisco staat in plain text. Ook de console- en VTY-wachtwoorden staan in plain text.
+- SW1 (192.168.1.10): De switch voor VLAN 10 en 20. Het privilege wachtwoord cisco staat in plain text.
+- Core-SW (192.168.1.5): De centrale switch. Het privilege wachtwoord cisco staat in plain text.
+
+Specifiek risico:
+- Een aanvaller krijgt via een TFTP-server de configuratie van R1 in handen (bijv. copy running-config tftp:).
+- In de configuratie ziet hij: enable password cisco (plain text).
+- De aanvaller gebruikt dit wachtwoord om via Telnet/SSH verbinding te maken met R1.
+- De aanvaller krijgt volledige controle over R1 en kan het netwerk compromitteren.
+
+Ook service password-encryption ontbreekt, wat betekent dat zelfs enable secret niet wordt gebruikt.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Wachtwoorden zijn niet versleuteld opgeslagen op meerdere apparaten:
+
+R1 (192.168.1.1):
+- Geen service password-encryption
+- enable password cisco (plain text)
+- username admin password cisco (plain text)
+- password cisco op console en VTY (plain text)
+
+SW1 (192.168.1.10):
+- Geen service password-encryption
+- enable password cisco (plain text)
+- password cisco op console (plain text)
+
+Core-SW (192.168.1.5):
+- Geen service password-encryption
+- enable password cisco (plain text)
+- password cisco op console (plain text)
+
+R2 en SW2 hebben wel service password-encryption en enable secret.
+
+Dit is een afwijking omdat de best practice voorschrijft dat alle wachtwoorden versleuteld moeten worden opgeslagen.
+
+
+
+Impact
+
+Impact: Zeer Hoog
+
+Door wachtwoorden in plain text op R1, SW1 en Core-SW:
+
+1. Wachtwoorden zijn direct leesbaar:
+- Als een aanvaller de configuratie van R1 kan uitlezen (bijv. via een ongeautoriseerde TFTP-toegang of door de startup-config te kopiëren), ziet hij:
+- enable password cisco (privilege wachtwoord)
+- username admin password cisco (gebruikersaccount wachtwoord)
+- password cisco (console en VTY wachtwoord)
+- De aanvaller kan deze wachtwoorden direct gebruiken.
+
+2. Volledige overname van R1 (192.168.1.1):
+- De aanvaller gebruikt het gestolen wachtwoord cisco om verbinding te maken met R1 via Telnet of SSH (als Telnet/SSH is ingeschakeld).
+- De aanvaller krijgt volledige controle over R1.
+- De aanvaller kan:
+- ACL's verwijderen die verkeer tussen VLAN's blokkeren
+- Routes aanpassen om al het verkeer via een eigen server te leiden
+- Wachtwoorden wijzigen zodat de echte beheerder geen toegang meer heeft
+- Interfaces uitschakelen waardoor het hele netwerk uitvalt
+- Configuratie opslaan zodat wijzigingen blijven bestaan
+
+3. Overname van SW1 en Core-SW:
+- Hetzelfde geldt voor SW1 en Core-SW. De wachtwoorden zijn ook cisco in plain text.
+- De aanvaller kan ook deze switches overnemen.
+
+4. Geen versleuteling:
+- Omdat service password-encryption niet is ingeschakeld, worden zelfs nieuwe wachtwoorden in plain text opgeslagen.
+- De beheerder moet alle wachtwoorden handmatig wijzigen naar secret of service password-encryption inschakelen.
+
+De impact is zeer hoog omdat:
+- Wachtwoorden zijn direct leesbaar in de configuratie
+- Een aanvaller kan de wachtwoorden eenvoudig stelen
+- De aanvaller kan de volledige controle krijgen over R1, SW1 en Core-SW
+- Het hele netwerk kan worden gecompromitteerd
+- Dit is een bekende kwetsbaarheid in netwerkbeveiliging
+
+
+
+
+Samenvatting
+
+Wachtwoorden zijn niet versleuteld opgeslagen op meerdere kritieke apparaten: R1 (192.168.1.1), SW1 (192.168.1.10) en Core-SW (192.168.1.5). 
+Deze apparaten gebruiken enable password cisco (plain text), username admin password cisco (plain text) en password cisco op console en VTY (plain text). 
+service password-encryption is uitgeschakeld op deze apparaten.
+
+Gevolgen:
+- Wachtwoorden zijn direct leesbaar in de configuratie
+- Een aanvaller kan de wachtwoorden stelen en de apparaten overnemen
+- Het hele netwerk kan worden gecompromitteerd
+
+Advies:
+1. Schakel service password-encryption in op alle apparaten:
+- service password-encryption (versleutelt alle bestaande wachtwoorden naar type 7)
+
+2. Vervang enable password door enable secret:
+- R1: enable secret C1sc0!2026#Secure
+- SW1: enable secret C1sc0!2026#Secure
+- Core-SW: enable secret C1sc0!2026#Secure
+
+3. Vervang username password door username secret:
+- R1: username admin secret C1sc0!2026#User
+
+4. Wijzig console en VTY-wachtwoorden:
+- Gebruik password met service password-encryption (type 7)
+- Of gebruik login local met username secret (type 5)
+
+5. Controleer na configuratie:
+- Gebruik show running-config | include password om te controleren dat wachtwoorden versleuteld zijn
+- Zoek naar password 7 of secret 5 in plaats van password cisco
+
+Na configuratie controleer je met show running-config | include password dat alle wachtwoorden versleuteld zijn (type 5 of type 7).
