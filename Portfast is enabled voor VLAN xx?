@@ -1,0 +1,345 @@
+Omschrijving
+
+Portfast is een STP-functie op switches die een poort direct in de forwarding-stand zet, in plaats van de normale STP-procedure (listening → learning → forwarding) te doorlopen.
+
+Simpel gezegd: Portfast zorgt dat een aangesloten PC of apparaat direct verbinding heeft, zonder de 30-50 seconden vertraging die STP normaal nodig heeft. 
+Het wordt toegepast op access-poorten (waar eindgebruikers op zitten), niet op trunk-poorten.
+
+Waarom is dit belangrijk?
+
+Snelle verbinding: Een PC kan direct verbinding maken zonder 30-50 seconden te wachten
+DHCP-problemen voorkomen: Voorkomt dat DHCP-timers verlopen tijdens het opstarten van een PC
+Gebruikservaring: Gebruikers kunnen direct werken na het opstarten van hun apparaat
+
+
+
+
+
+Uitvoering
+
+! Bekijk de Portfast status van een specifieke poort
+Switch# show spanning-tree interface fastEthernet 0/1 portfast
+
+! Bekijk alle poorten met Portfast
+Switch# show running-config | include spanning-tree portfast
+
+! Bekijk de configuratie van een specifieke poort
+Switch# show running-config interface fastEthernet 0/1
+
+! Bekijk of Portfast is ingeschakeld op een VLAN
+Switch# show spanning-tree vlan 10
+
+! Bekijk alle poorten met hun spanning-tree status
+Switch# show spanning-tree interface status
+
+
+Wat je moet controleren:
+
+    Is Portfast ingeschakeld op de juiste poorten? (alleen access-poorten)
+    Is Portfast ingeschakeld op de verkeerde poorten? (trunk-poorten = afwijking)
+    Welke VLAN's hebben Portfast? (specifiek voor deze taak)
+
+
+
+
+
+
+
+Als Portfast WEL is enabled
+
+
+In show spanning-tree interface fastEthernet 0/1 portfast:
+cisco
+
+Switch# show spanning-tree interface fastEthernet 0/1 portfast
+VLAN0100 enabled
+
+Let op: VLAN0100 enabled betekent dat Portfast is ingeschakeld voor VLAN 100 op deze poort.
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 95 bytes
+!
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 100
+ spanning-tree portfast
+end
+
+Let op: spanning-tree portfast betekent dat Portfast is ingeschakeld op deze poort.
+
+
+
+In show running-config | include spanning-tree portfast:
+cisco
+
+Switch# show running-config | include spanning-tree portfast
+spanning-tree portfast default
+spanning-tree portfast
+spanning-tree portfast
+spanning-tree portfast
+
+Let op: spanning-tree portfast default betekent dat Portfast is ingeschakeld op alle access-poorten.
+
+
+
+In show spanning-tree vlan 100:
+cisco
+
+Switch# show spanning-tree vlan 100
+VLAN0100
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32768
+             Address     0001.4321.ABCD
+             Cost        19
+             Port        1 (FastEthernet0/1)
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    32768
+             Address     0001.4321.ABCE
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Fa0/1            Desg FWD 19        128.1    P2p Edge
+Fa0/2            Desg FWD 19        128.2    P2p
+
+Let op: Edge bij de Type betekent dat Portfast is ingeschakeld op Fa0/1 (edge-port = Portfast). Fa0/2 heeft geen Edge, dus geen Portfast.
+
+
+
+Advies
+
+Portfast is een STP-functie die een poort direct in de forwarding-stand zet, zonder de normale STP-procedure (listening → learning → forwarding) te doorlopen. 
+Het is goed dat Portfast is ingeschakeld op de juiste poorten voor VLAN 100.
+
+Waarom is dit belangrijk?
+- Snelle verbinding: Een PC kan direct verbinding maken zonder 30-50 seconden te wachten op STP
+- DHCP-problemen voorkomen: Voorkomt dat DHCP-timers verlopen tijdens het opstarten van een PC
+- Gebruikservaring: Gebruikers kunnen direct werken na het opstarten van hun apparaat
+
+In dit netwerk:
+- Alle access-poorten (Fa0/1 t/m 0/8) hebben Portfast ingeschakeld voor VLAN 100
+- Dit zijn de poorten waar PC's in VLAN 100 zijn aangesloten
+- De poorten hebben ook BPDU-guard ingeschakeld, wat voorkomt dat een switch wordt aangesloten op een access-poort
+- De trunk-poorten (Gi0/1 en Gi0/2) hebben geen Portfast, wat correct is omdat trunks nooit Portfast mogen hebben
+- De ongebruikte poorten (Fa0/9-0/24) staan in shutdown en hebben geen Portfast
+
+Dit betekent dat gebruikers in VLAN 100 (Productie, 192.168.10.0/24) snel verbinding hebben na het opstarten en dat de switch niet kwetsbaar is voor STP-lussen op de trunk-poorten.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Portfast is correct ingeschakeld op alle access-poorten voor VLAN 100 en uitgeschakeld op trunk-poorten.
+
+
+
+Impact
+
+Geen impact. Portfast zorgt voor snelle verbindingen voor gebruikers in VLAN 100.
+
+
+
+Samenvatting
+
+Portfast is correct ingeschakeld voor VLAN 100 op alle access-poorten (Fa0/1-0/8) van SW1 en SW2. 
+Trunk-poorten (Gi0/1-0/2) hebben geen Portfast, wat correct is. Gebruikers in VLAN 100 (Productie, 192.168.10.0/24) hebben directe verbinding na het opstarten van hun PC. 
+De switch is beschermd tegen STP-lussen op de trunk-poorten.
+
+
+
+
+
+
+
+
+
+
+
+Als Portfast NIET is enabled
+
+
+In show spanning-tree interface fastEthernet 0/1 portfast:
+cisco
+
+Switch# show spanning-tree interface fastEthernet 0/1 portfast
+VLAN0100 disabled
+
+Let op: disabled betekent dat Portfast niet is ingeschakeld voor deze VLAN op deze poort.
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 62 bytes
+!
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 100
+end
+
+Let op: Er is geen spanning-tree portfast in de configuratie.
+
+
+
+In show spanning-tree vlan 100:
+cisco
+
+Switch# show spanning-tree vlan 100
+VLAN0100
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    32768
+             Address     0001.4321.ABCD
+             Cost        19
+             Port        1 (FastEthernet0/1)
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    32768
+             Address     0001.4321.ABCE
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Fa0/1            Desg FWD 19        128.1    P2p
+Fa0/2            Desg FWD 19        128.2    P2p
+
+Let op: Geen Edge bij Type, dus geen Portfast.
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat Portfast niet is ingeschakeld op meerdere access-poorten voor VLAN 100.
+
+SW1:
+- Poorten Fa0/1 t/m 0/8 hebben geen spanning-tree portfast in de configuratie
+- show spanning-tree interface fastEthernet 0/1 portfast toont VLAN0100 disabled
+- In show spanning-tree vlan 100 hebben deze poorten geen Edge type
+- Trunk-poorten Gi0/1 en Gi0/2 hebben ook geen Portfast (correct)
+
+SW2:
+- Poorten Fa0/1 t/m 0/8 hebben geen spanning-tree portfast in de configuratie
+- show spanning-tree interface fastEthernet 0/1 portfast toont VLAN0100 disabled
+
+Er zijn 16 access-poorten die geen Portfast hebben voor VLAN 100.
+
+
+
+Advies
+
+Portfast is een STP-functie die een poort direct in de forwarding-stand zet, zonder de normale STP-procedure (listening → learning → forwarding) te doorlopen. 
+Het is niet goed dat Portfast niet is ingeschakeld op de access-poorten voor VLAN 100.
+
+Waarom is dit een probleem?
+- Trage verbinding: Een PC moet 30-50 seconden wachten op STP voordat de verbinding actief is
+- DHCP-problemen: DHCP-timers kunnen verlopen tijdens de STP-vertraging, waardoor een PC geen IP-adres krijgt
+- Slechte gebruikservaring: Gebruikers ervaren vertragingen bij het opstarten van hun PC
+
+In dit netwerk:
+- Gebruikers in VLAN 100 (Productie, 192.168.10.0/24) moeten 30-50 seconden wachten voordat hun PC verbinding heeft
+- DHCP-aanvragen kunnen time-out krijgen omdat de PC al een IP-adres vraagt voordat de poort in forwarding staat
+- Dit leidt tot frustratie bij gebruikers en mogelijk tot helpdesk-meldingen
+
+Specifiek risico:
+- Bij het opstarten van een PC in de ochtend (alle medewerkers tegelijk) kan de DHCP-server overbelast raken omdat alle PC's tegelijk een IP-adres vragen, 
+maar de poorten nog niet in forwarding zijn. Dit leidt tot extra vertraging.
+
+
+
+Afwijking
+
+Portfast is niet ingeschakeld op de access-poorten voor VLAN 100.
+
+SW1:
+- Poorten Fa0/1 t/m 0/8 (8 poorten) hebben geen Portfast
+- Geen spanning-tree portfast in de configuratie
+
+SW2:
+- Poorten Fa0/1 t/m 0/8 (8 poorten) hebben geen Portfast
+- Geen spanning-tree portfast in de configuratie
+
+Dit is een afwijking omdat de best practice voorschrijft dat Portfast op alle access-poorten moet worden ingeschakeld.
+
+
+
+Impact
+
+Impact: Middel
+
+Door het ontbreken van Portfast op access-poorten voor VLAN 100:
+
+1. Trage verbinding bij opstarten:
+- Een PC op Fa0/1 (VLAN 100, Productie, 192.168.10.0/24) moet 30-50 seconden wachten
+- De PC kan niet communiceren tijdens deze periode
+- Netwerkapplicaties starten niet op
+- Gedeelde netwerkschijven zijn niet beschikbaar
+
+2. DHCP-time-outs:
+- De PC vraagt een IP-adres aan via DHCP direct na het opstarten
+- De poort is nog niet in forwarding (blokkeert verkeer)
+- Het DHCP-request wordt niet verzonden
+- De DHCP-client geeft na een time-out een foutmelding
+- De PC krijgt een APIPA-adres (169.254.x.x) in plaats van een correct IP-adres
+- De gebruiker moet handmatig ipconfig /renew uitvoeren of de PC opnieuw opstarten
+
+3. Slechte gebruikservaring:
+- Gebruikers ervaren dat hun PC "langzaam opstart"
+- Ze kunnen niet direct aan het werk
+- Dit leidt tot frustratie en productiviteitsverlies
+- Helpdesk krijgt klachten van gebruikers die geen verbinding hebben
+
+4. Grootschalige impact 's ochtends:
+- 's Ochtends starten alle PC's tegelijkertijd op
+- Alle poorten zijn nog in de STP-procedure
+- Het duurt 30-50 seconden voordat alle poorten in forwarding staan
+- DHCP-requests van alle PC's tegelijk kunnen time-outs veroorzaken
+- Dit kan leiden tot een golf van helpdesk-meldingen
+
+De impact is middel omdat:
+- Het netwerk blijft functioneren, maar gebruikers hebben vertraging
+- DHCP-problemen kunnen voorkomen
+- Productiviteitsverlies in de ochtend
+- Verhoogde werklast voor helpdesk
+
+
+
+
+Samenvatting
+
+Portfast is niet ingeschakeld op de access-poorten voor VLAN 100. In totaal hebben 16 access-poorten op SW1 en SW2 geen Portfast. Hierdoor moeten gebruikers in VLAN 100 (Productie, 192.168.10.0/24) 30-50 seconden wachten op verbinding na het opstarten van hun PC. Dit kan leiden tot DHCP-time-outs, trage verbindingen en slechte gebruikservaring.
+
+Advies:
+1. Schakel Portfast in op alle access-poorten voor VLAN 100:
+- SW1: interface range fastEthernet 0/1 - 8
+- spanning-tree portfast
+- SW2: interface range fastEthernet 0/1 - 8
+- spanning-tree portfast
+
+2. Controleer of BPDU-guard ook is ingeschakeld:
+- Voeg spanning-tree bpduguard enable toe voor extra beveiliging
+
+3. Controleer na configuratie:
+- Gebruik show spanning-tree interface fastEthernet 0/1 portfast om te controleren of Portfast is ingeschakeld
+- Gebruik show spanning-tree vlan 100 om te controleren of de poorten Edge type hebben
+
+4. Test de verbinding:
+- Start een PC in VLAN 100 opnieuw op
+- Controleer of de PC direct verbinding heeft (geen vertraging)
+- Controleer of de PC een correct IP-adres krijgt via DHCP
+
+
+
