@@ -1,0 +1,340 @@
+Omschrijving
+
+Een dynamic-access port is een switchpoort die zijn VLAN-toewijzing niet statisch heeft ingesteld, 
+maar dynamisch verkrijgt via een VMPS-server (VLAN Membership Policy Server). 
+De switch stuurt dan het MAC-adres van een aangesloten apparaat naar de VMPS-server, die bepaalt in welk VLAN de poort moet worden geplaatst.
+
+Simpel gezegd: Een dynamic-access port is een poort die "vraagt" aan een centrale server: "In welk VLAN moet ik dit apparaat plaatsen?" 
+Dit is handig in grote netwerken waar gebruikers vaak verplaatsen, 
+maar het is ook een groot beveiligingsrisico omdat de toewijzing volledig afhankelijk is van een externe server.
+
+Waarom moeten dynamic-access ports worden geblokkeerd?
+    Beveiligingsrisico: Als de VMPS-server niet beschikbaar is of wordt misbruikt, kan een poort in het verkeerde VLAN terechtkomen
+    Ongeautoriseerde toegang: Een aanvaller kan proberen een VMPS-server te imiteren om toegang te krijgen tot gevoelige VLAN's
+    Complexiteit: Dynamic-access ports maken het netwerkbeheer complexer en foutgevoeliger
+    Best practice: Gebruik in de meeste netwerken statische access-poorten of trunk-poorten in plaats van dynamic-access
+
+Waar moet je op letten:
+
+    Dynamic-access ports kunnen alleen worden gebruikt voor eindstations (PC's, printers), niet voor switches of routers
+    Dynamic-access ports kunnen geen lid zijn van een EtherChannel
+    Port Fast wordt automatisch ingeschakeld op dynamic-access ports
+    Dynamic-access ports gebruiken geen VLAN-tagging
+
+
+
+
+Uitvoering
+
+cisco
+
+! Bekijk de switchport configuratie van een specifieke poort
+Switch# show interfaces fastEthernet 0/1 switchport
+
+! Bekijk de configuratie van de poort
+Switch# show running-config interface fastEthernet 0/1
+
+! Zoek naar dynamic-access configuratie
+Switch# show running-config | include switchport access vlan dynamic
+
+! Bekijk alle switchport configuraties
+Switch# show interfaces switchport | include dynamic
+
+
+Wat je moet controleren:
+
+    Staat de poort in dynamic-access modus? (switchport access vlan dynamic)
+    Is de poort in access-modus gezet? (switchport mode access)
+    Is de poort in shutdown gezet? (als extra beveiliging)
+
+
+
+
+Als dynamic-access WEL is geblokkeerd
+
+In show interfaces fastEthernet 0/1 switchport:
+cisco
+
+Switch# show interfaces fastEthernet 0/1 switchport
+Name: Fa0/1
+Switchport: Enabled
+Administrative Mode: static access
+Operational Mode: static access
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: Off
+Access Mode VLAN: 10 (VLAN0010)
+
+Let op:
+
+Administrative Mode: static access = De poort is handmatig ingesteld als access-poort (geen dynamic-access)
+Negotiation of Trunking: Off = DTP is uitgeschakeld
+Er staat geen vlan dynamic in de configuratie
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 95 bytes
+!
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+ spanning-tree portfast
+end
+
+Let op:
+
+switchport mode access = De poort is statisch ingesteld als access-poort
+switchport access vlan 10 = De poort is toegewezen aan een specifiek VLAN (geen dynamic-access)
+Geen switchport access vlan dynamic in de configuratie
+
+
+
+
+Advies
+
+Een dynamic-access port is een switchpoort die zijn VLAN-toewijzing dynamisch verkrijgt via een VMPS-server (VLAN Membership Policy Server). 
+Het is goed dat dynamic-access is geblokkeerd op alle switchpoorten in dit netwerk.
+
+Waarom is dit belangrijk?
+- Beveiliging: Een dynamic-access port is afhankelijk van een externe VMPS-server. 
+Als deze server wordt misbruikt of niet beschikbaar is, kan een poort in het verkeerde VLAN terechtkomen.
+- Ongeautoriseerde toegang: Een aanvaller kan proberen een VMPS-server te imiteren om toegang te krijgen tot gevoelige 
+VLAN's zoals VLAN 10 (Productie) of VLAN 20 (HR).
+- Complexiteit: Dynamic-access ports maken het netwerkbeheer complexer en foutgevoeliger. Het is beter om statische access-poorten te gebruiken.
+
+In dit netwerk:
+- Alle access-poorten zijn statisch geconfigureerd met switchport mode access en een vaste VLAN-toewijzing.
+- Poorten in VLAN 10 (Productie, 192.168.10.0/24) kunnen alleen apparaten in dat VLAN toelaten.
+- Poorten in VLAN 20 (HR, 192.168.20.0/24) kunnen alleen apparaten in dat VLAN toelaten.
+- Trunk-poorten zijn handmatig geconfigureerd met switchport mode trunk.
+
+Dit voorkomt dat een apparaat via een dynamic-access poort automatisch in een verkeerd VLAN wordt geplaatst. 
+Alleen een netwerkbeheerder kan een poort handmatig aan een VLAN toewijzen.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Dynamic-access is correct geblokkeerd op alle poorten.
+
+
+
+Impact
+
+Geen impact. Alle poorten gebruiken statische VLAN-toewijzing, wat veiliger en beter beheersbaar is.
+
+
+
+Samenvatting
+
+Dynamic-access is correct geblokkeerd op alle switchpoorten. 
+Alle poorten gebruiken switchport mode access met een statische VLAN-toewijzing (VLAN 10 of VLAN 20). 
+Er zijn geen poorten met switchport access vlan dynamic. 
+Hierdoor kan een apparaat niet automatisch via een VMPS-server in een verkeerd VLAN worden geplaatst. 
+Het netwerk is beschermd tegen de risico's van dynamic-access configuraties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als dynamic-access NIET is geblokkeerd
+
+In show interfaces fastEthernet 0/1 switchport:
+cisco
+
+Switch# show interfaces fastEthernet 0/1 switchport
+Name: Fa0/1
+Switchport: Enabled
+Administrative Mode: dynamic access
+Operational Mode: access (assigned by VMPS)
+Administrative Trunking Encapsulation: negotiate
+Operational Trunking Encapsulation: native
+Negotiation of Trunking: On
+Access Mode VLAN: (assigned by VMPS)
+
+Let op:
+
+Administrative Mode: dynamic access = De poort is in dynamic-access modus
+(assigned by VMPS) = De VLAN-toewijzing wordt bepaald door de VMPS-server
+Negotiation of Trunking: On = DTP staat nog aan
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 73 bytes
+!
+interface FastEthernet0/1
+ switchport access vlan dynamic
+end
+
+Let op: switchport access vlan dynamic betekent dat de poort is geconfigureerd als dynamic-access port en de VLAN-toewijzing door de VMPS-server wordt bepaald.
+
+
+
+In show running-config | include switchport access vlan dynamic:
+cisco
+
+Switch# show running-config | include switchport access vlan dynamic
+ switchport access vlan dynamic
+ switchport access vlan dynamic
+
+Let op: Er zijn meerdere poorten die dynamic-access gebruiken.
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat dynamic-access niet is geblokkeerd op meerdere switchpoorten.
+
+SW1:
+- Poorten Fa0/1, Fa0/2, Fa0/3 hebben switchport access vlan dynamic
+- show interfaces switchport toont Administrative Mode: dynamic access
+- Deze poorten zijn afhankelijk van een VMPS-server voor VLAN-toewijzing
+
+SW2:
+- Poorten Fa0/1, Fa0/2 hebben switchport access vlan dynamic
+- Deze poorten zijn ook afhankelijk van een VMPS-server
+
+Er zijn 5 poorten die dynamic-access gebruiken. Deze poorten zijn verbonden met PC's in VLAN 10 (Productie) en VLAN 20 (HR).
+
+
+
+
+
+Advies
+
+Een dynamic-access port is een switchpoort die zijn VLAN-toewijzing dynamisch verkrijgt via een VMPS-server (VLAN Membership Policy Server). 
+Het is niet goed dat dynamic-access niet is geblokkeerd op meerdere poorten.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: De VLAN-toewijzing is afhankelijk van een externe VMPS-server. 
+Als deze server wordt misbruikt of niet beschikbaar is, kan een poort in het verkeerde VLAN terechtkomen.
+- Ongeautoriseerde toegang: Een aanvaller die verbinding maakt met een dynamic-access poort, 
+kan proberen een VMPS-server te imiteren om toegang te krijgen tot gevoelige VLAN's zoals VLAN 10 (Productie) of VLAN 20 (HR).
+- Complexiteit: Dynamic-access ports maken het netwerkbeheer complexer. De beheerder moet een VMPS-server configureren en onderhouden, 
+wat extra foutgevoeligheid introduceert.
+
+In dit netwerk:
+- Fa0/1, Fa0/2, Fa0/3 op SW1 gebruiken dynamic-access. Deze poorten zijn verbonden met PC's in VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24).
+- Fa0/1, Fa0/2 op SW2 gebruiken ook dynamic-access.
+- Als de VMPS-server niet beschikbaar is, krijgen deze poorten geen VLAN-toewijzing en kunnen de gebruikers geen verbinding maken.
+- Een aanvaller kan proberen een eigen VMPS-server te imiteren om een poort in een ander VLAN te plaatsen.
+
+Specifiek risico:
+- Een aanvaller in de buurt van SW1 kan een apparaat aansluiten op Fa0/3 (een dynamic-access poort). 
+De poort vraagt de VMPS-server om een VLAN-toewijzing. 
+Als de aanvaller een VMPS-server kan imiteren, kan de poort in VLAN 10 (Productie) worden geplaatst, waardoor de aanvaller toegang krijgt tot productieservers.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Dynamic-access is niet geblokkeerd op meerdere poorten.
+
+SW1:
+- Poorten Fa0/1, Fa0/2, Fa0/3 gebruiken switchport access vlan dynamic
+- Administrative Mode: dynamic access
+
+SW2:
+- Poorten Fa0/1, Fa0/2 gebruiken switchport access vlan dynamic
+- Administrative Mode: dynamic access
+
+Deze poorten zijn afhankelijk van een VMPS-server voor VLAN-toewijzing, wat een beveiligingsrisico en beheercomplexiteit met zich meebrengt.
+
+
+
+
+Impact
+
+Impact: Middel tot Hoog
+
+Door het gebruik van dynamic-access poorten:
+
+1. Afhankelijkheid van VMPS-server:
+- De poorten Fa0/1, Fa0/2, Fa0/3 op SW1 en Fa0/1, Fa0/2 op SW2 zijn afhankelijk van een VMPS-server voor VLAN-toewijzing.
+- Als de VMPS-server uitvalt, krijgen deze poorten geen VLAN-toewijzing en kunnen de gebruikers geen verbinding maken.
+- Dit kan leiden tot productiviteitsverlies voor gebruikers in VLAN 10 (Productie) en VLAN 20 (HR).
+
+2. Beveiligingsrisico:
+- Een aanvaller kan proberen een VMPS-server te imiteren om een poort in een verkeerd VLAN te plaatsen.
+- De aanvaller kan bijvoorbeeld Fa0/3 (SW1) in VLAN 10 (Productie) plaatsen, waardoor hij toegang krijgt tot productieservers op 192.168.10.0/24.
+- De aanvaller kan dan gevoelige gegevens stelen of malware verspreiden.
+
+3. Geen statische controle:
+- De beheerder heeft geen directe controle over in welk VLAN een apparaat wordt geplaatst.
+- De VMPS-server bepaalt dit op basis van het MAC-adres. 
+Als de MAC-adressen niet correct zijn geregistreerd, kan een apparaat in het verkeerde VLAN worden geplaatst.
+
+4. Complexer beheer:
+- De beheerder moet een VMPS-server configureren en onderhouden.
+- MAC-adressen moeten worden geregistreerd in de VMPS-database.
+- Dit is tijdrovend en foutgevoelig.
+
+De impact is middel tot hoog omdat:
+- Dynamic-access poorten afhankelijk zijn van een externe server (enkele point of failure)
+- Een aanvaller de VMPS-server kan imiteren voor ongeautoriseerde toegang
+- Het beheer complexer en foutgevoeliger is dan statische configuratie
+
+
+
+
+
+Samenvatting
+
+Dynamic-access is niet geblokkeerd op meerdere poorten. 
+De poorten Fa0/1, Fa0/2, Fa0/3 op SW1 en Fa0/1, Fa0/2 op SW2 gebruiken switchport access vlan dynamic en zijn afhankelijk van een VMPS-server voor VLAN-toewijzing.
+
+Gevolgen:
+- Bij uitval van de VMPS-server krijgen deze poorten geen VLAN-toewijzing en kunnen gebruikers geen verbinding maken
+- Een aanvaller kan proberen een VMPS-server te imiteren voor ongeautoriseerde toegang tot VLAN 10 (Productie) of VLAN 20 (HR)
+- Het beheer is complexer en foutgevoeliger dan statische configuratie
+
+Advies:
+1. Vervang dynamic-access door statische access-poorten:
+- SW1 (Fa0/1-0/3): interface range fastEthernet 0/1 - 3
+- switchport mode access
+- switchport access vlan 10 (of het juiste VLAN)
+
+2. Herhaal voor SW2 (Fa0/1-0/2):
+- interface range fastEthernet 0/1 - 2
+- switchport mode access
+- switchport access vlan 10 (of het juiste VLAN)
+
+3. Controleer na configuratie:
+- Gebruik show interfaces switchport om te controleren dat Administrative Mode: static access is
+- Gebruik show running-config interface fastEthernet 0/1 om te controleren dat switchport access vlan dynamic is verwijderd
+- Test of de PC's in het juiste VLAN verbinding maken
+
+Na configuratie controleer je met show running-config dat er geen switchport access vlan dynamic meer in de configuratie staat 
+en met show interfaces switchport dat alle poorten static access gebruiken.
+
+
+
+
+
+
+
+
+
