@@ -1,0 +1,409 @@
+omschrijving
+
+Spanning Tree Protocol (STP) is een protocol dat lussen in een netwerk voorkomt door bepaalde poorten in een blocking-stand te zetten, 
+zodat er altijd maar één actief pad is tussen twee switches.
+
+Simpel gezegd: STP is als een verkeersregelaar die ervoor zorgt dat er geen "rondjes" worden gereden in het netwerk. 
+Zonder STP zou het verkeer eindeloos blijven rondgaan (broadcast storm), wat het netwerk platlegt.
+
+De Root Bridge is de centrale switch in het STP-netwerk. Alle andere switches bepalen hun beste pad naar de Root Bridge. 
+De Root Bridge is de switch met de laagste bridge priority (standaard 32768). Als de priorities gelijk zijn, wint de switch met het laagste MAC-adres.
+
+MLS (Multilayer Switch) is een switch die ook kan routeren (L3-switch). Deze wordt vaak gekozen als Root Bridge omdat hij het centrum van het netwerk is.
+
+Waarom is het belangrijk dat MLS de Root Bridge is?
+
+    Optimale paden: Alle verkeer gaat via de MLS, die de snelste routes kent
+    Stabiliteit: Een voorspelbare, stabiele STP-topologie
+    Redundantie: Back-up paden zijn beschikbaar bij storingen
+    Performance: MLS heeft snellere processors en meer geheugen voor STP-berekeningen
+
+
+
+
+Uivoering
+
+cisco
+
+! Bekijk de STP-configuratie van een specifiek VLAN
+Switch# show spanning-tree vlan 10
+
+! Bekijk welke switch de Root Bridge is
+Switch# show spanning-tree root
+
+! Bekijk de bridge priority en MAC-adres van de switch
+Switch# show spanning-tree | include Root|Bridge
+
+! Bekijk de configuratie van de bridge priority
+Switch# show running-config | include spanning-tree vlan
+
+! Bekijk de STP-status van alle poorten
+Switch# show spanning-tree interface status
+
+Wat je moet controleren:
+
+    Welke switch is de Root Bridge? (zie show spanning-tree root of show spanning-tree vlan xx)
+    Is de MLS de Root Bridge? (vergelijk MAC-adres en priority)
+    Zijn de bridge priorities correct ingesteld? (MLS = laagste priority)
+    Is STP actief op alle VLAN's? (zie show spanning-tree)
+
+
+
+Als STP actief is en MLS de Root Bridge is
+
+
+In show spanning-tree vlan 10 (op de MLS):
+cisco
+
+Core-SW# show spanning-tree vlan 10
+VLAN0100
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    4096
+             Address     0001.4321.ABCD
+             This bridge is the root
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    4096
+             Address     0001.4321.ABCD
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Gi0/1            Desg FWD 4         128.1    P2p
+Gi0/2            Desg FWD 4         128.2    P2p
+Fa0/1            Desg FWD 19        128.3    P2p
+Fa0/2            Desg FWD 19        128.4    P2p
+
+Let op:
+
+This bridge is the root = Deze switch (MLS) is de Root Bridge
+De Root ID en Bridge ID zijn hetzelfde (zelfde MAC-adres en priority)
+
+
+
+In show spanning-tree vlan 10 (op een andere switch, bijv. SW1):
+cisco
+
+SW1# show spanning-tree vlan 10
+VLAN0100
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    4096
+             Address     0001.4321.ABCD
+             Cost        19
+             Port        1 (GigabitEthernet0/1)
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    24576
+             Address     0001.4321.ABCE
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  300
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Gi0/1            Root FWD 19        128.1    P2p
+Gi0/2            Altn BLK 19        128.2    P2p
+Fa0/1            Desg FWD 19        128.3    P2p
+Fa0/2            Desg FWD 19        128.4    P2p
+
+Let op:
+Root ID is de MLS (priority 4096, MAC 0001.4321.ABCD)
+Bridge ID is SW1 (priority 24576, MAC 0001.4321.ABCE)
+Gi0/1 heeft Root role (pad naar de Root Bridge)
+Gi0/2 heeft Altn role (alternatief pad, wordt geblokkeerd om lus te voorkomen)
+
+
+
+In show spanning-tree root:
+cisco
+
+Core-SW# show spanning-tree root
+                                     Root    Hello Max Fwd
+Vlan                   Root ID        Cost    Time  Age Dly  Root Port
+------------------- ---------------- ------- ----- --- --- ------------
+VLAN0001          4096 0001.4321.ABCD 0       2    20  15  (this bridge is root)
+VLAN0010          4096 0001.4321.ABCD 0       2    20  15  (this bridge is root)
+VLAN0020          4096 0001.4321.ABCD 0       2    20  15  (this bridge is root)
+VLAN0030          4096 0001.4321.ABCD 0       2    20  15  (this bridge is root)
+
+Let op: De MLS is de Root Bridge voor alle VLAN's (priority 4096).
+
+
+
+In show running-config | include spanning-tree vlan:
+cisco
+
+Core-SW# show running-config | include spanning-tree vlan
+spanning-tree vlan 1-4094 priority 4096
+
+Let op: De bridge priority van de MLS is handmatig ingesteld op 4096 (laag).
+
+
+
+Op SW1:
+cisco
+
+SW1# show running-config | include spanning-tree vlan
+spanning-tree vlan 1-4094 priority 24576
+
+Let op: SW1 heeft een hogere priority (24576), dus wordt geen Root Bridge.
+
+
+
+Advies
+
+STP (Spanning Tree Protocol) is een protocol dat lussen in een netwerk voorkomt door bepaalde poorten te blokkeren. 
+De Root Bridge is de centrale switch waar alle andere switches hun beste pad naartoe bepalen. 
+Het is goed dat STP actief is op alle VLAN's en dat de MLS (Core-SW) de Root Bridge is.
+
+Waarom is dit belangrijk?
+- Luspreventie: STP blokkeert redundantie paden (Gi0/2 op SW1 en SW2) om lussen te voorkomen. Zonder STP zou een broadcast storm het netwerk platleggen.
+- Optimale paden: Alle verkeer gaat via de MLS (Core-SW), die de snelste routes kent en verbinding heeft met alle andere switches.
+- Stabiliteit: Een voorspelbare, stabiele STP-topologie maakt probleemoplossing eenvoudiger.
+- Redundantie: Back-up paden zijn aanwezig (Gi0/2 op SW1/SW2) en worden alleen actief bij een storing op het primaire pad.
+
+In dit netwerk:
+- De Core-SW heeft de laagste bridge priority (4096), wat is ingesteld met spanning-tree vlan 1-4094 priority 4096.
+- SW1 en SW2 hebben een hogere priority (24576), waardoor zij nooit de Root Bridge kunnen worden.
+- De Core-SW is de Root Bridge voor alle VLAN's: VLAN 1, 10 (Productie), 20 (HR) en 30 (Gasten).
+- Gi0/1 op SW1 en SW2 is het Root port (beste pad naar Core-SW).
+- Gi0/2 op SW1 en SW2 is blocked (alternatief pad), waardoor er geen lus ontstaat.
+
+Dit zorgt voor een stabiel, voorspelbaar netwerk waarin alle verkeer via de Core-SW (de routerende switch) gaat. 
+Als een link uitvalt (bijv. Gi0/1 op SW1), zal STP Gi0/2 automatisch activeren (van blocking naar forwarding) binnen 30-50 seconden.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. STP is actief op alle VLAN's en de MLS is correct geconfigureerd als Root Bridge.
+
+
+
+Impact
+
+Geen impact. STP werkt correct en voorkomt lussen. De MLS is de Root Bridge, wat zorgt voor een stabiele topologie.
+
+
+
+Samenvatting
+
+STP is actief op alle VLAN's (1, 10, 20, 30) en de MLS (Core-SW) is de Root Bridge met priority 4096. 
+SW1 en SW2 hebben priority 24576 en hebben hun Root Port op Gi0/1 (naar Core-SW). 
+Het alternatieve pad (Gi0/2) is geblokkeerd om lussen te voorkomen. 
+Het netwerk heeft een stabiele en voorspelbare STP-topologie met redundantie.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als STP NIET actief is of MLS NIET de Root Bridge is
+
+In show spanning-tree vlan 10 (STP uitgeschakeld):
+cisco
+
+Switch# show spanning-tree vlan 10
+VLAN0100
+  Spanning tree enabled protocol ieee
+  (output niets of "no spanning tree instance exists")
+
+Let op: Er is geen STP-instantie actief voor VLAN 10.
+
+
+
+In show spanning-tree vlan 10 (Root Bridge is een andere switch):
+cisco
+
+SW1# show spanning-tree vlan 10
+VLAN0100
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    24576
+             Address     0001.4321.ABCE
+             This bridge is the root
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    24576
+             Address     0001.4321.ABCE
+             ...
+
+Let op: SW1 is de Root Bridge (priority 24576), niet de MLS.
+
+
+
+In show running-config | include spanning-tree vlan:
+cisco
+
+Core-SW# show running-config | include spanning-tree vlan
+(geen output - geen priority ingesteld)
+
+Let op: De MLS heeft geen priority ingesteld (gebruikt default 32768).
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat STP actief is maar de MLS (Core-SW) niet de Root Bridge is op meerdere VLAN's.
+
+Core-SW (MLS):
+- Bridge Priority: 32768 (default, niet ingesteld)
+- MAC-adres: 0001.4321.ABCD
+- Is niet de Root Bridge voor VLAN 10, 20 en 30
+
+SW1:
+- Bridge Priority: 24576 (handmatig ingesteld)
+- MAC-adres: 0001.4321.ABCE
+- Is de Root Bridge voor VLAN 10 en VLAN 20
+
+SW2:
+- Bridge Priority: 24576 (handmatig ingesteld)
+- MAC-adres: 0001.4321.ABCF
+- Is de Root Bridge voor VLAN 30
+
+VLAN 10 Root Bridge = SW1
+VLAN 20 Root Bridge = SW1
+VLAN 30 Root Bridge = SW2
+
+De MLS (Core-SW) is niet de Root Bridge voor alle VLAN's.
+
+
+
+
+
+Advies
+
+STP (Spanning Tree Protocol) is een protocol dat lussen in een netwerk voorkomt. 
+De Root Bridge is de centrale switch waar alle andere switches hun beste pad naartoe bepalen. 
+Het is niet goed dat de MLS (Core-SW) niet de Root Bridge is voor alle VLAN's.
+
+Waarom is dit een probleem?
+- Suboptimale paden: Verkeer tussen VLAN's (bijv. van VLAN 10 naar VLAN 20) gaat via SW1 en niet via de Core-SW (de routerende switch). 
+Dit is inefficiënt en kan vertraging veroorzaken.
+- Ongelijke belasting: SW1 wordt de centrale switch voor VLAN 10 en 20, terwijl SW2 de centrale switch is voor VLAN 30. Dit is niet gebalanceerd.
+- Moeilijker probleemoplossing: De STP-topologie is niet consistent. De Root Bridge wisselt per VLAN, wat het debuggen complexer maakt.
+- MLS is ontworpen als centrum: De MLS heeft snellere processors en meer geheugen en zou de Root Bridge moeten zijn voor optimale prestaties.
+
+In dit netwerk:
+- De Core-SW heeft geen priority ingesteld (default 32768).
+- SW1 heeft priority 24576 (lager dan 32768), dus wordt de Root Bridge voor VLAN 10 en 20.
+- SW2 heeft priority 24576 (lager dan 32768), dus wordt de Root Bridge voor VLAN 30.
+- Hierdoor is de STP-topologie inconsistent en gaat verkeer niet via de optimale route.
+
+Specifiek risico:
+- SW1 is een access-switch (niet zo krachtig als de Core-SW). Deze switch wordt nu belast met het routeren van alle STP-berekeningen voor VLAN 10 en 20.
+- SW2 is ook een access-switch en wordt belast met VLAN 30.
+- Verkeer dat van VLAN 10 naar VLAN 20 moet (via de MLS) moet via SW1 en vervolgens via de Core-SW, wat extra hops en vertraging veroorzaakt.
+
+
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+De MLS (Core-SW) is niet de Root Bridge voor alle VLAN's.
+
+VLAN 10 (Productie, 192.168.10.0/24):
+- Root Bridge = SW1 (priority 24576, MAC 0001.4321.ABCE)
+
+VLAN 20 (HR, 192.168.20.0/24):
+- Root Bridge = SW1 (priority 24576, MAC 0001.4321.ABCE)
+
+VLAN 30 (Gasten, 192.168.30.0/24):
+- Root Bridge = SW2 (priority 24576, MAC 0001.4321.ABCF)
+
+Core-SW (MLS):
+- Priority: 32768 (default)
+- Is geen Root Bridge voor enig VLAN
+
+De MLS is niet de Root Bridge, wat inefficiënte paden en een inconsistente STP-topologie veroorzaakt.
+
+
+
+
+Impact
+
+Impact: Middel tot Hoog
+
+Door het feit dat de MLS niet de Root Bridge is:
+
+1. Suboptimale paden (VLAN 10 en 20):
+- SW1 is de Root Bridge voor VLAN 10 en 20. Alle verkeer dat van VLAN 10 naar VLAN 20 moet (inter-VLAN routing via de MLS), moet:
+- Van PC in VLAN 10 → SW1 → Core-SW (MLS) → SW1 → PC in VLAN 20
+- Dit is een omweg en veroorzaakt extra vertraging en belasting op de verbindingen.
+- De Core-SW is de routerende switch, maar het verkeer moet eerst via SW1.
+
+2. Extra belasting op access-switches:
+- SW1 moet alle STP-berekeningen uitvoeren voor VLAN 10 en 20.
+- SW1 is een access-switch met beperktere CPU en geheugen dan de Core-SW.
+- Dit kan leiden tot prestatieproblemen op SW1 als er veel STP-wijzigingen zijn.
+
+3. Ongelijke belasting:
+- SW1 is de Root Bridge voor 2 VLAN's (10 en 20).
+- SW2 is de Root Bridge voor 1 VLAN (30).
+- De Core-SW is helemaal geen Root Bridge. Dit is niet gebalanceerd.
+
+4. Moeilijker probleemoplossing:
+- De STP-topologie is inconsistent per VLAN.
+- Bij een netwerkstoring is het moeilijker om te bepalen wat er gebeurt omdat de Root Bridge per VLAN verschilt.
+
+5. Performance-verlies:
+- Verkeer dat normaal direct via de MLS zou gaan, moet nu via SW1 of SW2.
+- Dit kan leiden tot hogere latency (vertraging) in het netwerk.
+
+De impact is middel tot hoog omdat:
+- De STP-topologie is niet optimaal
+- Access-switches worden overbelast met STP-berekeningen
+- Verkeer neemt omwegen
+- De Core-SW (het krachtigste apparaat) wordt niet benut als Root Bridge
+
+
+
+
+Samenvatting
+
+STP is actief, maar de MLS (Core-SW) is niet de Root Bridge.
+
+Huidige situatie:
+- VLAN 10 en 20: Root Bridge = SW1 (priority 24576)
+- VLAN 30: Root Bridge = SW2 (priority 24576)
+- Core-SW: Priority 32768 (default), geen Root Bridge
+
+Gevolgen:
+- Suboptimale paden (verkeer maakt omweg via SW1/SW2)
+- Extra belasting op access-switches (SW1, SW2)
+- Inconsistente STP-topologie (verschillende Root Bridges per VLAN)
+- Performance-verlies door hogere latency
+
+Advies:
+1. Stel de bridge priority van de Core-SW (MLS) in op een lage waarde:
+- spanning-tree vlan 1-4094 priority 4096
+
+2. Stel de bridge priority van SW1 en SW2 in op een hogere waarde:
+- SW1: spanning-tree vlan 1-4094 priority 24576 (of hoger)
+- SW2: spanning-tree vlan 1-4094 priority 24576 (of hoger)
+
+3. Controleer na configuratie:
+- Gebruik show spanning-tree vlan 10 om te controleren dat de Core-SW de Root Bridge is (This bridge is the root)
+- Gebruik show spanning-tree root om te controleren dat de Core-SW de Root Bridge is voor alle VLAN's
+- Controleer dat SW1 en SW2 hun Root Port hebben op de verbinding naar de Core-SW
+
+4. Controleer of de STP-topologie stabiel is:
+- Gebruik show spanning-tree summary om te controleren of alle poorten de juiste rol hebben
+- Controleer dat er geen onverwachte blokkades zijn
+
+Na configuratie controleer je met show spanning-tree vlan 10 dat de 
+Core-SW This bridge is the root toont en met show spanning-tree root dat de Core-SW de Root Bridge is voor alle VLAN's.
+
