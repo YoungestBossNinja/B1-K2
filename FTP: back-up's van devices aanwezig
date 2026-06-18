@@ -58,3 +58,292 @@ Let op: Back-up bestanden herken je aan de .cfg of .txt extensie en de bestandsn
 
 Als er back-ups AANWEZIG zijn
 
+
+Je ziet een lijst met configuratiebestanden van verschillende devices:
+Bestandsnaam	                        Grootte	                        Datum	                        Beschrijving
+R1-startup-config.cfg	                1843 bytes	                    17-06-2026	                    Router 1 configuratie
+R2-startup-config.cfg	                2034 bytes	                    17-06-2026	                    Router 2 configuratie
+SW1-startup-config.cfg	                1520 bytes	                    17-06-2026	                    Switch 1 configuratie
+SW2-startup-config.cfg	                1689 bytes	                    17-06-2026	                    Switch 2 configuratie
+Core-SW-startup-config.cfg	            2100 bytes	                    17-06-2026	                    Core Switch configuratie
+
+
+Let op: De bestanden zijn herkenbaar aan de namen van de devices en de .cfg extensie. De grootte en datum zijn ook zichtbaar.
+
+
+
+
+
+Inhoud van een back-up bestand bekijken:
+
+ftp> get R1-startup-config.cfg
+ftp> quit
+
+PC> more R1-startup-config.cfg
+!
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+hostname R1
+!
+interface FastEthernet0/0
+ ip address 192.168.1.1 255.255.255.0
+!
+interface FastEthernet0/1
+ ip address 192.168.2.1 255.255.255.0
+!
+ip route 0.0.0.0 0.0.0.0 192.168.1.254
+!
+end
+
+Let op: De inhoud van het bestand is een volledige configuratie die teruggezet kan worden op een router.
+
+
+
+
+
+
+
+Advies
+
+Een back-up van een configuratie is een reservekopie van de instellingen van een netwerkdevice. 
+Deze back-ups worden opgeslagen op een centrale server (bijv. FTP-server) en kunnen worden gebruikt om een apparaat snel te herstellen bij defecten of configuratiefouten .
+
+Het is goed dat er back-ups aanwezig zijn voor alle devices in het netwerk:
+
+Waarom is dit belangrijk?
+- Disaster Recovery: Als een router of switch defect raakt, kan de configuratie snel worden teruggezet op een vervangend apparaat
+- Tijdwinst: Herstellen vanaf een back-up (met copy ftp: running-config) is veel sneller dan handmatig alle instellingen opnieuw invoeren
+- Foutherstel: Als een beheerder per ongeluk een foutieve configuratie opslaat, kan de vorige versie worden teruggezet
+- Standaardisatie: Nieuwe apparaten kunnen snel worden voorzien van de juiste configuratie
+
+In dit netwerk:
+- Alle back-ups zijn opgeslagen op de FTP-server (192.168.1.100)
+- De bestanden hebben duidelijke namen: R1-startup-config.cfg (Router 1), SW1-startup-config.cfg (Switch 1), etc.
+- De bestanden zijn actueel (datum: 17-06-2026)
+- De bestanden bevatten een volledige configuratie met hostnames, IP-adressen, VLAN's, routes en ACL's
+
+Dit betekent dat bij een defect aan bijvoorbeeld R1 (192.168.1.1/24 en 192.168.2.1/24):
+1. Een vervangende router kan worden aangesloten
+2. De back-up R1-startup-config.cfg kan worden gedownload via FTP
+3. De configuratie kan worden hersteld met copy ftp: running-config
+4. De router is binnen enkele minuten operationeel
+
+Zonder deze back-ups zou de netwerkbeheerder uren of dagen nodig hebben om alles handmatig opnieuw te configureren .
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Back-ups zijn aanwezig voor alle netwerkdevices.
+
+
+
+Impact
+
+Geen impact. Het netwerk is goed beschermd tegen configuratieverlies. Bij een defect kan een device snel worden hersteld.
+
+
+
+
+Samenvatting
+
+Back-ups van alle netwerkdevices zijn aanwezig op de FTP-server (192.168.1.100). 
+De bestanden R1-startup-config.cfg, R2-startup-config.cfg, SW1-startup-config.cfg, SW2-startup-config.cfg en Core-SW-startup-config.cfg bevatten de volledige configuraties 
+van respectievelijk Router 1, Router 2, Switch 1, Switch 2 en de Core Switch. De back-ups zijn actueel (17-06-2026) en kunnen worden gebruikt voor disaster recovery of foutherstel. 
+Het netwerk voldoet aan de best practice voor configuratieback-ups.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als er GEEN back-ups aanwezig zijn 
+
+
+In de FTP-map van de server (via FTP client of server GUI):
+
+ftp> dir
+200 Port command successful.
+150 Opening ASCII mode data connection for /bin/ls.
+226 Transfer complete.
+ftp>
+
+
+Let op: Er zijn geen bestanden zichtbaar in de FTP-map. De directory is leeg.
+
+
+
+
+Of er staan alleen niet-relevante bestanden:
+
+ftp> dir
+200 Port command successful.
+150 Opening ASCII mode data connection for /bin/ls.
+-rw-r--r--  1 root  root  1024 Jan 1 00:01 README.txt
+-rw-r--r--  1 root  root  2048 Jan 1 00:02 test.txt
+-rw-r--r--  1 root  root  512  Jan 1 00:03 note.txt
+226 Transfer complete.
+
+
+Let op: Er zijn wel bestanden, maar geen configuratiebestanden van netwerkdevices (geen .cfg bestanden met device namen).
+
+
+
+
+
+Bevinding
+
+Op de FTP-server (192.168.1.100) zijn geen back-ups aanwezig van netwerkdevices.
+
+De FTP-map bevat geen configuratiebestanden (*.cfg of *.txt).
+
+Er zijn alleen enkele testbestanden aanwezig:
+- README.txt (1024 bytes)
+- test.txt (2048 bytes)
+- note.txt (512 bytes)
+
+Geen van deze bestanden bevat een configuratie van een router of switch.
+
+Er zijn geen bestanden met namen als R1-config.cfg, SW1-config.cfg, etc.
+
+
+
+Advies
+
+Een back-up van een configuratie is een reservekopie van de instellingen van een netwerkdevice. 
+Deze back-ups worden opgeslagen op een centrale server (bijv. FTP-server) en kunnen worden gebruikt om een apparaat snel te herstellen bij defecten of configuratiefouten .
+
+Het is niet goed dat er geen back-ups aanwezig zijn voor de netwerkdevices.
+
+Waarom is dit een probleem?
+- Disaster Recovery: Als een router of switch defect raakt, kan de configuratie niet worden teruggezet
+- Handmatig herstel: De netwerkbeheerder moet alle instellingen handmatig opnieuw invoeren
+- Tijdverlies: Dit kan uren of dagen duren, afhankelijk van de complexiteit van het netwerk
+- Foutgevoelig: Handmatig configureren leidt vaak tot typefouten en vergeten instellingen
+- Geen standaardisatie: Nieuwe apparaten moeten helemaal opnieuw worden geconfigureerd
+
+In dit netwerk:
+- Er zijn meerdere devices: R1, R2, SW1, SW2, Core-SW
+- Elk device heeft een unieke configuratie met IP-adressen, VLAN's, routes en ACL's
+- Zonder back-ups moet bij een defect elk device volledig opnieuw worden geconfigureerd
+
+Wat kan er misgaan?
+- Stroomstoring: Als de router zijn configuratie verliest (geen startup-config), moet alles opnieuw worden ingevoerd
+- Hardware-defect: Als een switch kapot gaat, moet de vervangende switch helemaal opnieuw worden geconfigureerd
+- Configuratiefout: Als een beheerder per ongeluk een verkeerde configuratie opslaat, kan hij niet terug naar de vorige versie
+
+De afwezigheid van back-ups betekent dat het netwerk zeer kwetsbaar is voor langdurige uitval.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Er zijn geen back-ups aanwezig op de FTP-server (192.168.1.100).
+
+De FTP-map is leeg of bevat alleen testbestanden zonder configuraties van netwerkdevices.
+
+Geen van de devices (R1, R2, SW1, SW2, Core-SW) heeft een back-up op de FTP-server.
+
+Dit is een afwijking omdat back-ups essentieel zijn voor netwerkbeheer en disaster recovery .
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Zonder back-ups van de configuraties:
+
+1. Geen disaster recovery mogelijk:
+- Als R1 (192.168.1.1/24 en 192.168.2.1/24) defect raakt, kan de configuratie niet worden teruggezet
+- Een vervangende router moet handmatig worden geconfigureerd
+- Alle IP-adressen, routes, ACL's en VLAN's moeten opnieuw worden ingevoerd
+- Dit kan uren of dagen duren, afhankelijk van de complexiteit
+
+2. Langdurige netwerkuitval:
+- Zonder back-up is het netwerk langer offline dan nodig
+- Alle gebruikers in VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24) kunnen niet werken
+- Dit leidt tot productiviteitsverlies en mogelijk omzetverlies
+
+3. Foutgevoelig herstel:
+- Handmatig configureren leidt vaak tot typefouten of vergeten instellingen
+- Een vergeten ACL kan bijvoorbeeld een beveiligingslek veroorzaken
+- Een verkeerde route kan ervoor zorgen dat het netwerk niet goed werkt
+
+4. Geen standaardisatie:
+- Zonder back-ups kunnen nieuwe apparaten niet snel worden geïmplementeerd
+- Elk apparaat moet handmatig worden geconfigureerd, wat tijdrovend is
+- Er is geen consistente configuratie voor identieke apparaten
+
+Specifiek voor dit netwerk:
+- R1: Inter-VLAN routing (VLAN 10, 20, 30) en ACL's tussen VLAN's
+- R2: Verbinding met internet en NAT
+- Core-SW: Trunk-poorten en STP-configuratie
+- SW1/SW2: Access-poorten en VLAN-toewijzing
+
+Zonder back-ups moet al deze configuratie handmatig opnieuw worden ingevoerd bij een defect. De impact is hoog omdat:
+- Het hele netwerk afhankelijk is van deze devices
+- Herstel lang duurt zonder back-ups
+- De kans op fouten tijdens handmatig herstel groot is
+
+
+
+
+
+Samenvatting
+
+Er zijn geen back-ups aanwezig op de FTP-server (192.168.1.100) voor de netwerkdevices R1, R2, SW1, SW2 en Core-SW.
+
+Gevolgen:
+- Bij een defect moet de configuratie handmatig opnieuw worden ingevoerd
+- Dit leidt tot langdurige netwerkuitval (uren tot dagen)
+- Grote kans op typefouten en vergeten instellingen
+- Geen mogelijkheid om snel een vervangend apparaat in te zetten
+
+Advies:
+1. Maak back-ups van alle devices:
+- Gebruik copy running-config ftp: om de configuratie van elk device naar de FTP-server te kopiëren
+- Router 1: copy running-config ftp: naar R1-startup-config.cfg
+- Router 2: copy running-config ftp: naar R2-startup-config.cfg
+- Switch 1: copy running-config ftp: naar SW1-startup-config.cfg
+- Switch 2: copy running-config ftp: naar SW2-startup-config.cfg
+- Core Switch: copy running-config ftp: naar Core-SW-startup-config.cfg
+
+2. Configureer automatische back-ups:
+- Gebruik de archive functie op Cisco devices om automatisch back-ups te maken
+- archive en path ftp://[username]:[password]@192.168.1.100/$h
+- time-period 1440 (dagelijkse back-up)
+- write-memory (back-up bij elke configuratiewijziging)
+
+3. Controleer de back-ups regelmatig:
+- Gebruik ftp en dir om te controleren of back-ups aanwezig zijn
+- Download een back-up en controleer de inhoud met more
+
+4. Maak een herstelprocedure:
+- Documenteer hoe een back-up moet worden hersteld met copy ftp: running-config
+- Test de herstelprocedure regelmatig
+
+Na het maken van back-ups controleer je de FTP-map met dir om te bevestigen dat alle bestanden aanwezig zijn.
+
+
+
+
+
+
+
+
+
+
