@@ -1,0 +1,380 @@
+omschrijving
+
+Syslog is een standaardprotocol voor het loggen van gebeurtenissen op netwerkapparaten zoals routers, switches en servers. 
+Het stuurt logberichten naar een centrale syslog-server waar alle logs worden verzameld en opgeslagen.
+
+Simpel gezegd: Syslog is als een centraal dagboek voor al je netwerkapparaten. 
+In plaats dat elk apparaat zijn eigen logboek bijhoudt, stuurt elk apparaat zijn logberichten naar één centrale server. 
+Zo heb je alle gebeurtenissen van het hele netwerk op één plek.
+
+Syslog-niveaus (van ernstig naar minder ernstig):
+
+    0 - Emergencies: Systeem is onbruikbaar
+    1 - Alerts: Onmiddellijke actie nodig
+    2 - Critical: Kritieke fouten
+    3 - Errors: Foutmeldingen
+    4 - Warnings: Waarschuwingen
+    5 - Notifications: Normale maar belangrijke gebeurtenissen
+    6 - Informational: Informatieve berichten
+    7 - Debugging: Debug-informatie (zeer gedetailleerd)
+
+"Alle events worden verzameld" betekent dat de syslog-server is geconfigureerd om alle logberichten van alle apparaten te ontvangen en op te slaan, 
+ongeacht het ernstniveau (bijv. van 0 tot en met 6 of 7).
+
+Waarom is het belangrijk dat alle events worden verzameld?
+
+    Volledig overzicht: Alle gebeurtenissen in het netwerk zijn zichtbaar op één centrale plek
+    Beveiligingsmonitoring: Beveiligingsincidenten kunnen worden gedetecteerd (bijv. mislukte inlogpogingen)
+    Probleemoplossing: Logs kunnen worden gebruikt om de oorzaak van problemen te achterhalen
+    Audit en compliance: Logs zijn nodig voor ISO 27001, AVG, PCI-DSS, etc.
+    Trendanalyse: Patronen kunnen worden geïdentificeerd (bijv. toenemend aantal fouten)
+
+
+
+
+Uitvoering
+
+! Bekijk de algemene logging-configuratie
+Router# show logging
+
+! Bekijk de syslog-configuratie in de running-config
+Router# show running-config | include logging
+
+! Bekijk of een syslog-server is geconfigureerd
+Router# show running-config | include logging host
+
+! Bekijk het logging level
+Router# show running-config | include logging trap
+
+! Bekijk of er logs naar de server worden gestuurd
+Router# show logging | include logging to
+
+
+Wat je moet controleren:
+
+    Is er een syslog-server geconfigureerd? (logging host [IP])
+    Wat is het logging level? (logging trap [level]) - moet minimaal informational (6) zijn
+    Worden logs daadwerkelijk naar de server gestuurd? (zie show logging)
+    Is logging ingeschakeld? (zie show logging - Syslog logging: enabled)
+    Worden alle events verzameld? (controleer op syslog-server of logs binnenkomen)
+
+
+
+
+
+Als Syslog is geconfigureerd en alle events worden verzameld
+
+In show logging:
+cisco
+
+Router# show logging
+Syslog logging: enabled (0 messages dropped, 0 flushes, 0 overruns)
+    Console logging: level debugging, 45 messages logged
+    Monitor logging: level debugging, 0 messages logged
+    Buffer logging: level debugging, 128 messages logged
+    Trap logging: level informational, 256 message lines logged
+    Logging to 192.168.1.100 (udp port 514, audit disabled,
+              authentication disabled), 256 message lines logged,
+              0 lines rate-limited
+
+Log Buffer (50000 bytes):
+*Jun 17 10:23:45.123: %LINK-3-UPDOWN: Interface FastEthernet0/0, changed state to up
+*Jun 17 10:23:46.456: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to up
+*Jun 17 10:24:12.789: %SYS-5-CONFIG_I: Configured from console by admin on console
+*Jun 17 10:25:30.123: %DHCP-4-NO_ADDRESS: DHCP pool [PRODUCTIE] has no available addresses
+*Jun 17 10:30:15.456: %SEC-6-IPACCESSLOGP: list 100 denied tcp 192.168.30.10(1024) -> 192.168.10.10(80), 1 packet
+...
+
+Let op:
+
+Syslog logging: enabled = Logging is ingeschakeld
+Trap logging: level informational = Logs worden naar de syslog-server gestuurd met level informational (6)
+Logging to 192.168.1.100 = De syslog-server is 192.168.1.100
+Er zijn 256 logs naar de server gestuurd
+
+
+
+In show running-config | include logging:
+cisco
+
+Router# show running-config | include logging
+logging buffered informational
+logging console informational
+logging host 192.168.1.100
+logging trap informational
+logging source-interface Loopback0
+
+Let op:
+
+logging host 192.168.1.100 = Syslog-server is geconfigureerd
+logging trap informational = Logs worden naar de server gestuurd met level informational (6)
+logging buffered informational = Logs worden lokaal opgeslagen met level informational
+logging source-interface Loopback0 = Logs worden verzonden met een consistent bron-IP
+
+
+
+Op de syslog-server:
+cisco
+
+Syslog Server 192.168.1.100
+Log Files:
+  R1.log - 1024 entries
+  R2.log - 876 entries
+  SW1.log - 543 entries
+  SW2.log - 489 entries
+  Core-SW.log - 1234 entries
+
+Let op: Alle apparaten sturen hun logs naar de centrale syslog-server.
+
+
+
+
+Advies
+
+Syslog is een protocol voor het loggen van gebeurtenissen op netwerkapparaten. 
+Het is goed dat Syslog is geconfigureerd op alle routers en switches en dat alle events worden verzameld op de centrale syslog-server.
+
+Waarom is dit belangrijk?
+- Volledig overzicht: Alle gebeurtenissen van alle apparaten zijn beschikbaar op één centrale plek (192.168.1.100).
+- Beveiligingsmonitoring: Beveiligingsincidenten kunnen worden gedetecteerd. 
+Bijvoorbeeld: %SEC-6-IPACCESSLOGP logs in R1 tonen dat een verbinding uit VLAN 30 (Gasten, 192.168.30.0/24) naar VLAN 10 (Productie, 192.168.10.0/24) is geblokkeerd.
+- Probleemoplossing: DHCP-problemen worden gelogd (%DHCP-4-NO_ADDRESS), zodat de beheerder kan zien wanneer de DHCP-pool bijna vol is.
+- Audit en compliance: Logs zijn nodig voor ISO 27001, AVG, PCI-DSS. Alle logs worden bewaard op de syslog-server.
+
+In dit netwerk:
+- Alle apparaten sturen logs naar 192.168.1.100 (de syslog-server).
+- Het logging level is informational (level 6), 
+wat betekent dat alle belangrijke gebeurtenissen worden verzameld: fouten, waarschuwingen, informatieve berichten, configuratiewijzigingen, etc.
+- logging source-interface is geconfigureerd, zodat alle logs van een apparaat een consistent bron-IP hebben.
+- De syslog-server heeft logs ontvangen van alle 5 apparaten (R1, R2, SW1, SW2, Core-SW).
+
+Dit betekent dat de netwerkbeheerder:
+- Alle gebeurtenissen kan bekijken op de syslog-server
+- Proactief problemen kan detecteren voordat gebruikers klagen
+- Beveiligingsincidenten kan onderzoeken met behulp van de logs
+- Voldoet aan compliance-eisen (logs worden bewaard)
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Syslog is correct geconfigureerd met alle events die worden verzameld op de centrale server.
+
+
+
+
+Impact
+
+Geen impact. Alle logs worden gecentraliseerd opgeslagen, wat het beheer en de beveiliging verbetert.
+
+
+
+
+Samenvatting
+
+Syslog is correct geconfigureerd op alle routers en switches. 
+Alle apparaten sturen hun logs naar de centrale syslog-server op 192.168.1.100 met logging level informational (6). 
+Hierdoor worden alle belangrijke gebeurtenissen 
+(inclusief fouten, waarschuwingen, configuratiewijzigingen en beveiligingsgebeurtenissen) op één centrale plek verzameld. 
+De netwerkbeheerder heeft volledig inzicht in wat er in het netwerk gebeurt en kan voldoen aan compliance-eisen.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als Syslog NIET is geconfigureerd of events NIET worden verzameld
+
+In show logging (geen syslog-server):
+cisco
+
+Router# show logging
+Syslog logging: enabled (0 messages dropped, 0 flushes, 0 overruns)
+    Console logging: level debugging, 45 messages logged
+    Monitor logging: level debugging, 0 messages logged
+    Buffer logging: level debugging, 128 messages logged
+    Trap logging: disabled
+
+Let op:
+
+Trap logging: disabled = Er worden geen logs naar een externe server gestuurd
+Geen Logging to [IP] regel
+
+
+
+In show running-config | include logging host:
+cisco
+
+Router# show running-config | include logging host
+(geen output - niets te zien)
+
+Let op: Er is geen syslog-server geconfigureerd.
+
+
+
+In show logging (logging level te laag):
+cisco
+
+Router# show logging
+Syslog logging: enabled
+    Trap logging: level warnings, 10 message lines logged
+    Logging to 192.168.1.100 (udp port 514), 10 message lines logged
+
+Let op: level warnings (4) betekent dat alleen ernstige gebeurtenissen worden gestuurd. Informatieve berichten (level 6) worden niet verzameld.
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat Syslog niet correct is geconfigureerd op meerdere apparaten of dat niet alle events worden verzameld.
+
+R1:
+- show logging: Trap logging: disabled (geen syslog-server)
+- Geen logging host in de configuratie
+- Logs worden alleen lokaal opgeslagen (buffer)
+
+SW1:
+- show logging: Trap logging: disabled
+- Geen logging host in de configuratie
+
+Core-SW:
+- show logging: Trap logging: disabled
+- Geen logging host in de configuratie
+
+R2 en SW2:
+- Hebben wel een syslog-server geconfigureerd (192.168.1.100)
+- Maar logging level is warnings (4) in plaats van informational (6)
+
+Er zijn 3 apparaten zonder syslog-server (R1, SW1, Core-SW) en 2 apparaten met een te laag logging level (R2, SW2).
+
+
+
+
+Advies
+
+Syslog is een protocol voor het loggen van gebeurtenissen op netwerkapparaten. Het is niet goed dat Syslog niet correct is geconfigureerd op meerdere apparaten.
+
+Waarom is dit een probleem?
+- Geen centraal overzicht: Logs van R1, SW1 en Core-SW worden alleen lokaal opgeslagen. 
+Een beheerder moet elk apparaat afzonderlijk controleren om problemen te vinden.
+- Geen beveiligingsmonitoring: Beveiligingsincidenten op R1, SW1 en Core-SW worden niet gecentraliseerd gelogd. Een aanval kan onopgemerkt blijven.
+- Compliance-risico: AVG, ISO 27001 en PCI-DSS vereisen dat logs worden bewaard. Zonder centrale syslog-server is dit niet mogelijk.
+- Ontbrekende informatieve berichten: R2 en SW2 sturen alleen waarschuwingen (level 4) en hoger. 
+Informatieve berichten (level 6) zoals configuratiewijzigingen (%SYS-5-CONFIG_I) worden niet verzameld.
+
+In dit netwerk:
+- R1 (192.168.1.1): De hoofdrouter voor VLAN 10, 20 en 30. Logs van deze router zijn kritiek voor beveiliging (ACL-blokkades, inlogpogingen).
+- Core-SW (192.168.1.5): De centrale switch. Logs van deze switch zijn essentieel voor STP en VLAN-wijzigingen.
+- SW1 (192.168.1.10): De switch voor VLAN 10 en 20. Logs van deze switch zijn nodig voor port security en VLAN-toewijzing.
+
+Specifiek risico:
+- Een aanvaller in VLAN 30 (Gasten) probeert toegang te krijgen tot VLAN 10 (Productie). R1 blokkeert dit met een ACL en logt %SEC-6-IPACCESSLOGP. 
+Omdat R1 geen syslog-server heeft, wordt dit incident niet centraal gelogd. De netwerkbeheerder ziet het niet en de aanval blijft onopgemerkt.
+- Een beheerder wijzigt de configuratie op SW1 (%SYS-5-CONFIG_I). 
+Dit wordt alleen lokaal gelogd en niet op de centrale server. Bij een incident kan niet worden herleid wie de wijziging heeft aangebracht.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+1. Syslog-server ontbreekt op 3 apparaten:
+- R1: Geen logging host geconfigureerd
+- SW1: Geen logging host geconfigureerd
+- Core-SW: Geen logging host geconfigureerd
+
+2. Logging level te laag op 2 apparaten:
+- R2: logging trap warnings (level 4) in plaats van informational (level 6)
+- SW2: logging trap warnings (level 4) in plaats van informational (level 6)
+
+Hierdoor worden logs van de helft van de apparaten niet centraal verzameld en worden van de andere helft niet alle events verzameld.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het ontbreken van syslog-server op R1, SW1 en Core-SW:
+
+1. Geen zicht op beveiligingsincidenten:
+- R1 logt ACL-blokkades (%SEC-6-IPACCESSLOGP), maar deze worden niet naar de centrale server gestuurd.
+- Een aanvaller in VLAN 30 die probeert toegang te krijgen tot VLAN 10 wordt niet gedetecteerd door de netwerkbeheerder.
+
+2. Probleemoplossing is vertraagd:
+- Bij een netwerkstoring moet de beheerder elk apparaat afzonderlijk controleren op logs.
+- Dit kost tijd en vertraagt het herstel.
+
+3. Geen audit en compliance:
+- Logs van R1, SW1 en Core-SW worden niet centraal bewaard.
+- Dit voldoet niet aan AVG, ISO 27001 of PCI-DSS.
+- Kan leiden tot boetes en reputatieschade.
+
+Door het te lage logging level op R2 en SW2:
+
+4. Ontbrekende informatieve berichten:
+- R2 en SW2 sturen alleen waarschuwingen (level 4) en hoger.
+- Configuratiewijzigingen (%SYS-5-CONFIG_I) worden niet verzameld.
+- Beveiligingsgebeurtenissen (ACL-logs) worden niet verzameld.
+- Bij een incident kan niet worden herleid wie of wanneer wijzigingen zijn aangebracht.
+
+De impact is hoog omdat:
+- De helft van de apparaten stuurt geen logs naar de centrale server
+- Beveiligingsincidenten worden niet gedetecteerd
+- Compliance is in gevaar
+- Probleemoplossing is vertraagd
+
+
+
+
+Samenvatting
+
+Syslog is niet correct geconfigureerd.
+
+Afwijkingen:
+1. R1, SW1, Core-SW: Geen syslog-server geconfigureerd. Logs worden alleen lokaal opgeslagen.
+2. R2, SW2: Logging level is warnings (4) in plaats van informational (6). Informatieve berichten (configuratiewijzigingen, beveiligingslogs) worden niet verzameld.
+
+Gevolgen:
+- Beveiligingsincidenten op R1, SW1 en Core-SW worden niet gedetecteerd
+- Geen centraal overzicht van netwerkgebeurtenissen
+- Compliance (AVG, ISO 27001) is in gevaar
+- Probleemoplossing is vertraagd
+
+Advies:
+1. Configureer syslog-server op alle apparaten:
+- R1: logging host 192.168.1.100
+- SW1: logging host 192.168.1.100
+- Core-SW: logging host 192.168.1.100
+
+2. Stel logging level in op informational (6) op alle apparaten:
+- R2: logging trap informational
+- SW2: logging trap informational
+
+3. Configureer logging source-interface (aanbevolen):
+- logging source-interface Loopback0 (als loopback bestaat)
+- Of gebruik een stabiele interface (bijv. Vlan1 op switches)
+
+4. Controleer na configuratie:
+- Gebruik show logging om te controleren dat Trap logging: enabled is en logging host zichtbaar is
+- Gebruik show logging | include logging to om te controleren dat logs naar de server worden gestuurd
+- Controleer op de syslog-server of er logs binnenkomen van alle apparaten
+
+Na configuratie controleer je met show logging dat Trap logging: 
+enabled is en met show running-config | include logging dat alle apparaten de juiste configuratie hebben.
+
+
