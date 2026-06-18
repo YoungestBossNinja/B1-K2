@@ -1,0 +1,358 @@
+Omschrijving
+
+Een IOS-update is het upgraden van het besturingssysteem (IOS) van een Cisco-router of -switch naar een nieuwere versie. 
+Dit wordt gedaan om nieuwe features te krijgen, beveiligingslekken te dichten en stabiliteitsproblemen op te lossen.
+
+Simpel gezegd: Een IOS-update is als het upgraden van Windows op je computer naar een nieuwere versie. 
+Je krijgt nieuwe functies, de nieuwste beveiligingsupdates en je apparaat wordt stabieler en veiliger.
+
+
+Waarom is een IOS-update belangrijk?
+
+    Beveiliging: Nieuwe IOS-versies bevatten beveiligingspatches voor bekende kwetsbaarheden
+    Nieuwe features: Nieuwe versies ondersteunen nieuwe functies en technologieën
+    Stabiliteit: Bugfixes zorgen voor minder crashes en stabielere werking
+    Ondersteuning: Cisco biedt alleen technische ondersteuning voor bepaalde IOS-versies
+    Compatibiliteit: Nieuwe apparaten hebben vaak een nieuwere IOS-versie nodig
+
+Hoe werkt een IOS-update?
+
+    Download de nieuwe IOS-image van Cisco
+    Upload de image naar de flash van het apparaat via TFTP, FTP of SCP
+    Controleer of er voldoende flash-geheugen en RAM is voor de nieuwe IOS
+    Stel de boot-statement in om de nieuwe IOS te laden
+    Herstart het apparaat om de nieuwe IOS te laden
+    Controleer of de nieuwe IOS correct werkt
+
+
+
+
+Uitvoering
+
+! Bekijk de huidige IOS-versie
+Router# show version
+
+! Bekijk beschikbaar flash-geheugen
+Router# show flash
+
+! Bekijk de beschikbare IOS-images in flash
+Router# show flash | include bin
+
+! Bekijk de boot-configuratie
+Router# show running-config | include boot system
+
+! Bekijk beschikbaar RAM-geheugen
+Router# show version | include memory
+
+
+Wat je moet controleren voor de update:
+
+    Wat is de huidige IOS-versie? (show version)
+    Is er voldoende flash-geheugen? (show flash)
+    Is er voldoende RAM? (show version | include memory)
+    Welke IOS-image moet worden geladen? (nieuwste versie)
+    Is de boot-statement correct ingesteld? (boot system flash:[image])
+    Is er een back-up van de configuratie? (show running-config)
+
+
+
+
+
+Als de IOS-update is uitgevoerd
+
+Voor de update - Huidige IOS-versie:
+cisco
+
+Router# show version
+Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 12.4(15)T1, RELEASE SOFTWARE (fc1)
+...
+System image file is "flash:c880data-universalk9-mz.124-15.T1.bin"
+
+Let op: Huidige IOS is 12.4(15)T1 (oude versie)
+
+
+
+Na de update - Nieuwe IOS-versie:
+cisco
+
+Router# show version
+Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 15.0(1)M4, RELEASE SOFTWARE (fc1)
+...
+System image file is "flash:c880data-universalk9-mz.150-1.M4.bin"
+
+Let op: Nieuwe IOS is 15.0(1)M4 (nieuwere versie)
+
+
+
+In show flash (nieuwe image aanwezig):
+cisco
+
+Router# show flash
+-#- --length-- -----date/time------ path
+1   5898240    Jun 17 2026 10:23:45 c880data-universalk9-mz.124-15.T1.bin
+2   7208960    Jun 17 2026 10:30:00 c880data-universalk9-mz.150-1.M4.bin
+
+Let op: De nieuwe IOS-image is aanwezig in de flash naast de oude.
+
+
+
+In show running-config | include boot system:
+cisco
+
+Router# show running-config | include boot system
+boot system flash:c880data-universalk9-mz.150-1.M4.bin
+
+    Let op: De boot-statement verwijst naar de nieuwe IOS-image.
+
+
+
+Advies
+
+Een IOS-update is het upgraden van het besturingssysteem van een Cisco-apparaat naar een nieuwere versie. 
+Het is goed dat de IOS-update is uitgevoerd op alle routers en switches.
+
+Waarom is dit belangrijk?
+- Beveiliging: Nieuwe IOS-versies bevatten beveiligingspatches voor bekende kwetsbaarheden. 
+De oude versie (12.4) had bijvoorbeeld kwetsbaarheden die in 15.0 zijn opgelost.
+- Nieuwe features: 15.0 ondersteunt meer features dan 12.4, zoals betere IPv6-ondersteuning en verbeterde beveiliging.
+- Stabiliteit: Bugfixes zorgen voor stabielere werking en minder crashes.
+- Ondersteuning: Cisco biedt geen ondersteuning meer voor 12.4. De update naar 15.0 zorgt dat het apparaat weer wordt ondersteund.
+
+In dit netwerk:
+- R1 en R2 zijn bijgewerkt van 12.4(15)T1 naar 15.0(1)M4.
+- De nieuwe IOS-image is succesvol naar de flash gekopieerd (c880data-universalk9-mz.150-1.M4.bin).
+- De boot-statement is ingesteld op de nieuwe IOS, zodat het apparaat bij een herstart de nieuwe IOS laadt.
+- Er is voldoende flash-geheugen en RAM voor de nieuwe IOS.
+- Na de update is het apparaat opnieuw opgestart en draait nu de nieuwe IOS.
+
+Dit betekent dat de routers en switches:
+- Veiliger zijn (beveiligingspatches toegepast)
+- Meer features ondersteunen
+- Stabieler draaien
+- Weer ondersteund worden door Cisco
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. De IOS-update is correct uitgevoerd op alle apparaten.
+
+
+
+Impact
+
+Geen impact. Alle apparaten draaien de nieuwste, veiligste IOS-versie
+
+
+
+Samenvatting
+
+De IOS-update is correct uitgevoerd op alle apparaten. R1 en R2 zijn bijgewerkt van 12.4(15)T1 naar 15.0(1)M4. 
+Core-SW is bijgewerkt naar 15.0(2)SE9. 
+De nieuwe IOS-images zijn aanwezig in de flash en de boot-statement is correct ingesteld. 
+Het netwerk draait nu op de nieuwste, veiligste IOS-versies.
+
+
+
+
+
+
+
+
+
+
+
+
+Als de IOS-update NIET is uitgevoerd
+In show version (oude IOS):
+cisco
+
+Router# show version
+Cisco IOS Software, C880 Software (C880DATA-UNIVERSALK9-M), Version 12.4(15)T1, RELEASE SOFTWARE (fc1)
+...
+System image file is "flash:c880data-universalk9-mz.124-15.T1.bin"
+
+Let op: Nog steeds de oude IOS-versie (12.4(15)T1)
+
+
+
+In show flash (nieuwe image niet aanwezig):
+cisco
+
+Router# show flash
+-#- --length-- -----date/time------ path
+1   5898240    Jun 17 2026 10:23:45 c880data-universalk9-mz.124-15.T1.bin
+
+Let op: Alleen de oude IOS-image is aanwezig, de nieuwe ontbreekt.
+
+
+
+In show running-config | include boot system:
+cisco
+
+Router# show running-config | include boot system
+(geen output - niets te zien)
+
+Let op: Geen boot-statement ingesteld (apparaat laadt standaard de eerste IOS in flash).
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat de IOS-update niet is uitgevoerd op meerdere apparaten.
+
+R1:
+- Huidige IOS: 12.4(15)T1 (oud)
+- Flash: flash:c880data-universalk9-mz.124-15.T1.bin (alleen oude IOS)
+- Nieuwe IOS: 15.0(1)M4 niet aanwezig in flash
+- Boot-statement: Geen (laadt standaard oude IOS)
+
+SW1:
+- Huidige IOS: 12.2(52)SE (oud)
+- Flash: flash:c2960-lanbase-mz.122-52.SE.bin
+- Nieuwe IOS: 15.0(2)SE9 niet aanwezig
+
+Core-SW:
+- Huidige IOS: 15.0(1)SE (oud)
+- Nieuwe IOS: 15.0(2)SE9 niet aanwezig
+
+R2 en SW2:
+- Hebben wel de update uitgevoerd
+
+Er zijn 3 apparaten (R1, SW1, Core-SW) die de IOS-update niet hebben uitgevoerd. Deze apparaten draaien nog een verouderde IOS-versie.
+
+
+
+
+
+Advies
+
+Een IOS-update is het upgraden van het besturingssysteem van een Cisco-apparaat naar een nieuwere versie. 
+Het is niet goed dat de IOS-update niet is uitgevoerd op meerdere apparaten.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: Oude IOS-versies bevatten bekende kwetsbaarheden die in nieuwere versies zijn opgelost. 
+R1 draait 12.4(15)T1, wat jaren oud is en meerdere bekende kwetsbaarheden heeft.
+- Stabiliteitsproblemen: Oude IOS-versies kunnen crashen of bugs bevatten die in nieuwere versies zijn opgelost.
+- Geen ondersteuning: Cisco biedt geen technische ondersteuning meer voor 12.4.
+- Geen nieuwe features: Oude IOS-versies ondersteunen geen nieuwe features (bijv. verbeterde IPv6, beveiligingsfeatures).
+
+In dit netwerk:
+- R1 (192.168.1.1): Draait 12.4(15)T1 (oude versie). Dit is de hoofdrouter voor VLAN 10, 20 en 30.
+- SW1 (192.168.1.10): Draait 12.2(52)SE (oude versie). Dit is de switch voor VLAN 10 en 20.
+- Core-SW (192.168.1.5): Draait 15.0(1)SE (oud). Dit is de centrale switch.
+
+Specifiek risico:
+- R1 heeft een bekende kwetsbaarheid in IOS 12.4(15)T1 (bijv. CVE-2016-1287) waardoor een aanvaller 
+een denial-of-service-aanval kan uitvoeren of zelfs de router kan overnemen.
+- SW1 heeft kwetsbaarheden in 12.2(52)SE waardoor een aanvaller VLAN-hopping kan uitvoeren.
+- Core-SW heeft kwetsbaarheden in 15.0(1)SE die in 15.0(2)SE9 zijn opgelost.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+De IOS-update is niet uitgevoerd op meerdere apparaten:
+
+R1 (192.168.1.1):
+- Huidige IOS: 12.4(15)T1 (verouderd)
+- Nieuwe IOS 15.0(1)M4 niet aanwezig in flash
+
+SW1 (192.168.1.10):
+- Huidige IOS: 12.2(52)SE (verouderd)
+- Nieuwe IOS 15.0(2)SE9 niet aanwezig in flash
+
+Core-SW (192.168.1.5):
+- Huidige IOS: 15.0(1)SE (verouderd)
+- Nieuwe IOS 15.0(2)SE9 niet aanwezig in flash
+
+Deze apparaten draaien nog een verouderde IOS-versie en missen daardoor beveiligingspatches, bugfixes en nieuwe features.
+
+
+
+
+Impact
+
+Impact: Zeer Hoog
+
+Door het ontbreken van de IOS-update op R1, SW1 en Core-SW:
+
+1. Beveiligingsrisico op R1 (hoofdrouter):
+- R1 draait 12.4(15)T1, een zeer oude IOS-versie met bekende kwetsbaarheden
+- Een aanvaller kan een van deze kwetsbaarheden gebruiken om:
+- Denial-of-service-aanval uitvoeren (router crasht, heel netwerk valt uit)
+- Router overnemen en volledige controle krijgen
+- ACL's uitschakelen en toegang krijgen tot VLAN 10 (Productie) en VLAN 20 (HR)
+
+2. Beveiligingsrisico op SW1:
+- SW1 draait 12.2(52)SE (oud)
+- Kwetsbaarheden in deze versie kunnen leiden tot:
+- VLAN-hopping (aanvaller krijgt toegang tot andere VLAN's)
+- MAC-flooding (switch raakt overbelast en valt uit)
+
+3. Beveiligingsrisico op Core-SW:
+- Core-SW draait 15.0(1)SE (ouder dan 15.0(2)SE9)
+- Kwetsbaarheden in deze versie kunnen leiden tot STP-manipulatie of netwerkuitval
+
+4. Geen ondersteuning:
+- 12.4 en 12.2 worden niet meer ondersteund door Cisco
+- Bij een bug of crash is er geen technische ondersteuning beschikbaar
+
+5. Nieuwe features niet beschikbaar:
+- Nieuwe beveiligingsfeatures (bijv. verbeterde SSH, IP Source Guard) zijn niet beschikbaar op de oude IOS
+
+De impact is zeer hoog omdat:
+- R1, SW1 en Core-SW zijn kritieke apparaten
+- Oude IOS-versies hebben bekende kwetsbaarheden
+- Een aanvaller kan deze kwetsbaarheden eenvoudig misbruiken
+- Het hele netwerk kan worden gecompromitteerd
+
+
+
+
+
+Samenvatting
+
+De IOS-update is niet uitgevoerd op meerdere kritieke apparaten: R1 (192.168.1.1), SW1 (192.168.1.10) en Core-SW (192.168.1.5). 
+Deze apparaten draaien nog verouderde IOS-versies (12.4, 12.2, 15.0(1)SE) in plaats van de nieuwste versies.
+
+Gevolgen:
+- Bekende kwetsbaarheden zijn aanwezig (beveiligingsrisico)
+- Geen ondersteuning van Cisco
+- Nieuwe features niet beschikbaar
+- Hoger risico op crashes en instabiliteit
+
+Advies:
+1. Download de nieuwe IOS-images:
+- R1: c880data-universalk9-mz.150-1.M4.bin (van Cisco website)
+- SW1: c2960-lanbase-mz.150-2.SE9.bin (van Cisco website)
+- Core-SW: c3560-ipservicesk9-mz.150-2.SE9.bin (van Cisco website)
+
+2. Upload de nieuwe IOS naar de flash:
+- Gebruik TFTP of FTP: copy tftp: flash:
+- Voorbeeld: copy tftp://192.168.1.100/c880data-universalk9-mz.150-1.M4.bin flash:
+
+3. Controleer voldoende flash-geheugen:
+- show flash om te controleren of er voldoende ruimte is
+- Verwijder eventueel de oude IOS om ruimte te maken
+
+4. Stel de boot-statement in:
+- boot system flash:[nieuwe-image.bin]
+- Controleer met show running-config | include boot system
+
+5. Herstart het apparaat:
+- reload (plan dit tijdens een onderhoudsvenster)
+
+6. Controleer na de update:
+- show version om te controleren dat de nieuwe IOS is geladen
+- show flash om te controleren dat de nieuwe IOS aanwezig is
+- Test of alle functionaliteiten nog werken (ACL's, routing, VLAN's)
+
+Herhaal dit voor R1, SW1 en Core-SW.
+
+
