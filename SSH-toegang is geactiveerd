@@ -1,0 +1,423 @@
+Omschrijving
+
+SSH (Secure Shell) is een versleuteld protocol waarmee een netwerkbeheerder veilig verbinding kan maken met een router of switch voor beheerdoeleinden.
+
+Simpel gezegd: SSH is de beveiligde vervanger van Telnet. 
+Waar Telnet alle communicatie als leesbare tekst verstuurt (inclusief wachtwoorden), versleutelt SSH alle gegevens, 
+zodat een aanvaller die het verkeer onderschept er niets mee kan.
+
+Waarom is SSH belangrijk?
+
+Versleutelde communicatie: Alle gegevens (incl. wachtwoorden) worden versleuteld verzonden
+Authenticatie: Gebruikers worden geïdentificeerd met wachtwoord of certificaten
+Integriteit: Gegevens kunnen niet worden gewijzigd tijdens transport
+Vervanging voor Telnet: Telnet is onveilig en mag niet meer worden gebruikt
+
+Vereisten voor SSH op een Cisco-apparaat:
+
+    Een hostname (hostname R1)
+    Een domain name (ip domain-name example.com)
+    Een RSA-sleutel genereren (crypto key generate rsa)
+
+    SSH inschakelen (ip ssh version 2)
+
+    AAA-authenticatie of line vty configuratie met transport input ssh
+
+    Een gebruikersaccount (username admin secret cisco)
+
+    Enable secret of local authentication voor toegang
+
+
+
+
+
+
+uivoering
+
+! Bekijk de SSH-configuratie
+Router# show running-config | include ssh
+Router# show running-config | section line vty
+
+! Bekijk de SSH-server status
+Router# show ip ssh
+
+! Bekijk of er SSH-sessies actief zijn
+Router# show ssh
+
+! Bekijk de versie van SSH
+Router# show ip ssh | include version
+
+! Bekijk de RSA-sleutels
+Router# show crypto key mypubkey rsa
+
+
+Wat je moet controleren:
+
+    Is SSH geconfigureerd? (hostname, domain-name, RSA-sleutel)
+    Is SSH versie 2 gebruikt? (niet versie 1)
+    Zijn de VTY-lijnen correct geconfigureerd? (transport input ssh)
+    Is Telnet uitgeschakeld? (alleen ssh en geen telnet)
+    Is er een gebruikersaccount? (username commando)
+    Zijn er actieve SSH-sessies? (via show ssh)
+
+
+
+
+Als SSH WEL is geactiveerd
+
+In show running-config | include ssh:
+cisco
+
+Router# show running-config | include ssh
+ip ssh version 2
+ip ssh authentication-retries 3
+ip ssh time-out 60
+
+Let op:
+
+ip ssh version 2 = SSH versie 2 is ingeschakeld (veilig)
+ip ssh authentication-retries 3 = maximaal 3 inlogpogingen
+ip ssh time-out 60 = sessie time-out na 60 seconden
+
+
+
+In show running-config | section line vty:
+cisco
+
+Router# show running-config | section line vty
+line vty 0 4
+ transport input ssh
+ login local
+ exec-timeout 5 0
+
+Let op:
+
+transport input ssh = Alleen SSH-toegang is toegestaan (Telnet is uitgeschakeld)
+login local = Gebruikt lokale gebruikersaccount voor authenticatie
+exec-timeout 5 0 = Sessie time-out na 5 minuten
+
+
+
+In show ip ssh:
+cisco
+
+Router# show ip ssh
+SSH Enabled - version 2.0
+Authentication timeout: 60 secs; Authentication retries: 3
+Minimum expected Diffie Hellman key size : 1024 bits
+IOS Keys in SECSH format(ssh-rsa, base64 encoded): ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA...
+
+Let op:
+
+SSH Enabled - version 2.0 = SSH is ingeschakeld met versie 2
+De RSA-sleutel is gegenereerd en aanwezig
+
+
+
+In show crypto key mypubkey rsa:
+cisco
+
+Router# show crypto key mypubkey rsa
+% Key pair was generated at: 10:23:45 CET Jun 17 2026
+Key name: R1.example.com
+ Usage: General Purpose Key
+ Key Data:
+  30819F30 0D06092A 864886F7 0D010101 05000381 8D003081 89028181 00B9D5...
+
+Let op: De RSA-sleutel is gegenereerd en aanwezig (verplicht voor SSH).
+
+
+
+In show ssh (actieve sessies):
+cisco
+
+Router# show ssh
+Connection Version Mode Encryption  Username
+0          2.0     IN   aes256-cbc  admin
+
+Let op: Er is een actieve SSH-sessie van gebruiker admin.
+
+
+
+Advies
+
+SSH (Secure Shell) is een versleuteld protocol voor veilig netwerkbeheer. Het is goed dat SSH is geactiveerd op alle routers en switches.
+
+Waarom is dit belangrijk?
+- Versleuteling: Alle communicatie (inclusief wachtwoorden) is versleuteld en kan niet worden onderschept
+- Veilige vervanger voor Telnet: Telnet stuurt alles in leesbare tekst (onveilig)
+- Authenticatie: Gebruikers moeten zich identificeren met een wachtwoord
+- Integriteit: Gegevens kunnen niet worden gewijzigd tijdens transport
+
+In dit netwerk:
+- Alle apparaten gebruiken SSH versie 2 (de veilige versie, versie 1 heeft bekende kwetsbaarheden)
+- Telnet is uitgeschakeld (transport input ssh), dus een aanvaller kan geen onveilige Telnet-verbinding gebruiken
+- RSA-sleutels zijn gegenereerd op alle apparaten (vereist voor SSH)
+- Time-outs en retries zijn ingesteld (60 seconden, 3 pogingen) om brute-force aanvallen te voorkomen
+- Er is een gebruikersaccount geconfigureerd voor authenticatie (admin)
+
+Een beheerder kan veilig verbinding maken met R1 (192.168.1.1) via SSH en de configuratie beheren zonder dat een aanvaller het verkeer kan onderscheppen. 
+Zelfs als een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) het netwerkverkeer onderschept, kan hij het SSH-verkeer niet lezen omdat het versleuteld is.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. SSH is correct geactiveerd op alle apparaten.
+
+
+
+Impact
+
+Geen impact. SSH biedt veilige beheerderstoegang tot alle apparaten.
+
+
+
+Samenvatting
+
+SSH-toegang is correct geactiveerd op alle routers en switches. 
+Alle apparaten gebruiken SSH versie 2, hebben RSA-sleutels gegenereerd en hebben Telnet uitgeschakeld. 
+Time-outs en retries zijn ingesteld voor extra beveiliging. 
+Een beheerder kan veilig verbinding maken met alle apparaten via SSH zonder dat verkeer kan worden onderschept.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als SSH NIET is geactiveerd 
+
+
+In show running-config | include ssh:
+cisco
+
+Router# show running-config | include ssh
+(geen output - niets te zien)
+
+Let op: Er zijn geen SSH-commando's in de configuratie.
+
+
+
+In show running-config | section line vty:
+cisco
+
+Router# show running-config | section line vty
+line vty 0 4
+ transport input telnet
+ password cisco
+ login
+
+Let op:
+
+transport input telnet = Alleen Telnet is ingeschakeld (onveilig)
+Geen SSH-commando's op de VTY-lijnen
+
+
+
+In show ip ssh:
+cisco
+
+Router# show ip ssh
+%SSH is not enabled.
+
+Let op: %SSH is not enabled. betekent dat SSH niet is ingeschakeld.
+
+
+
+In show crypto key mypubkey rsa:
+cisco
+
+Router# show crypto key mypubkey rsa
+% No RSA keys found.
+
+Let op: Er zijn geen RSA-sleutels gegenereerd (verplicht voor SSH).
+
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat SSH niet is geactiveerd op meerdere routers en switches.
+
+R1:
+- show ip ssh: %SSH is not enabled.
+- Geen RSA-sleutels aanwezig
+- transport input telnet op VTY-lijnen
+- Geen gebruikersaccounts
+
+SW1:
+- show ip ssh: %SSH is not enabled.
+- Geen RSA-sleutels aanwezig
+- transport input telnet op VTY-lijnen
+
+Core-SW:
+- show ip ssh: %SSH is not enabled.
+- Geen RSA-sleutels aanwezig
+- transport input telnet op VTY-lijnen
+
+R2 en SW2:
+- Hebben wel SSH correct geconfigureerd
+
+Er zijn 3 apparaten (R1, SW1, Core-SW) zonder SSH. Deze apparaten gebruiken Telnet voor beheer, wat onveilig is.
+
+
+
+
+Advies
+
+SSH (Secure Shell) is een versleuteld protocol voor veilig netwerkbeheer. Het is niet goed dat SSH niet is geactiveerd op meerdere routers en switches.
+
+Waarom is dit een probleem?
+- Geen versleuteling: Alle communicatie (inclusief wachtwoorden) wordt in leesbare tekst verzonden
+- Telnet is onveilig: Een aanvaller die het verkeer onderschept, kan het wachtwoord lezen
+- Man-in-the-middle: Een aanvaller kan het verkeer wijzigen tijdens transport
+- Geen authenticatie: Telnet biedt geen sterke authenticatie
+
+In dit netwerk:
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan het netwerkverkeer onderscheppen
+- De beheerder maakt verbinding met R1 (192.168.1.1) via Telnet
+- Het wachtwoord wordt in leesbare tekst verzonden
+- De aanvaller kan het wachtwoord onderscheppen en gebruiken om zelf toegang te krijgen
+- De aanvaller kan dan de configuratie wijzigen, ACL's verwijderen of het netwerk platleggen
+
+Specifiek risico:
+- R1 is de hoofdrouter die verkeer tussen VLAN 10 (Productie), VLAN 20 (HR) en VLAN 30 (Gasten) routeert.
+- SW1 is een belangrijke switch voor VLAN 10 en 20.
+- Core-SW is de centrale switch die alle switches verbindt.
+- Als een aanvaller het Telnet-wachtwoord van een van deze apparaten onderschept, kan hij het hele netwerk compromitteren.
+
+Dit is een ernstig beveiligingsrisico omdat Telnet al decennia bekend staat als onveilig.
+
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+SSH is niet geactiveerd op meerdere apparaten:
+
+R1 (192.168.1.1):
+- %SSH is not enabled.
+- Gebruikt Telnet voor beheer (onveilig)
+- Geen RSA-sleutels
+
+SW1 (192.168.1.10):
+- %SSH is not enabled.
+- Gebruikt Telnet voor beheer (onveilig)
+- Geen RSA-sleutels
+
+Core-SW (192.168.1.5):
+- %SSH is not enabled.
+- Gebruikt Telnet voor beheer (onveilig)
+- Geen RSA-sleutels
+
+R2 en SW2 hebben wel SSH correct geconfigureerd.
+
+Dit is een afwijking omdat de best practice voorschrijft dat SSH moet worden gebruikt voor netwerkbeheer en Telnet moet worden uitgeschakeld.
+
+
+
+
+
+Impact
+
+Impact: Zeer Hoog
+
+Door het ontbreken van SSH op R1, SW1 en Core-SW:
+
+1. Wachtwoorden worden onderschept:
+- Een beheerder maakt verbinding met R1 via Telnet
+- Alle gegevens, inclusief het privilege password, worden in leesbare tekst verzonden
+- Een aanvaller in VLAN 30 (Gasten) kan het verkeer onderscheppen met een packet sniffer (bijv. Wireshark)
+- De aanvaller ziet het wachtwoord in leesbare tekst
+
+2. Volledige overname van R1 (192.168.1.1):
+- De aanvaller gebruikt het gestolen wachtwoord om zelf verbinding te maken met R1 via Telnet
+- De aanvaller krijgt volledige controle over R1
+- De aanvaller kan:
+- ACL's verwijderen die verkeer tussen VLAN's blokkeren
+- Routes aanpassen om al het verkeer via een eigen server te leiden
+- Wachtwoorden wijzigen zodat de echte beheerder geen toegang meer heeft
+- Interfaces uitschakelen waardoor het hele netwerk uitvalt
+- Configuratie opslaan zodat wijzigingen blijven bestaan
+
+3. Overname van SW1 en Core-SW:
+- SW1 is de switch die verbinding maakt met de gebruikers in VLAN 10 en VLAN 20
+- Core-SW is de centrale switch die alle switches verbindt
+- Een aanvaller kan hetzelfde doen met SW1 en Core-SW en deze apparaten overnemen
+
+4. Volledig netwerk wordt gecompromitteerd:
+- Met toegang tot R1, SW1 en Core-SW heeft de aanvaller volledige controle over het hele netwerk
+- De aanvaller kan:
+- Gevoelige gegevens stelen (productiegegevens, HR-gegevens)
+- Malware verspreiden
+- Het netwerk platleggen (shutdown van interfaces)
+- Ransomware installeren op servers
+- Zichzelf onzichtbaar maken in de configuratie
+
+5. Geen herleidbaarheid:
+- De beheerder heeft via Telnet ingelogd zonder versleuteling
+- Het is onmogelijk om te herleiden of de aanvaller of de beheerder de wijzigingen heeft aangebracht
+
+De impact is zeer hoog omdat:
+- Een aanvaller kan het Telnet-wachtwoord eenvoudig onderscheppen
+- De aanvaller kan de volledige controle krijgen over R1, SW1 en Core-SW
+- Het hele netwerk kan worden gecompromitteerd
+- Gevoelige gegevens kunnen worden gestolen
+- Wijzigingen zijn niet te herleiden
+
+
+
+
+
+Samenvatting
+
+SSH is niet geactiveerd op meerdere kritieke apparaten: R1 (192.168.1.1), SW1 (192.168.1.10) en Core-SW (192.168.1.5). 
+Deze apparaten gebruiken Telnet voor beheer, wat onveilig is omdat alle gegevens (inclusief wachtwoorden) in leesbare tekst worden verzonden.
+
+Gevolgen:
+- Een aanvaller in VLAN 30 kan het Telnet-verkeer onderscheppen en het wachtwoord stelen
+- De aanvaller kan R1, SW1 en Core-SW volledig overnemen
+- Het hele netwerk kan worden gecompromitteerd
+- Gevoelige gegevens kunnen worden gestolen
+- Wijzigingen zijn niet te herleiden
+
+Advies:
+1. Schakel SSH in op alle apparaten zonder SSH:
+- Stap 1: Stel hostname in: hostname R1
+- Stap 2: Stel domain-name in: ip domain-name example.com
+- Stap 3: Genereer RSA-sleutel: crypto key generate rsa modulus 2048
+- Stap 4: Schakel SSH versie 2 in: ip ssh version 2
+- Stap 5: Stel timeout en retries in: ip ssh time-out 60, ip ssh authentication-retries 3
+- Stap 6: Maak een gebruikersaccount: username admin secret cisco123!
+- Stap 7: Configureer VTY-lijnen: line vty 0 4, transport input ssh, login local, exec-timeout 5 0
+
+2. Schakel Telnet uit:
+- Gebruik transport input ssh in plaats van transport input telnet of transport input all
+
+3. Controleer na configuratie:
+- Gebruik show ip ssh om te controleren of SSH Enabled verschijnt
+- Gebruik show crypto key mypubkey rsa om te controleren of de RSA-sleutel aanwezig is
+- Test verbinding via SSH van een PC: ssh -l admin 192.168.1.1
+
+Herhaal deze stappen voor SW1 en Core-SW.
+
+
+
+
+
+
