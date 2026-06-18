@@ -1,0 +1,378 @@
+omschrijving
+
+De console is een fysieke poort op een router of switch waarmee een beheerder lokale toegang krijgt tot 
+het apparaat via een seriële verbinding (meestal via een rollover-kabel en een seriële-poort of USB-serieel adapter). Het console-wachtwoord is het wachtwoord dat nodig is om via de console verbinding te maken.
+
+Simpel gezegd: De console is de "nooddeur" van een router of switch. 
+Zelfs als het netwerk volledig is uitgevallen, kan een beheerder via de console verbinding maken om het apparaat te herstellen. 
+Het console-wachtwoord is de sleutel van die nooddeur. Zonder wachtwoord kan iedereen met fysieke toegang tot het apparaat de volledige controle krijgen.
+
+Waarom is het belangrijk om een console-wachtwoord in te stellen?
+
+Fysieke beveiliging: Zonder wachtwoord kan iedereen met fysieke toegang tot het apparaat de volledige controle krijgen
+Toegangscontrole: Alleen beheerders met het juiste wachtwoord kunnen via de console verbinding maken
+Hersteltoegang: De console is de laatste redmiddel bij netwerkstoringen, maar moet wel beveiligd zijn
+
+
+Hoe wordt een console-wachtwoord ingesteld?
+cisco
+
+line con 0
+ password [wachtwoord]
+ login
+
+of met login local (gebruikt lokale gebruikersaccount):
+cisco
+
+line con 0
+ login local
+
+
+
+
+uitvoering
+
+cisco
+
+! Bekijk de console-configuratie
+Router# show running-config | section line con 0
+
+! Bekijk de console-configuratie (alternatief)
+Router# show running-config | include line con 0|password|login|exec-timeout
+
+! Bekijk of er een gebruikersaccount is voor login local
+Router# show running-config | include username
+
+Wat je moet controleren:
+
+    Is er een wachtwoord ingesteld op de console? (password of login local)
+
+    Is login of login local aanwezig? (anders is er geen authenticatie)
+
+    Is het wachtwoord sterk genoeg? (lengte en complexiteit)
+
+    Is exec-timeout ingesteld? (voorkomt inactieve sessies)
+
+
+
+
+
+Als een console-wachtwoord WEL is geconfigureerd
+
+In show running-config | section line con 0:
+cisco
+
+Router# show running-config | section line con 0
+line con 0
+ password 7 0822455D0A16
+ login
+ exec-timeout 5 0
+ logging synchronous
+
+Let op:
+
+password 7 = Het wachtwoord is versleuteld (type 7) opgeslagen
+login = Het wachtwoord is vereist voor console-toegang
+exec-timeout 5 0 = Sessie wordt na 5 minuten inactiviteit beëindigd
+logging synchronous = Zorgt voor leesbare output
+
+
+
+In show running-config | section line con 0 (met login local):
+cisco
+
+Router# show running-config | section line con 0
+line con 0
+ login local
+ exec-timeout 5 0
+ logging synchronous
+
+Let op:
+
+login local = Gebruikt een lokaal gebruikersaccount voor authenticatie
+Er moet ook een username commando aanwezig zijn
+
+
+
+In show running-config | include username:
+cisco
+
+Router# show running-config | include username
+username admin secret 5 $1$mERr$9cTjUIEqNurqX/tCv/7e/
+
+Let op: Er is een gebruikersaccount admin met een versleuteld wachtwoord.
+
+
+
+Als je probeert in te loggen via console:
+cisco
+
+Router con0 is now available.
+
+Press RETURN to get started.
+
+User Access Verification
+Password: ********
+Router>
+
+Let op: Er wordt om een wachtwoord gevraagd.
+
+
+
+
+Advies
+
+De console-poort is de fysieke toegangspoort tot een router of switch. Het is goed dat een console-wachtwoord is geconfigureerd op alle apparaten.
+
+Waarom is dit belangrijk?
+- Fysieke beveiliging: Zonder wachtwoord kan iedereen met fysieke toegang tot het apparaat de volledige controle krijgen. 
+De console is vaak de enige manier om toegang te krijgen als het netwerk is uitgevallen.
+- Toegangscontrole: Alleen beheerders met het juiste wachtwoord kunnen via de console verbinding maken.
+- Hersteltoegang: De console is de laatste redmiddel bij netwerkstoringen, maar moet wel beveiligd zijn.
+
+In dit netwerk:
+- Alle apparaten hebben een console-wachtwoord:
+- R1, SW1, SW2: password met login (lokaal wachtwoord)
+- R2, Core-SW: login local met gebruikersaccount admin
+- De wachtwoorden zijn versleuteld opgeslagen (type 7) of met secret (MD5-hash).
+- exec-timeout is ingesteld op 5 minuten, wat betekent dat een inactieve sessie automatisch wordt beëindigd.
+- logging synchronous is ingeschakeld, wat zorgt voor leesbare output op de console.
+
+Dit voorkomt dat een onbevoegde persoon met fysieke toegang tot de serverruimte of een router direct toegang krijgt tot de privileged exec mode. 
+Zelfs als het netwerk volledig is uitgevallen, kan een beheerder alleen via de console verbinding maken met het juiste wachtwoord.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Een console-wachtwoord is correct geconfigureerd op alle apparaten.
+
+
+
+Impact
+
+Geen impact. Het console-wachtwoord beschermt de apparaten tegen ongeautoriseerde fysieke toegang.
+
+
+
+Samenvatting
+
+Een console-wachtwoord is correct geconfigureerd op alle routers en switches. 
+Alle apparaten gebruiken login of login local voor authenticatie op de console. 
+De wachtwoorden zijn versleuteld opgeslagen en exec-timeout is ingesteld op 5 minuten. 
+Het netwerk is beschermd tegen ongeautoriseerde fysieke toegang via de console.
+
+
+
+
+
+
+
+Als er GEEN console-wachtwoord is geconfigureerd
+
+In show running-config | section line con 0:
+cisco
+
+Router# show running-config | section line con 0
+line con 0
+ exec-timeout 5 0
+ logging synchronous
+
+Let op:
+
+Geen password commando
+Geen login commando
+Geen login local commando
+Geen authenticatie op de console!
+
+
+
+Als je probeert in te loggen via console:
+cisco
+
+Router con0 is now available.
+
+Press RETURN to get started.
+
+Router>
+
+Let op: Er wordt geen wachtwoord gevraagd! Je komt direct in de gebruikersmodus (Router>)
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat geen console-wachtwoord is geconfigureerd op meerdere apparaten.
+
+R1:
+- line con 0: geen password, geen login, geen login local
+- Geen authenticatie op de console!
+
+SW1:
+- line con 0: geen password, geen login, geen login local
+- Geen authenticatie op de console!
+
+Core-SW:
+- line con 0: geen password, geen login, geen login local
+- Geen authenticatie op de console!
+
+R2 en SW2:
+- Hebben wel een console-wachtwoord geconfigureerd
+
+Er zijn 3 apparaten (R1, SW1, Core-SW) zonder console-wachtwoord. Op deze apparaten kan iedereen met fysieke toegang de console gebruiken zonder wachtwoord.
+
+
+
+
+
+Advies
+
+De console-poort is de fysieke toegangspoort tot een router of switch. Het is niet goed dat geen console-wachtwoord is geconfigureerd op meerdere apparaten.
+
+Waarom is dit een probleem?
+- Geen fysieke beveiliging: Iedereen met fysieke toegang tot het apparaat (bijv. in de serverruimte) kan verbinding maken via de console zonder wachtwoord.
+- Volledige controle: De gebruiker kan direct de privileged exec mode betreden (enable) en de configuratie wijzigen, ACL's verwijderen, 
+routes aanpassen of het netwerk platleggen.
+- Geen authenticatie: Er is geen controle over wie toegang heeft tot het apparaat.
+- Geen audittrail: Het is niet mogelijk om te herleiden wie via de console wijzigingen heeft aangebracht.
+
+In dit netwerk:
+- R1 (192.168.1.1): De hoofdrouter voor VLAN 10, 20 en 30. Iedereen met fysieke toegang tot de router kan de console gebruiken zonder wachtwoord.
+- SW1 (192.168.1.10): De switch voor VLAN 10 en 20. Iedereen met fysieke toegang kan de console gebruiken zonder wachtwoord.
+- Core-SW (192.168.1.5): De centrale switch. Iedereen met fysieke toegang kan de console gebruiken zonder wachtwoord.
+
+Specifiek risico:
+- Een kwaadwillende medewerker of bezoeker heeft toegang tot de serverruimte.
+- De persoon sluit een laptop aan op de console-poort van R1.
+- Er wordt geen wachtwoord gevraagd.
+- De persoon typt enable en krijgt direct toegang tot de privileged exec mode (Router#).
+- De persoon kan:
+- ACL's verwijderen die verkeer tussen VLAN's blokkeren
+- Routes aanpassen om al het verkeer via een eigen server te leiden
+- Wachtwoorden wijzigen zodat de echte beheerder geen toegang meer heeft
+- Interfaces uitschakelen waardoor het hele netwerk uitvalt
+- Configuratie opslaan zodat wijzigingen blijven bestaan
+
+Dit is een ernstig beveiligingsrisico omdat de console de enige toegang is die altijd werkt, zelfs als het netwerk volledig is uitgevallen.
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Er is geen console-wachtwoord geconfigureerd op meerdere apparaten:
+
+R1 (192.168.1.1):
+- line con 0 heeft geen password, geen login, geen login local
+- Geen authenticatie op de console
+
+SW1 (192.168.1.10):
+- line con 0 heeft geen password, geen login, geen login local
+- Geen authenticatie op de console
+
+Core-SW (192.168.1.5):
+- line con 0 heeft geen password, geen login, geen login local
+- Geen authenticatie op de console
+
+R2 en SW2 hebben wel een console-wachtwoord.
+
+Dit is een afwijking omdat de best practice voorschrijft dat een console-wachtwoord op alle routers en switches moet worden ingesteld.
+
+
+
+
+Impact
+
+Impact: Zeer Hoog
+
+Door het ontbreken van een console-wachtwoord op R1, SW1 en Core-SW:
+
+1. Ongeautoriseerde fysieke toegang:
+- Iedereen met fysieke toegang tot de serverruimte (medewerkers, schoonmakers, bezoekers, hackers) kan verbinding maken met R1, SW1 of Core-SW via de console.
+- Er wordt geen wachtwoord gevraagd.
+- De persoon kan direct de privileged exec mode betreden (enable).
+
+2. Volledige overname van R1 (192.168.1.1):
+- De persoon kan verbinding maken met R1 via de console.
+- Typt enable en krijgt direct Router#.
+- De persoon kan:
+- ACL's verwijderen die verkeer tussen VLAN's blokkeren
+- Routes aanpassen om al het verkeer via een eigen server te leiden (man-in-the-middle)
+- Wachtwoorden wijzigen zodat de echte beheerder geen toegang meer heeft
+- Interfaces uitschakelen waardoor het hele netwerk uitvalt
+- Configuratie opslaan zodat wijzigingen blijven bestaan
+
+3. Overname van SW1 en Core-SW:
+- Hetzelfde kan worden gedaan met SW1 en Core-SW.
+- De persoon kan VLAN's wijzigen, port security uitschakelen, STP manipuleren.
+
+4. Geen herleidbaarheid:
+- Omdat er geen wachtwoordbeveiliging is op de console, is het onmogelijk om te herleiden wie via de console wijzigingen heeft aangebracht.
+- Bij een beveiligingsincident kan de oorzaak niet worden achterhaald.
+
+5. Geen hersteltoegang zonder wachtwoord:
+- De console is de enige toegang die altijd werkt, zelfs als het netwerk volledig is uitgevallen.
+- Als er geen wachtwoord is, is het gemakkelijk voor een aanvaller om het apparaat over te nemen.
+
+De impact is zeer hoog omdat:
+- Fysieke toegang tot de serverruimte niet altijd wordt gecontroleerd
+- Een aanvaller kan de volledige controle krijgen over R1, SW1 en Core-SW
+- Het hele netwerk kan worden gecompromitteerd
+- Wijzigingen zijn niet te herleiden
+- Dit is een bekende kwetsbaarheid in netwerkbeveiliging
+
+
+
+
+Samenvatting
+
+Er is geen console-wachtwoord geconfigureerd op meerdere kritieke apparaten: R1 (192.168.1.1), SW1 (192.168.1.10) en Core-SW (192.168.1.5). Op deze apparaten kan iedereen met fysieke toegang verbinding maken via de console zonder wachtwoord.
+
+Gevolgen:
+- Een onbevoegde persoon kan de apparaten volledig overnemen
+- ACL's kunnen worden verwijderd, routes aangepast, interfaces uitgeschakeld
+- Configuratie kan worden gewijzigd en opgeslagen
+- Wijzigingen zijn niet te herleiden
+- Ernstig beveiligingsrisico
+
+Advies:
+1. Configureer een console-wachtwoord op alle apparaten zonder wachtwoord:
+- R1:
+```cisco
+line con 0	
+password C1sc0!2026#Console	
+login	
+exec-timeout 5 0	
+logging synchronous	
+<br> - **SW1:** <br> cisco	
+line con 0	
+password C1sc0!2026#Console	
+login	
+exec-timeout 5 0	
+logging synchronous	
+<br> - **Core-SW:** <br> cisco	
+line con 0	
+password C1sc0!2026#Console	
+login	
+exec-timeout 5 0	
+logging synchronous	
+```
+
+2. Gebruik een sterk wachtwoord:
+- Minimaal 10 tekens
+- Mix van hoofdletters, kleine letters, cijfers en symbolen
+- Bijv. C1sc0!2026#Console
+
+3. Overweeg login local te gebruiken:
+- Dit gebruikt een lokaal gebruikersaccount voor authenticatie
+- username admin secret [sterk-wachtwoord]
+- line con 0 → login local
+
+4. Controleer na configuratie:
+- Gebruik `show running-config	section line con 0
+om te controleren dat password en login aanwezig zijn 
+<br> - Sluit een console-verbinding aan en controleer dat er om een wachtwoord wordt gevraagd <br>
+<br> Na configuratie controleer je met 
+show running-config	section line con 0
+dat password en login` aanwezig zijn. |
