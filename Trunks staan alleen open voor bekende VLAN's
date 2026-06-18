@@ -1,0 +1,370 @@
+omschrijving
+
+Een trunk is een verbinding tussen twee switches die meerdere VLAN's tegelijkertijd transporteert. 
+Standaard staan alle VLAN's op een trunk, maar dit kan een beveiligingsrisico zijn. Daarom is het een best practice om alleen de noodzakelijke VLAN's toe te staan op een trunk.
+
+    Simpel gezegd: Een trunk is als een brede snelweg waar meerdere VLAN's tegelijk over rijden. 
+"Trunks staan alleen open voor bekende VLAN's" betekent dat de snelweg alleen is open voor de VLAN's die dat ook echt nodig hebben 
+(bijv. VLAN 10, 20, 30) en niet voor alle mogelijke VLAN's (bijv. VLAN 999, dat niet bestaat). 
+Zo voorkom je dat een aanvaller via een trunk toegang krijgt tot onbekende VLAN's.
+
+Standaard gedrag:
+
+    Een trunk staat standaard alle VLAN's toe (1-4094)
+    VLAN 1 is standaard de native VLAN
+    Een onbekend VLAN op de trunk kan een beveiligingslek zijn
+
+Waarom moeten trunks alleen open staan voor bekende VLAN's?
+
+    Beveiliging: Voorkomt dat een aanvaller VLAN-hopping gebruikt om toegang te krijgen tot onbekende VLAN's
+    Netwerkbeheer: Maakt het duidelijk welke VLAN's daadwerkelijk worden gebruikt
+    Voorkomen van fouten: Voorkomt dat een VLAN per ongeluk over een trunk wordt getransporteerd
+    Performance: Minder VLAN's over de trunk betekent minder overhead
+
+
+
+
+
+
+uitvoering
+
+cisco
+
+! Bekijk de trunk-configuratie
+Switch# show interfaces trunk
+
+! Bekijk welke VLAN's zijn toegestaan op een trunk
+Switch# show interfaces trunk | include Vlans allowed on trunk
+
+! Bekijk de configuratie van een specifieke trunk
+Switch# show running-config interface gigabitEthernet 0/1
+
+! Bekijk alle trunks en hun toegestane VLAN's in detail
+Switch# show interfaces trunk
+
+Wat je moet controleren:
+
+    Welke poorten zijn trunks? (zie show interfaces trunk)
+    Welke VLAN's zijn toegestaan op de trunk? (zie Vlans allowed on trunk)
+    Zijn onbekende VLAN's uitgesloten? (niet "1-4094" maar een specifieke lijst)
+    Is de native VLAN gewijzigd van VLAN 1? (aanbevolen)
+    Zijn er VLAN's die niet nodig zijn? (bijv. alleen VLAN 10, 20, 30)
+
+
+
+
+
+
+Als Trunks alleen open staan voor bekende VLAN's 
+
+In show interfaces trunk:
+cisco
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       on           802.1q         trunking      999
+Gi0/2       on           802.1q         trunking      999
+
+Port        Vlans allowed on trunk
+Gi0/1       10,20,30
+Gi0/2       10,20,30
+
+Port        Vlans allowed and active in management domain
+Gi0/1       10,20,30
+Gi0/2       10,20,30
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Gi0/1       10,20,30
+Gi0/2       10,20,30
+
+Let op:
+
+Vlans allowed on trunk toont alleen VLAN 10, 20, 30
+Geen 1-4094 of all
+Native VLAN is 999 (niet VLAN 1)
+Dit zijn de bekende VLAN's die in het netwerk bestaan
+
+
+
+In show running-config interface gigabitEthernet 0/1:
+cisco
+
+Switch# show running-config interface gigabitEthernet 0/1
+Building configuration...
+
+Current configuration : 127 bytes
+!
+interface GigabitEthernet0/1
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan 10,20,30
+end
+
+Let op:
+
+switchport trunk allowed vlan 10,20,30 = Alleen VLAN 10, 20 en 30 zijn toegestaan
+switchport trunk native vlan 999 = Native VLAN is gewijzigd naar 999
+Geen switchport trunk allowed vlan all of switchport trunk allowed vlan 1-4094
+
+
+
+
+Advies
+
+Een trunk is een verbinding tussen switches die meerdere VLAN's tegelijk transporteert. 
+Het is goed dat trunks alleen open staan voor de bekende VLAN's (10, 20, 30) en dat de native VLAN is gewijzigd naar 999.
+
+Waarom is dit belangrijk?
+- Beveiliging: Als alle VLAN's (1-4094) op een trunk zijn toegestaan, 
+kan een aanvaller VLAN-hopping gebruiken om toegang te krijgen tot niet-bestaande of ongewenste VLAN's.
+- Netwerkbeheer: Het is duidelijk welke VLAN's over de trunk gaan. Dit maakt het beheer eenvoudiger.
+- Voorkomen van fouten: Een nieuw VLAN dat per ongeluk wordt aangemaakt, kan niet zomaar over een trunk worden getransporteerd.
+- Native VLAN: Door de native VLAN te wijzigen van 1 naar 999, voorkom je dat VLAN 1 (standaard) over de trunk wordt gestuurd. 
+Dit is een aanbevolen beveiligingsmaatregel.
+
+In dit netwerk:
+- Alleen VLAN 10 (Productie), VLAN 20 (HR) en VLAN 30 (Gasten) zijn toegestaan op de trunks.
+- De trunks zijn:
+- Core-SW → SW1 (Gi0/1)
+- Core-SW → SW2 (Gi0/2)
+- SW1 → SW2 (Gi0/2)
+- Native VLAN is 999, wat betekent dat ongetagd verkeer in VLAN 999 terechtkomt (niet in VLAN 1).
+
+Dit voorkomt dat een aanvaller een onbekend VLAN (bijv. VLAN 999) kan gebruiken om via een trunk toegang te krijgen tot het netwerk. 
+Alleen de noodzakelijke VLAN's (10, 20, 30) worden getransporteerd.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Trunks staan alleen open voor de bekende VLAN's (10, 20, 30).
+
+
+
+Impact
+
+Geen impact. Trunks zijn correct geconfigureerd met alleen de noodzakelijke VLAN's.
+
+
+
+Samenvatting
+
+Trunks zijn correct geconfigureerd en staan alleen open voor de bekende VLAN's: 
+VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24). 
+De native VLAN is gewijzigd naar 999. Geen onbekende VLAN's zijn toegestaan op de trunks. 
+Het netwerk is beschermd tegen VLAN-hopping en onbedoeld VLAN-verkeer.
+
+
+
+
+
+
+
+
+
+
+
+
+Als Trunks NIET alleen open staan voor bekende VLAN's - Wat zie je?
+
+In show interfaces trunk (alle VLAN's toegestaan):
+cisco
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       on           802.1q         trunking      1
+Gi0/2       on           802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Gi0/1       1-4094
+Gi0/2       1-4094
+
+Port        Vlans allowed and active in management domain
+Gi0/1       1-4094
+Gi0/2       1-4094
+
+Let op:
+
+Vlans allowed on trunk toont 1-4094 (alle VLAN's)
+Native VLAN is 1 (standaard)
+Dit is onveilig en een afwijking
+
+
+
+In show running-config interface gigabitEthernet 0/1:
+cisco
+
+Switch# show running-config interface gigabitEthernet 0/1
+Building configuration...
+
+Current configuration : 95 bytes
+!
+interface GigabitEthernet0/1
+ switchport mode trunk
+end
+
+    Let op:
+
+Geen switchport trunk allowed vlan commando
+Geen switchport trunk native vlan commando (standaard VLAN 1)
+Alle VLAN's zijn toegestaan (default)
+
+
+
+In show interfaces trunk (alleen specifieke VLAN's maar niet alle bekende VLAN's):
+cisco
+
+Switch# show interfaces trunk
+Port        Vlans allowed on trunk
+Gi0/1       10,20
+Gi0/2       10,20
+
+Let op: VLAN 30 (Gasten) is niet toegestaan op de trunk, maar zou wel moeten omdat er Gasten in het netwerk zijn.
+
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat trunks niet alleen open staan voor bekende VLAN's op meerdere switches.
+
+Core-SW:
+- Gi0/1: switchport trunk allowed vlan 1-4094 (alle VLAN's)
+- Gi0/2: switchport trunk allowed vlan 1-4094 (alle VLAN's)
+- Native VLAN: 1 (standaard)
+
+SW1:
+- Gi0/1: switchport trunk allowed vlan 10,20 (VLAN 30 ontbreekt)
+- Gi0/2: switchport trunk allowed vlan 1-4094 (alle VLAN's)
+- Native VLAN: 1 (standaard)
+
+SW2:
+- Gi0/1: switchport trunk allowed vlan 10,20,30 (correct)
+- Gi0/2: switchport trunk allowed vlan all (alle VLAN's)
+- Native VLAN: 1 (standaard)
+
+De bekende VLAN's in dit netwerk zijn:
+- VLAN 10 (Productie, 192.168.10.0/24)
+- VLAN 20 (HR, 192.168.20.0/24)
+- VLAN 30 (Gasten, 192.168.30.0/24)
+
+Er zijn meerdere afwijkingen: sommige trunks staan open voor alle VLAN's (1-4094), andere missen VLAN 30.
+
+
+
+
+
+Advies
+
+Een trunk is een verbinding tussen switches die meerdere VLAN's tegelijk transporteert. Het is niet goed dat trunks niet alleen open staan voor bekende VLAN's.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: Als alle VLAN's (1-4094) op een trunk zijn toegestaan, 
+kan een aanvaller VLAN-hopping gebruiken om toegang te krijgen tot niet-bestaande of ongewenste VLAN's.
+- Native VLAN 1: De native VLAN is nog VLAN 1 (standaard). VLAN 1 is het default VLAN en moet niet worden gebruikt voor verkeer. 
+Een aanvaller kan VLAN 1 gebruiken om VLAN-hopping uit te voeren.
+- Ontbrekende VLAN's: Op SW1 mist VLAN 30 (Gasten) op Gi0/1. 
+Hierdoor kan verkeer van VLAN 30 niet van SW1 naar Core-SW gaan, wat leidt tot netwerkproblemen voor gasten.
+
+In dit netwerk:
+- Core-SW Gi0/1 & Gi0/2: Alle VLAN's (1-4094) zijn toegestaan. 
+Een aanvaller kan een onbekend VLAN (bijv. VLAN 999) aanmaken en via deze trunk toegang krijgen tot het netwerk.
+- SW1 Gi0/2: Alle VLAN's zijn toegestaan. Dit is hetzelfde risico.
+- SW1 Gi0/1: VLAN 30 (Gasten) mist. Gasten in VLAN 30 op SW1 kunnen geen verbinding maken met de Core-SW of het internet.
+- Native VLAN 1: Op alle trunks is de native VLAN nog 1. Dit is onveilig.
+
+Specifiek risico:
+- Een aanvaller in VLAN 30 (Gasten) kan een VLAN-hopping-aanval uitvoeren. 
+Omdat de trunk alle VLAN's toestaat (1-4094), kan de aanvaller een pakket sturen met een VLAN-tag van een ander VLAN (bijv. VLAN 10). 
+De switch accepteert dit omdat alle VLAN's zijn toegestaan. De aanvaller krijgt toegang tot VLAN 10 (Productie).
+- Ook kan een aanvaller de native VLAN 1 gebruiken voor aanvallen. Omdat VLAN 1 over de trunk wordt gestuurd, kan de aanvaller verkeer naar VLAN 1 sturen.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+1. Alle VLAN's toegestaan op meerdere trunks:
+- Core-SW Gi0/1 en Gi0/2: switchport trunk allowed vlan 1-4094
+- SW1 Gi0/2: switchport trunk allowed vlan 1-4094
+- SW2 Gi0/2: switchport trunk allowed vlan all
+
+2. Ontbrekende VLAN's op een trunk:
+- SW1 Gi0/1: VLAN 30 (Gasten) mist, alleen VLAN 10 en 20 zijn toegestaan
+
+3. Native VLAN is nog VLAN 1:
+- Alle trunks gebruiken native VLAN 1 (standaard) in plaats van een veilige native VLAN (bijv. 999)
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door trunks die open staan voor alle VLAN's:
+
+1. VLAN-hopping (beveiligingsrisico):
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan een pakket sturen met een VLAN-tag van VLAN 10 (Productie)
+- De trunk accepteert alle VLAN's, dus het pakket wordt doorgestuurd
+- De aanvaller krijgt toegang tot VLAN 10 (Productie) en kan gevoelige gegevens stelen
+
+2. Onbeperkte VLAN-toegang:
+- Omdat alle VLAN's (1-4094) zijn toegestaan, kan een aanvaller elk VLAN gebruiken dat hij maar wil
+- Dit geldt ook voor niet-bestaande VLAN's die de aanvaller zelf aanmaakt
+
+3. Native VLAN 1 risico:
+- Native VLAN 1 is standaard en wordt vaak gebruikt voor beheer
+- Een aanvaller kan VLAN 1 gebruiken om toegang te krijgen tot beheerinterfaces
+
+Door het ontbreken van VLAN 30 op SW1 Gi0/1:
+
+4. Netwerkproblemen voor gasten:
+- Gasten in VLAN 30 op SW1 kunnen geen verbinding maken met de Core-SW
+- Gasten hebben geen internettoegang
+- Dit leidt tot productiviteitsverlies en helpdesk-meldingen
+
+De impact is hoog omdat:
+- VLAN-hopping een bekende aanvalsvector is
+- Gevoelige gegevens kunnen worden gestolen
+- Gasten kunnen niet werken door het ontbreken van VLAN 30 op een trunk
+
+
+
+
+
+Samenvatting
+
+Trunks zijn niet correct geconfigureerd. Er zijn meerdere afwijkingen:
+
+1. Alle VLAN's toegestaan op trunks: Core-SW Gi0/1, Gi0/2, SW1 Gi0/2 en SW2 Gi0/2 staan open voor alle VLAN's (1-4094 of all). 
+Dit is een beveiligingsrisico (VLAN-hopping).
+
+2. Ontbrekende VLAN's op trunks: SW1 Gi0/1 mist VLAN 30 (Gasten). Hierdoor kunnen gasten op SW1 geen verbinding maken.
+
+3. Native VLAN 1: Alle trunks gebruiken nog native VLAN 1 (standaard) in plaats van een veilige native VLAN (bijv. 999).
+
+Advies:
+1. Beperk de toegestane VLAN's tot de bekende VLAN's:
+- Core-SW Gi0/1 & Gi0/2: switchport trunk allowed vlan 10,20,30
+- SW1 Gi0/2: switchport trunk allowed vlan 10,20,30
+- SW2 Gi0/2: switchport trunk allowed vlan 10,20,30
+
+2. Voeg VLAN 30 toe op de ontbrekende trunk:
+- SW1 Gi0/1: switchport trunk allowed vlan 10,20,30
+
+3. Wijzig de native VLAN naar een veilige VLAN (bijv. 999):
+- switchport trunk native vlan 999 op alle trunks
+- Zorg dat VLAN 999 niet bestaat of niet wordt gebruikt
+
+4. Controleer na configuratie:
+- Gebruik show interfaces trunk om te controleren dat Vlans allowed on trunk alleen de bekende VLAN's toont
+- Gebruik show interfaces trunk om te controleren dat Native vlan 999 is
+- Test of VLAN 30 verkeer van SW1 naar Core-SW werkt
+
+Na configuratie controleer je met show interfaces trunk dat alleen VLAN 10, 20, 30 zijn toegestaan en dat de native VLAN 999 is.
+
