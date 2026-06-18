@@ -1,0 +1,394 @@
+Port security is een beveiligingsfunctie op switches die beperkt welke apparaten verbinding mogen maken via een specifieke poort. 
+Dit wordt gedaan door het aantal MAC-adressen te limiteren dat op een poort wordt toegestaan.
+
+Simpel gezegd: Port security is als een deurbel met camera. 
+Je kunt instellen dat er maximaal 4 mensen tegelijk door de deur mogen. 
+Als er een 5e persoon probeert binnen te komen, gaat het alarm af (de poort wordt uitgeschakeld of blokkeert het verkeer).
+
+Waarom is dit belangrijk?
+    Beveiliging: Voorkomt dat een aanvaller een apparaat aansluit op een netwerkaansluiting
+    MAC-flooding: Beschermt tegen MAC-flooding-aanvallen waarbij een switch wordt overbelast met MAC-adressen
+    Toegangscontrole: Zorgt dat alleen erkende apparaten (PC's, printers) verbinding maken
+    Netwerkstabiliteit: Voorkomt dat onbedoelde apparaten het netwerk verstoren
+
+
+
+
+Uitvoering
+
+! Bekijk de port security status van alle poorten
+Switch# show port-security
+
+! Bekijk specifieke poorten
+Switch# show port-security interface fastEthernet 0/1
+
+! Bekijk de configuratie van een poort
+Switch# show running-config interface fastEthernet 0/1
+
+! Bekijk welke MAC-adressen zijn toegestaan
+Switch# show port-security address
+
+! Bekijk alle poorten met port security
+Switch# show port-security | include SecurePort|MaxSecureAddr|SecurityViolation
+
+
+
+
+Als Port Security WEL is enabled (max 4 users)
+
+In show port-security:
+cisco
+
+Switch# show port-security
+Secure Port  MaxSecureAddr  CurrentAddr  SecurityViolation  Security Action
+               (Count)       (Count)
+-------------------------------------------------------------------------------
+      Fa0/1              4            2                  0  Shutdown
+      Fa0/2              4            1                  0  Shutdown
+      Fa0/3              4            2                  0  Shutdown
+      Fa0/4              4            1                  0  Shutdown
+      Fa0/5              4            3                  0  Shutdown
+      Fa0/6              4            1                  0  Shutdown
+      Fa0/7              4            2                  0  Shutdown
+      Fa0/8              4            1                  0  Shutdown
+-------------------------------------------------------------------------------
+Total Addresses in System (excluding one mac per port)     : 0
+Max Addresses limit in System (excluding one mac per port) : 8192
+
+Let op:
+
+Secure Port = Poort met port security
+MaxSecureAddr = Maximaal toegestane MAC-adressen (4)
+CurrentAddr = Aantal MAC-adressen dat momenteel is geleerd
+SecurityViolation = Aantal overtredingen (0 = geen problemen)
+Security Action = Shutdown (poort wordt uitgeschakeld bij overtreding)
+
+
+
+
+In show port-security interface fastEthernet 0/1:
+cisco
+
+Switch# show port-security interface fastEthernet 0/1
+Port Security              : Enabled
+Port Status                : Secure-up
+Violation Mode             : Shutdown
+Aging Time                 : 0 mins
+Aging Type                 : Absolute
+SecureStatic Address Aging : Disabled
+Maximum MAC Addresses      : 4
+Total MAC Addresses        : 2
+Configured MAC Addresses   : 0
+Sticky MAC Addresses       : 0
+Last Source Address:Vlan   : 0001.4321.ABCD:10
+Security Violation Count   : 0
+
+Let op:
+
+Port Security : Enabled = Port security is ingeschakeld
+Maximum MAC Addresses : 4 = Maximaal 4 MAC-adressen toegestaan
+Port Status : Secure-up = Poort is actief en beveiligd
+Security Violation Count : 0 = Geen overtredingen
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 145 bytes
+!
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+ switchport port-security
+ switchport port-security maximum 4
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+end
+
+Let op:
+
+switchport port-security = Port security is ingeschakeld
+switchport port-security maximum 4 = Maximaal 4 MAC-adressen
+switchport port-security violation shutdown = Poort wordt uitgeschakeld bij overtreding
+switchport port-security mac-address sticky = Leert MAC-adressen en slaat ze op
+
+
+
+
+In show port-security address:
+cisco
+
+Switch# show port-security address
+               Secure Mac Address Table
+-------------------------------------------------------------------------------
+Vlan  Mac Address       Type                Port      Remaining Age
+----  -----------       ----                ----      -------------
+  10  0001.4321.ABCD   SecureSticky         Fa0/1         -
+  10  0001.4321.ABCE   SecureSticky         Fa0/1         -
+  10  0001.4321.ABCF   SecureSticky         Fa0/2         -
+  10  0001.4321.ABD0   SecureSticky         Fa0/2         -
+-------------------------------------------------------------------------------
+Total Addresses in System : 4
+Max Addresses limit in System : 8192
+
+Let op: De geleerde MAC-adressen worden weergegeven met hun VLAN en poort.
+
+
+
+
+Advies
+
+Port security is een beveiligingsfunctie die beperkt welke MAC-adressen verbinding mogen maken via een poort. 
+Het is goed dat port security is ingeschakeld op alle access-poorten met een maximum van 4 gebruikers.
+
+Waarom is dit belangrijk?
+- Beveiliging: Een aanvaller kan geen onbekend apparaat aansluiten op een poort. Als hij dit probeert, wordt de poort uitgeschakeld (violation mode shutdown).
+- MAC-flooding: Beschermt tegen MAC-flooding-aanvallen waarbij een switch wordt overbelast met MAC-adressen.
+- Toegangscontrole: Alleen erkende apparaten (met bekende MAC-adressen) kunnen verbinding maken.
+
+In dit netwerk:
+- Alle 8 access-poorten op SW1 en SW2 hebben port security met een maximum van 4 MAC-adressen.
+- Dit is voldoende voor een werkplek met bijvoorbeeld een PC, een IP-telefoon, een printer en een laptop.
+- De violation mode staat op shutdown, wat betekent dat bij een overtreding (een 5e apparaat) de poort direct wordt uitgeschakeld en een netwerkbeheerder deze handmatig moet herstellen.
+- Er zijn geen overtredingen geregistreerd (SecurityViolation = 0), wat betekent dat gebruikers zich correct gedragen.
+- De MAC-adressen worden opgeslagen als sticky, wat betekent dat ze blijven bestaan na een herstart van de switch.
+
+Dit voorkomt dat een aanvaller of onbevoegde gebruiker in VLAN 10 
+(Productie, 192.168.10.0/24) of VLAN 20 (HR, 192.168.20.0/24) een apparaat kan aansluiten en toegang krijgt tot het netwerk.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Port security is correct ingeschakeld op alle access-poorten met het juiste maximum van 4 gebruikers.
+
+
+
+Impact
+
+Geen impact. Port security werkt correct en beschermt het netwerk tegen ongeautoriseerde toegang.
+
+
+
+Samenvatting
+
+Port security is correct ingeschakeld op alle access-poorten van SW1 en SW2. 
+Elke poort heeft een maximum van 4 MAC-adressen en gebruikt violation mode shutdown. 
+Er zijn geen overtredingen geregistreerd. De MAC-adressen worden opgeslagen als sticky. 
+Hierdoor is het netwerk beschermd tegen ongeautoriseerde toegang via de access-poorten in VLAN 10 (Productie, 192.168.10.0/24) en VLAN 20 (HR, 192.168.20.0/24).
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als Port Security NIET is enabled
+
+In show port-security:
+cisco
+
+Switch# show port-security
+Port Security is enabled globally. But no ports are configured with port security.
+
+Let op: Geen enkele poort heeft port security.
+
+
+
+
+In show port-security interface fastEthernet 0/1:
+cisco
+
+Switch# show port-security interface fastEthernet 0/1
+Port Security : Disabled
+
+Let op: Port Security : Disabled betekent dat port security niet is ingeschakeld.
+
+
+
+
+In show running-config interface fastEthernet 0/1:
+cisco
+
+Switch# show running-config interface fastEthernet 0/1
+Building configuration...
+
+Current configuration : 62 bytes
+!
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+end
+
+Let op: Er zijn geen port security commando's in de configuratie.
+
+
+
+
+Bevinding
+
+Uit show port-security blijkt dat Port Security niet is ingeschakeld op meerdere access-poorten.
+
+SW1:
+- Poorten Fa0/1 t/m 0/8 hebben geen port security
+- In show port-security staat: Port Security is enabled globally. But no ports are configured with port security.
+- In show running-config zijn geen switchport port-security commando's zichtbaar
+
+SW2:
+- Poorten Fa0/1 t/m 0/8 hebben geen port security
+- In show port-security staat: Port Security is enabled globally. But no ports are configured with port security.
+- In show running-config zijn geen switchport port-security commando's zichtbaar
+
+Core-SW:
+- Poorten Fa0/1 en Fa0/2 (serverpoorten) hebben geen port security
+
+Er zijn 16 access-poorten op SW1 en SW2 die geen port security hebben.
+
+
+
+
+
+Advies
+
+Port security is een beveiligingsfunctie die beperkt welke MAC-adressen verbinding mogen maken via een poort. 
+Het is niet goed dat port security niet is ingeschakeld op de access-poorten.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: Een aanvaller kan een apparaat aansluiten op een willekeurige poort en toegang krijgen tot het netwerk.
+- MAC-flooding: Een aanvaller kan MAC-flooding-aanvallen uitvoeren, wat de switch kan overbelasten en netwerkuitval kan veroorzaken.
+- Geen toegangscontrole: Iedereen met een netwerkkabel kan verbinding maken, ongeacht of het apparaat geautoriseerd is.
+- Geen beperking van apparaten: Meerdere apparaten kunnen via één poort worden aangesloten (bijv. via een hub), zonder limiet.
+
+In dit netwerk:
+- Een aanvaller kan een laptop aansluiten op Fa0/9 (of een andere poort zonder port security) op SW1.
+- De laptop krijgt direct toegang tot het netwerk in het VLAN van die poort (bijv. VLAN 10 voor Productie of VLAN 20 voor HR).
+- De aanvaller kan vervolgens netwerkscans uitvoeren, gevoelige gegevens stelen of malware verspreiden.
+- De aanvaller kan ook meerdere apparaten aansluiten via een hub of switch, omdat er geen limiet is.
+
+Specifiek risico:
+- Zonder port security kan een aanvaller een onbeperkt aantal MAC-adressen gebruiken op één poort.
+- Dit kan leiden tot MAC-flooding, waarbij de CAM-tabel van de switch overvol raakt en verkeer naar alle poorten wordt gestuurd (broadcast). 
+Hierdoor kan de aanvaller al het verkeer in het netwerk onderscheppen.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Port security is niet ingeschakeld op de access-poorten van de switches.
+
+SW1:
+- Poorten Fa0/1 t/m 0/8 (8 poorten) hebben geen port security
+- Geen switchport port-security in de configuratie
+
+SW2:
+- Poorten Fa0/1 t/m 0/8 (8 poorten) hebben geen port security
+- Geen switchport port-security in de configuratie
+
+Core-SW:
+- Poorten Fa0/1 en Fa0/2 (serverpoorten) hebben geen port security
+
+Dit is een afwijking omdat de best practice voorschrijft dat port security op alle access-poorten moet worden ingeschakeld.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het ontbreken van port security op access-poorten:
+
+1. Ongeautoriseerde netwerktoegang:
+- Een aanvaller kan een laptop aansluiten op Fa0/1 op SW1 (VLAN 10, Productie, 192.168.10.0/24)
+- De laptop krijgt direct toegang tot het productienetwerk
+- De aanvaller kan:
+- Netwerkscans uitvoeren op 192.168.10.0/24
+- Toegang krijgen tot productieservers (bijv. 192.168.10.10, 192.168.10.20)
+- Gevoelige bedrijfsgegevens stelen
+- Malware verspreiden naar andere systemen
+
+2. Geen limiet op MAC-adressen:
+- Een aanvaller kan een hub of switch aansluiten en meerdere apparaten gebruiken
+- De poort heeft geen maximum, dus de aanvaller kan onbeperkt MAC-adressen gebruiken
+- Dit kan leiden tot MAC-flooding, waarbij de CAM-tabel van de switch overvol raakt
+
+3. MAC-flooding-aanval:
+- Een aanvaller kan een tool gebruiken die duizenden MAC-adressen genereert
+- De switch raakt overbelast en kan niet meer functioneren
+- De switch stuurt al het verkeer naar alle poorten (broadcast)
+- De aanvaller kan al het netwerkverkeer onderscheppen, inclusief wachtwoorden, e-mails en vertrouwelijke documenten
+
+4. Geen controle over aangesloten apparaten:
+- Een medewerker kan een eigen apparaat aansluiten (bijv. een persoonlijke laptop)
+- Dit apparaat kan malware bevatten die het netwerk infecteert
+- De IT-afdeling heeft geen zicht op welke apparaten verbinding maken
+
+Specifiek voor dit netwerk:
+- Zowel VLAN 10 (Productie) als VLAN 20 (HR) zijn kwetsbaar omdat de poorten in deze VLAN's geen port security hebben.
+- Een aanvaller in VLAN 10 kan productiegegevens stelen.
+- Een aanvaller in VLAN 20 kan personeelsgegevens (salaris, BSN, etc.) stelen.
+
+De impact is hoog omdat:
+- Ongeautoriseerde toegang tot het netwerk zeer eenvoudig is
+- Gevoelige gegevens kunnen worden gestolen
+- Het hele netwerk kan worden gecompromitteerd via MAC-flooding
+- Dit kan leiden tot datalekken, reputatieschade, boetes en juridische gevolgen
+
+
+
+
+
+Samenvatting
+
+Port security is niet ingeschakeld op de access-poorten van de switches. 
+In totaal hebben 16 access-poorten op SW1 en SW2 geen port security. 
+Hierdoor kan een aanvaller een apparaat aansluiten en toegang krijgen tot VLAN 10 (Productie, 192.168.10.0/24) of VLAN 20 (HR, 192.168.20.0/24). 
+Ook is er geen limiet op het aantal MAC-adressen, wat MAC-flooding-aanvallen mogelijk maakt.
+
+Advies:
+1. Schakel port security in op alle access-poorten:
+- SW1: interface range fastEthernet 0/1 - 8
+- switchport port-security
+- switchport port-security maximum 4
+- switchport port-security violation shutdown
+- switchport port-security mac-address sticky
+
+2. Herhaal voor SW2:
+- interface range fastEthernet 0/1 - 8
+- switchport port-security
+- switchport port-security maximum 4
+- switchport port-security violation shutdown
+- switchport port-security mac-address sticky
+
+3. Configureer ook serverpoorten op Core-SW:
+- interface range fastEthernet 0/1 - 2
+- switchport port-security
+- switchport port-security maximum 2 (voor twee server-NIC's)
+- switchport port-security violation shutdown
+
+4. Controleer na configuratie:
+- Gebruik show port-security om te controleren of port security is ingeschakeld
+- Gebruik show port-security interface fastEthernet 0/1 om de details te bekijken
+
+5. Stel een herstelprocedure in:
+- Als een poort in err-disable gaat door een overtreding, moet een beheerder deze handmatig herstellen met shutdown en no shutdown
+- Overweeg errdisable recovery cause psecure-violation en errdisable recovery interval 300 voor automatisch herstel na 5 minuten
+
+
+
+
+
