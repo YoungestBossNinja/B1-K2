@@ -1,0 +1,388 @@
+omschrijving
+
+OSPF (Open Shortest Path First) is een link-state routing protocol dat wordt gebruikt om routes tussen routers in een netwerk uit te wisselen. 
+Een passive interface in OSPF is een interface waarop OSPF geen hello-berichten uitzendt en geen OSPF-adjacencies vormt.
+
+    Simpel gezegd: Een passive interface in OSPF is als een stille buur. De router zegt: "Op deze interface ga ik geen OSPF-berichten meer sturen." 
+Dit wordt gedaan op interfaces waar geen andere OSPF-router is aangesloten, zoals op een interface die naar een LAN met alleen eindgebruikers gaat.
+
+Default passive interface betekent dat alle interfaces standaard passief worden gezet, 
+behalve de interfaces die expliciet als niet-passief (active) worden geconfigureerd.
+
+Waarom is dit belangrijk?
+
+    Beveiliging: Voorkomt dat een aanvaller OSPF-hello-berichten ontvangt en een OSPF-adjacency probeert te vormen
+    Netwerkstabiliteit: Voorkomt dat onbedoelde OSPF-adjacencies worden gevormd
+    Resourcebesparing: Vermindert het aantal OSPF-berichten dat wordt verzonden (minder overhead)
+    Best practice: Interfaces naar eindgebruikers (access-netwerken) moeten passief zijn
+
+
+
+
+uitvoering
+
+! Bekijk de OSPF-configuratie
+Router# show running-config | section router ospf
+
+! Bekijk of passive-interface default is ingesteld
+Router# show running-config | include passive-interface default
+
+! Bekijk welke interfaces actief zijn (niet-passief)
+Router# show running-config | include no passive-interface
+
+! Bekijk de OSPF-interface status
+Router# show ip ospf interface
+
+! Bekijk de OSPF-buren
+Router# show ip ospf neighbor
+
+
+Wat je moet controleren:
+
+    Is passive-interface default ingesteld?
+    Welke interfaces zijn actief (no passive-interface)? (alleen interfaces naar andere OSPF-routers)
+    Zijn er interfaces die passief zouden moeten zijn maar actief zijn? (bijv. interfaces naar eindgebruikers)
+    Werken OSPF-adjacencies nog correct?
+
+
+
+
+
+
+Als Default Passive Interface WEL is enabled
+
+
+
+In show running-config | section router ospf:
+cisco
+
+Router# show running-config | section router ospf
+router ospf 100
+ router-id 1.1.1.1
+ passive-interface default
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.2.0 0.0.0.255 area 0
+ no passive-interface GigabitEthernet0/0
+
+Let op:
+
+passive-interface default = Alle interfaces zijn standaard passief
+no passive-interface GigabitEthernet0/0 = Alleen Gi0/0 is actief (stuurt OSPF-berichten)
+
+
+
+In show running-config | include passive-interface:
+cisco
+
+Router# show running-config | include passive-interface
+passive-interface default
+no passive-interface GigabitEthernet0/0
+
+Let op: passive-interface default is aanwezig en Gi0/0 is expliciet actief gemaakt.
+
+
+
+In show ip ospf interface:
+cisco
+
+Router# show ip ospf interface
+GigabitEthernet0/0 is up, line protocol is up
+  Internet Address 192.168.1.1/24, Area 0
+  Process ID 100, Router ID 1.1.1.1, Network Type BROADCAST, Cost: 1
+  Transmit Delay is 1 sec, State DR, Priority 1
+  Designated Router (ID) 1.1.1.1, Interface address 192.168.1.1
+  Backup Designated Router (ID) 2.2.2.2, Interface address 192.168.1.2
+  Timer intervals configured, Hello 10, Dead 40, Wait 40, Retransmit 5
+    Hello due in 00:00:02
+  Index 1/1, flood queue length 0
+  Next 0x0(0)/0x0(0)
+  Last flood scan length is 1, maximum is 1
+  Last flood scan time is 0 msec, maximum is 0 msec
+  Neighbor Count is 1, Adjacent neighbor count is 1
+    Adjacent with neighbor 2.2.2.2  (Backup Designated Router)
+  Suppress hello for 0 neighbor(s)
+FastEthernet0/0 is up, line protocol is up
+  Internet Address 192.168.10.1/24, Area 0
+  Process ID 100, Router ID 1.1.1.1, Network Type BROADCAST, Cost: 10
+  Transmit Delay is 1 sec, State DR, Priority 1
+  Designated Router (ID) 1.1.1.1, Interface address 192.168.10.1
+  No backup designated router on this network
+  Timer intervals configured, Hello 10, Dead 40, Wait 40, Retransmit 5
+    Hello due in 00:00:05
+  Neighbor Count is 0, Adjacent neighbor count is 0
+  Suppress hello for 0 neighbor(s)
+
+Let op:
+
+Gi0/0: Neighbor Count is 1 → deze interface is actief en heeft een OSPF-buur
+Fa0/0: Neighbor Count is 0 → deze interface is passief (stuurt geen hello-berichten)
+
+
+
+In show ip ospf neighbor:
+cisco
+
+Router# show ip ospf neighbor
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+2.2.2.2           1   FULL/DR         00:00:35    192.168.1.2     GigabitEthernet0/0
+
+Let op: Er is een OSPF-buur op Gi0/0 (de enige actieve interface).
+
+
+
+
+
+Advies
+
+Passive-interface default is een OSPF-functie die alle interfaces standaard passief maakt, 
+behalve de interfaces die expliciet als actief worden geconfigureerd met no passive-interface. 
+Het is goed dat passive-interface default is ingeschakeld op alle OSPF-routers.
+
+Waarom is dit belangrijk?
+- Beveiliging: Voorkomt dat een aanvaller OSPF-hello-berichten ontvangt op een interface en een OSPF-adjacency probeert te vormen. 
+Een aanvaller zou anders zijn eigen router kunnen aansluiten en valse routes kunnen injecteren.
+- Netwerkstabiliteit: Voorkomt dat onbedoelde OSPF-adjacencies worden gevormd (bijv. een gebruiker die per ongeluk een router aansluit).
+- Resourcebesparing: Vermindert het aantal OSPF-berichten dat wordt verzonden (minder overhead).
+
+In dit netwerk:
+- Alleen Gi0/0 op R1 en R2 is actief (verbinding tussen de routers).
+- Fa0/0 en Fa0/1 op R1 en R2 zijn passief (verbindingen naar VLAN 10, 20, 30).
+- Vlan1 op Core-SW is actief (verbinding met R1 en R2).
+- Alle andere VLAN-interfaces op Core-SW zijn passief (VLAN 10, 20, 30).
+
+Dit betekent dat alleen de interfaces die daadwerkelijk verbinding maken met andere OSPF-routers OSPF-berichten sturen. 
+Een aanvaller in VLAN 10 (Productie, 192.168.10.0/24) kan geen OSPF-adjacency vormen met R1 omdat de interface naar VLAN 10 passief is. 
+Hierdoor kan de aanvaller geen valse routes injecteren of het OSPF-proces verstoren.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Passive-interface default is correct ingeschakeld.
+
+
+
+Impact
+
+Geen impact. OSPF werkt correct met alleen de juiste interfaces actief.
+
+
+
+Samenvatting
+
+Passive-interface default is correct ingeschakeld op alle OSPF-routers (R1, R2, Core-SW). 
+Alleen de interfaces die verbinding maken met andere OSPF-routers zijn actief: Gi0/0 op R1/R2 en Vlan1 op Core-SW. 
+Alle interfaces naar eindgebruikers (VLAN 10, 20, 30) zijn passief. 
+Het netwerk is beschermd tegen ongeautoriseerde OSPF-adjacencies en OSPF-verkeer is geminimaliseerd.
+
+
+
+
+
+
+
+
+
+
+
+
+Als Default Passive Interface NIET is enabled
+
+
+In show running-config | section router ospf:
+cisco
+
+Router# show running-config | section router ospf
+router ospf 100
+ router-id 1.1.1.1
+ network 192.168.1.0 0.0.0.255 area 0
+ network 192.168.2.0 0.0.0.255 area 0
+
+Let op: Er is geen passive-interface default in de configuratie.
+
+
+
+In show running-config | include passive-interface:
+cisco
+
+Router# show running-config | include passive-interface
+(geen output - niets te zien)
+
+Let op: Er zijn geen passive-interface commando's.
+
+
+
+In show ip ospf interface:
+cisco
+
+Router# show ip ospf interface
+GigabitEthernet0/0 is up, line protocol is up
+  Internet Address 192.168.1.1/24, Area 0
+  Process ID 100, Router ID 1.1.1.1, Network Type BROADCAST, Cost: 1
+  Neighbor Count is 1, Adjacent neighbor count is 1
+    Adjacent with neighbor 2.2.2.2  (Backup Designated Router)
+FastEthernet0/0 is up, line protocol is up
+  Internet Address 192.168.10.1/24, Area 0
+  Process ID 100, Router ID 1.1.1.1, Network Type BROADCAST, Cost: 10
+  Neighbor Count is 0, Adjacent neighbor count is 0
+
+Let op: Beide interfaces sturen hello-berichten, ook al heeft Fa0/0 geen buren. Dit is onnodig en kan een beveiligingsrisico zijn.
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat passive-interface default niet is ingeschakeld op meerdere OSPF-routers.
+
+R1:
+- Geen passive-interface default in OSPF-configuratie
+- Geen no passive-interface commando's
+- Alle interfaces sturen OSPF-hello-berichten
+- Fa0/0 (VLAN 10) en Fa0/1 (VLAN 20) zijn actief, ook al hebben ze geen OSPF-buren
+
+R2:
+- Geen passive-interface default in OSPF-configuratie
+- Alle interfaces sturen OSPF-hello-berichten
+- Fa0/0 (VLAN 30) is actief, ook al heeft het geen OSPF-buren
+
+Core-SW:
+- Geen passive-interface default in OSPF-configuratie
+- Alle VLAN-interfaces sturen OSPF-hello-berichten
+- VLAN 10, 20 en 30 sturen OSPF-berichten, ook al hebben ze geen OSPF-buren
+
+Er zijn 5 interfaces die OSPF-berichten sturen zonder dat dit nodig is.
+
+
+
+
+Advies
+
+Passive-interface default is een OSPF-functie die alle interfaces standaard passief maakt, 
+behalve de interfaces die expliciet als actief worden geconfigureerd met no passive-interface. 
+Het is niet goed dat passive-interface default niet is ingeschakeld op de OSPF-routers.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: Een aanvaller in VLAN 10 (Productie, 192.168.10.0/24) kan OSPF-hello-berichten ontvangen van R1. 
+De aanvaller kan een router aansluiten, een OSPF-adjacency vormen en valse routes injecteren.
+- Onnodig OSPF-verkeer: Interfaces die geen OSPF-buren hebben, sturen nog steeds hello-berichten. Dit is overbodig en verbruikt netwerkbandbreedte en CPU-cycli.
+- Netwerkstabiliteit: Een onbedoelde OSPF-adjacency kan het routing-proces verstoren en tot netwerkuitval leiden.
+
+In dit netwerk:
+- R1 stuurt OSPF-berichten op Fa0/0 (VLAN 10, Productie, 192.168.10.0/24). Een aanvaller in VLAN 10 kan deze berichten ontvangen.
+- R1 stuurt OSPF-berichten op Fa0/1 (VLAN 20, HR, 192.168.20.0/24). Een aanvaller in VLAN 20 kan deze berichten ontvangen.
+- R2 stuurt OSPF-berichten op Fa0/0 (VLAN 30, Gasten, 192.168.30.0/24). Een aanvaller in VLAN 30 kan deze berichten ontvangen.
+- Core-SW stuurt OSPF-berichten op VLAN 10, 20 en 30.
+
+Specifiek risico:
+- Een aanvaller in VLAN 30 (Gasten) kan een router aansluiten op het gastennetwerk. 
+Omdat R2 OSPF-berichten stuurt op Fa0/0 naar VLAN 30, kan de aanvaller een OSPF-adjacency vormen met R2. 
+De aanvaller kan dan valse routes injecteren, bijvoorbeeld een route naar 0.0.0.0/0 met een lagere metric. 
+Al het internetverkeer van het netwerk gaat dan via de router van de aanvaller, die al het verkeer kan onderscheppen (man-in-the-middle).
+- Een aanvaller in VLAN 10 kan hetzelfde doen met R1 en toegang krijgen tot productieverkeer.
+
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Passive-interface default is niet ingeschakeld op de OSPF-routers.
+
+R1:
+- Fa0/0 (VLAN 10, Productie) stuurt OSPF-berichten, geen OSPF-buren
+- Fa0/1 (VLAN 20, HR) stuurt OSPF-berichten, geen OSPF-buren
+
+R2:
+- Fa0/0 (VLAN 30, Gasten) stuurt OSPF-berichten, geen OSPF-buren
+
+Core-SW:
+- VLAN 10, 20 en 30 sturen OSPF-berichten, geen OSPF-buren
+
+Dit is een afwijking omdat de best practice voorschrijft dat passive-interface default moet worden ingeschakeld 
+en alleen interfaces naar andere OSPF-routers actief moeten zijn.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het ontbreken van passive-interface default op OSPF-routers:
+
+1. Ongeautoriseerde OSPF-adjacency:
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan een router aansluiten op het gastennetwerk
+- R2 stuurt OSPF-hello-berichten op Fa0/0 (naar VLAN 30)
+- De router van de aanvaller ontvangt deze hello-berichten en kan een OSPF-adjacency vormen
+- De aanvaller kan valse routes injecteren, bijv. een route naar 0.0.0.0/0 met een lagere metric
+- Al het internetverkeer van het netwerk gaat via de router van de aanvaller (man-in-the-middle)
+- De aanvaller kan wachtwoorden, bankgegevens en andere gevoelige informatie onderscheppen
+
+2. Route hijacking:
+- De aanvaller kan een route injecteren naar 192.168.10.0/24 (Productie) via zijn eigen router
+- Al het verkeer naar VLAN 10 gaat via de aanvaller
+- De aanvaller kan productiegegevens stelen of manipuleren
+
+3. Netwerkstabiliteit:
+- Een onbedoelde OSPF-adjacency kan het routing-proces verstoren
+- OSPF kan een verkeerde router als best path kiezen
+- Dit kan leiden tot lussen of blackholing van verkeer
+- Het hele netwerk kan uitvallen
+
+4. Onnodig OSPF-verkeer:
+- Interfaces zonder OSPF-buren sturen hello-berichten (10 seconden interval)
+- Dit verbruikt bandbreedte en CPU-cycli op de routers
+- In grote netwerken kan dit leiden tot prestatieproblemen
+
+De impact is hoog omdat:
+- Een aanvaller in VLAN 30 (Gasten) kan eenvoudig een OSPF-adjacency vormen met R2
+- De aanvaller kan al het internetverkeer onderscheppen
+- Gevoelige gegevens kunnen worden gestolen
+- Het netwerk kan worden gecompromitteerd
+- Dit is een bekende aanvalsvector voor OSPF-netwerken zonder passive-interface
+
+
+
+
+Samenvatting
+
+Passive-interface default is niet ingeschakeld op de OSPF-routers. Hierdoor sturen R1, R2 en Core-SW OSPF-berichten op interfaces die geen OSPF-buren hebben:
+- R1: Fa0/0 (VLAN 10, Productie) en Fa0/1 (VLAN 20, HR)
+- R2: Fa0/0 (VLAN 30, Gasten)
+- Core-SW: VLAN 10, 20 en 30
+
+Gevolgen:
+- Een aanvaller in VLAN 30 kan een OSPF-adjacency vormen met R2 en valse routes injecteren
+- Al het internetverkeer kan worden onderschept (man-in-the-middle)
+- Gevoelige gegevens kunnen worden gestolen
+- Onnodig OSPF-verkeer verbruikt resources
+
+Advies:
+1. Schakel passive-interface default in op alle OSPF-routers:
+- R1: router ospf 100, passive-interface default, no passive-interface GigabitEthernet0/0
+- R2: router ospf 100, passive-interface default, no passive-interface GigabitEthernet0/0
+- Core-SW: router ospf 100, passive-interface default, no passive-interface Vlan1
+
+2. Alleen interfaces naar andere OSPF-routers actief maken:
+- Gebruik no passive-interface voor de interfaces die verbinding maken met andere OSPF-routers
+- R1/R2: no passive-interface GigabitEthernet0/0 (verbinding tussen R1 en R2)
+- Core-SW: no passive-interface Vlan1 (verbinding met R1 en R2)
+
+3. Controleer na configuratie:
+- Gebruik show running-config | section router ospf om te controleren of passive-interface default aanwezig is
+- Gebruik show ip ospf interface om te controleren welke interfaces actief zijn
+- Gebruik show ip ospf neighbor om te controleren of OSPF-buren nog correct werken
+
+Na configuratie controleer je met show ip ospf interface dat alleen de juiste interfaces OSPF-berichten sturen 
+en met show ip ospf neighbor dat de OSPF-adjacencies nog bestaan.
+
+
+
+
+
+
