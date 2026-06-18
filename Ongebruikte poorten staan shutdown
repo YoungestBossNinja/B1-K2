@@ -1,0 +1,427 @@
+Omschrijving
+
+Shutdown is een beveiligingsfunctie op switches die een poort uitschakelt zodat er geen verkeer doorheen kan. 
+Een poort in shutdown-status is administratief uitgeschakeld en functioneert niet, ook al is er een kabel aangesloten.
+
+Simpel gezegd: Een poort in shutdown is als een dichte deur. Niemand kan erdoorheen, ook al heeft hij een sleutel (kabel). 
+Door ongebruikte poorten in shutdown te zetten, voorkom je dat iemand zomaar een apparaat kan aansluiten op een vrije netwerkaansluiting en toegang krijgt tot het netwerk.
+
+Waarom is het belangrijk om ongebruikte poorten in shutdown te zetten?
+
+Beveiliging: Een aanvaller kan een apparaat aansluiten op een ongebruikte poort en toegang krijgen tot het netwerk (bijv. VLAN hopping, netwerkscans, hackingpogingen)
+MAC-flooding: Een aanvaller kan een switch aansluiten en MAC-flooding-aanvallen uitvoeren
+DHCP-aanvallen: Een aanvaller kan een valse DHCP-server aansluiten op een ongebruikte poort
+Onbedoelde verbindingen: Een medewerker kan per ongeluk een apparaat aansluiten dat problemen veroorzaakt (bijv. een switch met STP-problemen)
+Netwerkbeheer: Het is duidelijk welke poorten in gebruik zijn en welke niet
+
+
+
+
+Uivoering
+
+! Bekijk de status van alle poorten
+Switch# show interfaces status
+
+! Bekijk de configuratie van specifieke poorten
+Switch# show running-config interface fastEthernet 0/1
+
+! Bekijk alle poorten die in shutdown staan
+Switch# show interfaces status | include disabled
+
+! Bekijk alle poorten die in gebruik zijn (connected)
+Switch# show interfaces status | include connected
+
+! Bekijk een specifieke interface in detail
+Switch# show interfaces fastEthernet 0/1
+
+
+
+Wat je moet controleren:
+
+    Welke poorten zijn in gebruik? (status = connected)
+    Welke poorten zijn ongebruikt? (geen kabel aangesloten of status = notconnect)
+    Staan ongebruikte poorten in shutdown? (status = disabled of administratively down)
+    Zijn er actieve poorten die eigenlijk niet gebruikt zouden moeten worden?
+
+
+
+
+Als ongebruikte poorten WEL in shutdown staan
+
+In show interfaces status:
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1     PC-Productie-1     connected    10         a-full   a-100 10/100BaseTX
+Fa0/2     PC-Productie-2     connected    10         a-full   a-100 10/100BaseTX
+Fa0/3     PC-Productie-3     connected    10         a-full   a-100 10/100BaseTX
+Fa0/4     PC-Productie-4     connected    10         a-full   a-100 10/100BaseTX
+Fa0/5     PC-HR-1            connected    20         a-full   a-100 10/100BaseTX
+Fa0/6     PC-HR-2            connected    20         a-full   a-100 10/100BaseTX
+Fa0/7     PC-HR-3            connected    20         a-full   a-100 10/100BaseTX
+Fa0/8     PC-HR-4            connected    20         a-full   a-100 10/100BaseTX
+Fa0/9     Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/10    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/11    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/12    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/13    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/14    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/15    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/16    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/17    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/18    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/19    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/20    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/21    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/22    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/23    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Fa0/24    Ongebruikt         disabled     1          auto     auto  10/100BaseTX
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      a-full   a-1000 1000BaseTX
+
+
+Let op:
+
+    Poorten in gebruik hebben status connected
+    Ongebruikte poorten hebben status disabled (dit betekent shutdown)
+    Actieve poorten hebben een description die aangeeft waarvoor ze worden gebruikt
+
+
+
+
+In show running-config interface fastEthernet 0/9:
+
+Switch# show running-config interface fastEthernet 0/9
+Building configuration...
+
+Current configuration : 93 bytes
+!
+interface FastEthernet0/9
+ description Ongebruikt
+ shutdown
+end
+
+Let op: De poort heeft shutdown in de configuratie en een beschrijving Ongebruikt.
+
+
+
+
+In show interfaces fastEthernet 0/9:
+cisco
+
+Switch# show interfaces fastEthernet 0/9
+FastEthernet0/9 is administratively down, line protocol is down (disabled)
+  Hardware is Fast Ethernet, address is 0001.4321.ABCD (bia 0001.4321.ABCD)
+  MTU 1500 bytes, BW 100000 Kbit, DLY 1000 usec,
+  ...
+  Last input never, output never, output hang never
+  Last clearing of "show interface" counters never
+
+Let op: administratively down betekent dat de poort in shutdown staat.
+
+
+
+Advies
+
+Het in shutdown zetten van ongebruikte poorten is een beveiligingsmaatregel die voorkomt dat een aanvaller of 
+onbevoegde gebruiker een apparaat kan aansluiten op een vrije netwerkaansluiting en toegang krijgt tot het netwerk .
+
+Het is goed dat alle ongebruikte poorten in shutdown staan op alle switches in dit netwerk.
+
+Waarom is dit belangrijk?
+- Beveiliging: Een aanvaller kan een apparaat aansluiten op een ongebruikte poort en toegang krijgen tot het netwerk (bijv. VLAN hopping, netwerkscans, hackingpogingen)
+- MAC-flooding: Een aanvaller kan een switch aansluiten en MAC-flooding-aanvallen uitvoeren
+- DHCP-aanvallen: Een aanvaller kan een valse DHCP-server aansluiten op een ongebruikte poort
+- Onbedoelde verbindingen: Een medewerker kan per ongeluk een apparaat aansluiten dat problemen veroorzaakt (bijv. een switch met STP-problemen)
+- Netwerkbeheer: Het is duidelijk welke poorten in gebruik zijn en welke niet
+
+In dit netwerk:
+- SW1 en SW2: 16 van de 24 FastEthernet-poorten zijn in shutdown. Alleen de poorten voor de aangesloten PC's (Fa0/1-0/8) en de trunk-poorten (Gi0/1-0/2) zijn actief.
+- Core-SW: Alle FastEthernet-poorten zijn in shutdown, behalve de poorten voor de servers (Fa0/1-0/2) en de trunk-poorten (Gi0/1-0/2).
+- Alle ongebruikte poorten hebben een duidelijke beschrijving (description Ongebruikt), wat het beheer vereenvoudigt.
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan geen verbinding maken met de ongebruikte poorten omdat deze in shutdown staan.
+
+Dit voorkomt dat een onbevoegde gebruiker in een lege kantoorruimte of een verdachte persoon in de serverruimte een apparaat kan aansluiten 
+op een vrije poort en toegang krijgt tot VLAN 10 (Productie, 192.168.10.0/24) of VLAN 20 (HR, 192.168.20.0/24).
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Alle ongebruikte poorten staan correct in shutdown.
+
+
+
+
+Impact
+
+Geen impact. Ongebruikte poorten zijn uitgeschakeld en vormen geen beveiligingsrisico.
+
+
+
+Samenvatting
+
+Alle ongebruikte poorten staan correct in shutdown op alle switches in het netwerk. 
+SW1 en SW2 hebben 16 van de 24 FastEthernet-poorten in shutdown, Core-SW heeft alle FastEthernet-poorten in shutdown behalve de serverpoorten. 
+De actieve poorten zijn duidelijk gemarkeerd met beschrijvingen en worden gebruikt voor PC's, servers en trunk-verbindingen. 
+Hierdoor is het netwerk beschermd tegen ongeautoriseerde toegang via ongebruikte poorten.
+
+
+
+
+
+
+
+
+
+
+
+
+Als ongebruikte poorten NIET in shutdown staan
+
+In show interfaces status:
+cisco
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1     PC-Productie-1     connected    10         a-full   a-100 10/100BaseTX
+Fa0/2     PC-Productie-2     connected    10         a-full   a-100 10/100BaseTX
+Fa0/3     PC-Productie-3     connected    10         a-full   a-100 10/100BaseTX
+Fa0/4     PC-Productie-4     connected    10         a-full   a-100 10/100BaseTX
+Fa0/5     PC-HR-1            connected    20         a-full   a-100 10/100BaseTX
+Fa0/6     PC-HR-2            connected    20         a-full   a-100 10/100BaseTX
+Fa0/7     PC-HR-3            connected    20         a-full   a-100 10/100BaseTX
+Fa0/8     PC-HR-4            connected    20         a-full   a-100 10/100BaseTX
+Fa0/9     -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/10    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/11    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/12    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/13    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/14    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/15    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/16    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/17    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/18    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/19    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/20    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/21    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/22    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/23    -                  notconnect   1          auto     auto  10/100BaseTX
+Fa0/24    -                  notconnect   1          auto     auto  10/100BaseTX
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      a-full   a-1000 1000BaseTX
+
+
+Let op:
+
+    Poorten in gebruik hebben status connected
+    Ongebruikte poorten hebben status notconnect (geen kabel aangesloten) maar zijn niet in shutdown (staat niet op disabled)
+    Er zijn geen beschrijvingen voor ongebruikte poorten
+
+
+
+In show running-config interface fastEthernet 0/9:
+cisco
+
+Switch# show running-config interface fastEthernet 0/9
+Building configuration...
+
+Current configuration : 62 bytes
+!
+interface FastEthernet0/9
+ switchport mode access
+ switchport access vlan 10
+end
+
+Let op: De poort heeft geen shutdown in de configuratie.
+
+
+
+
+
+In show interfaces fastEthernet 0/9:
+cisco
+
+Switch# show interfaces fastEthernet 0/9
+FastEthernet0/9 is down, line protocol is down (notconnect)
+  Hardware is Fast Ethernet, address is 0001.4321.ABCD (bia 0001.4321.ABCD)
+  MTU 1500 bytes, BW 100000 Kbit, DLY 1000 usec,
+  ...
+  Last input never, output never, output hang never
+  Last clearing of "show interface" counters never
+
+Let op: is down, line protocol is down (notconnect) betekent dat de poort niet in shutdown staat, maar gewoon geen kabel heeft.
+
+
+
+
+
+Bevinding
+
+Uit show interfaces status blijkt dat ongebruikte poorten niet in shutdown staan op meerdere switches.
+
+SW1:
+- Poorten in gebruik: Fa0/1 t/m 0/8 (status: connected)
+- Ongebruikte poorten: Fa0/9 t/m 0/24 (status: notconnect)
+- Ongebruikte poorten hebben geen shutdown in de configuratie
+- Ongebruikte poorten staan in VLAN 1 (default) in plaats van een veilige VLAN
+
+SW2:
+- Poorten in gebruik: Fa0/1 t/m 0/8 (status: connected)
+- Ongebruikte poorten: Fa0/9 t/m 0/24 (status: notconnect)
+- Ongebruikte poorten hebben geen shutdown in de configuratie
+- Ongebruikte poorten staan in VLAN 1 (default) in plaats van een veilige VLAN
+
+Core-SW:
+- Poorten in gebruik: Gi0/1 en Gi0/2 (trunks, status: connected)
+- Ongebruikte poorten: Alle FastEthernet-poorten (status: notconnect)
+- Ongebruikte poorten hebben geen shutdown in de configuratie
+
+In totaal zijn er 16 ongebruikte poorten op SW1, 16 op SW2 en alle FastEthernet-poorten op Core-SW die niet in shutdown staan.
+
+
+
+Advies
+
+Het in shutdown zetten van ongebruikte poorten is een beveiligingsmaatregel die voorkomt dat een aanvaller of 
+onbevoegde gebruiker een apparaat kan aansluiten op een vrije netwerkaansluiting en toegang krijgt tot het netwerk .
+
+Het is niet goed dat ongebruikte poorten niet in shutdown staan op meerdere switches.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: Een aanvaller kan een apparaat aansluiten op een ongebruikte poort en toegang krijgen tot het netwerk. 
+  De poorten staan in VLAN 1 (default) of een ander VLAN, waardoor de aanvaller direct toegang heeft tot dat VLAN.
+- VLAN hopping: Een aanvaller kan DTP gebruiken om een trunk te onderhandelen op een ongebruikte poort en toegang krijgen tot alle VLAN's (VLAN 10, 20 en 30).
+- MAC-flooding: Een aanvaller kan een switch aansluiten en MAC-flooding-aanvallen uitvoeren, wat het netwerk kan platleggen.
+- DHCP-aanvallen: Een aanvaller kan een valse DHCP-server aansluiten op een ongebruikte poort en valse IP-adressen uitdelen aan andere gebruikers.
+- Onbedoelde verbindingen: Een medewerker kan per ongeluk een apparaat aansluiten dat problemen veroorzaakt (bijv. een switch met STP-problemen).
+
+In dit netwerk:
+- Een aanvaller kan een laptop aansluiten op Fa0/9 op SW1 en krijgt direct toegang tot VLAN 1 (of een ander VLAN).
+- De aanvaller kan vervolgens proberen DTP te gebruiken om een trunk te onderhandelen. Als DTP niet is uitgeschakeld, krijgt de aanvaller toegang tot alle VLAN's:
+- VLAN 10 (Productie, 192.168.10.0/24): Productieservers, bedrijfskritische applicaties
+- VLAN 20 (HR, 192.168.20.0/24): Personeelsgegevens, salarisadministratie
+- VLAN 30 (Gasten, 192.168.30.0/24): Gasten-netwerk
+- De aanvaller kan dan gevoelige gegevens stelen, malware verspreiden of netwerkverkeer onderscheppen.
+
+Specifiek risico:
+- De ongebruikte poorten op SW1 en SW2 staan in VLAN 1, wat het default VLAN is en vaak niet goed beveiligd is.
+- Op Core-SW staan de FastEthernet-poorten ook niet in shutdown. Hoewel deze poorten minder toegankelijk zijn (serverruimte), vormt dit nog steeds een risico.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Ongebruikte poorten staan niet in shutdown op meerdere switches:
+
+SW1:
+- Poorten Fa0/9 t/m 0/24 (16 poorten) staan niet in shutdown
+- Status: notconnect (geen kabel) maar geen shutdown
+- Deze poorten staan in VLAN 1 (default)
+
+SW2:
+- Poorten Fa0/9 t/m 0/24 (16 poorten) staan niet in shutdown
+- Status: notconnect (geen kabel) maar geen shutdown
+- Deze poorten staan in VLAN 1 (default)
+
+Core-SW:
+- Alle FastEthernet-poorten staan niet in shutdown
+- Status: notconnect (geen kabel) maar geen shutdown
+
+Dit is een afwijking omdat de best practice voorschrijft dat alle ongebruikte poorten in shutdown moeten staan.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door ongebruikte poorten die niet in shutdown staan:
+
+1. Ongeautoriseerde netwerktoegang:
+- Een aanvaller kan een laptop aansluiten op Fa0/9 op SW1 (of een andere ongebruikte poort)
+- De laptop krijgt direct toegang tot het netwerk omdat de poort niet in shutdown staat
+- De poort staat in VLAN 1 (default VLAN), wat vaak minder beveiligd is
+- De aanvaller kan vervolgens:
+- Netwerkscans uitvoeren om actieve apparaten te detecteren (bijv. 192.168.10.1, 192.168.10.10, 192.168.20.1, 192.168.20.10)
+- VLAN hopping uitvoeren door DTP te gebruiken om een trunk te onderhandelen (als DTP niet is uitgeschakeld)
+- Toegang krijgen tot VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24)
+- Gevoelige gegevens stelen van productieservers en HR-systemen
+- Malware verspreiden naar andere systemen
+
+2. DHCP-aanvallen:
+- Een aanvaller kan een valse DHCP-server aansluiten op een ongebruikte poort
+- De DHCP-server deelt valse IP-adressen uit aan andere gebruikers
+- Gebruikers krijgen een valse default gateway (de aanvaller)
+- Al het internetverkeer gaat via de aanvaller (man-in-the-middle)
+- De aanvaller kan wachtwoorden, bankgegevens en andere gevoelige informatie onderscheppen
+
+3. STP-aanvallen:
+- Een aanvaller kan een switch aansluiten op een ongebruikte poort
+- De switch stuurt BPDU's met een lagere bridge-priority
+- STP herberekent de topologie en kan een andere verbinding blokkeren
+- Dit kan leiden tot lussen (broadcast storms) en netwerkuitval
+
+4. MAC-flooding:
+- Een aanvaller kan een switch aansluiten en MAC-flooding-aanvallen uitvoeren
+- De switch raakt overbelast met MAC-adressen en kan niet meer functioneren
+- Dit kan leiden tot netwerkuitval
+
+Specifiek voor dit netwerk:
+- Er zijn 16 ongebruikte poorten op SW1 en 16 op SW2 die niet in shutdown staan
+- Deze poorten zijn direct toegankelijk voor iedereen die fysiek bij de switch kan komen
+- In een kantooromgeving kunnen deze poorten in lege kantoorruimtes, vergaderzalen of gangen zitten
+- Een aanvaller kan binnen enkele minuten toegang krijgen tot het netwerk
+
+De impact is hoog omdat:
+- Ongeautoriseerde toegang tot het netwerk zeer eenvoudig is
+- Gevoelige gegevens (productie, HR) kunnen worden gestolen
+- Het hele netwerk kan worden gecompromitteerd
+- Dit kan leiden tot datalekken, reputatieschade, boetes en juridische gevolgen
+
+
+
+
+Samenvatting
+
+Ongebruikte poorten staan niet in shutdown op meerdere switches.
+
+Afwijkingen:
+- SW1: 16 poorten (Fa0/9-0/24) staan niet in shutdown, status notconnect
+- SW2: 16 poorten (Fa0/9-0/24) staan niet in shutdown, status notconnect
+- Core-SW: Alle FastEthernet-poorten staan niet in shutdown, status notconnect
+
+Deze poorten zijn direct toegankelijk voor iedereen die fysiek bij de switch kan komen. 
+Een aanvaller kan een apparaat aansluiten en toegang krijgen tot VLAN 1 (of een ander VLAN). 
+Met DTP-onderhandeling kan de aanvaller mogelijk een trunk vormen en toegang krijgen tot VLAN 10 
+(Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) en VLAN 30 (Gasten, 192.168.30.0/24).
+
+Advies:
+1. Zet alle ongebruikte poorten in shutdown:
+- SW1 (Fa0/9-0/24): Gebruik interface range fastEthernet 0/9 - 24 en shutdown
+- SW2 (Fa0/9-0/24): Gebruik interface range fastEthernet 0/9 - 24 en shutdown
+- Core-SW (Alle FastEthernet): Gebruik interface range fastEthernet 0/1 - 24 en shutdown (behalve serverpoorten als die actief zijn)
+
+2. Voeg beschrijvingen toe:
+- Gebruik description Ongebruikt - in shutdown om aan te geven dat de poort bewust is uitgeschakeld
+
+3. Verplaats ongebruikte poorten naar een veilige VLAN:
+- Zet ongebruikte poorten in een gasten-VLAN of niet-gebruikte VLAN (bijv. VLAN 999) als extra beveiliging
+- Gebruik switchport access vlan 999
+
+4. Controleer na configuratie:
+- Gebruik show interfaces status om te controleren dat alle ongebruikte poorten disabled zijn
+- Gebruik show running-config interface fastEthernet 0/9 om te controleren dat shutdown in de configuratie staat
+
+Na configuratie controleer je met show interfaces status of alle ongebruikte poorten disabled zijn en met show running-config of shutdown in de configuratie staat.
+
+
+
+
