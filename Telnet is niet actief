@@ -1,0 +1,406 @@
+omschrijving 
+Telnet is een protocol dat wordt gebruikt voor externe toegang tot netwerkapparaten zoals routers en switches. 
+Het is een van de oudste protocollen voor netwerkbeheer.
+
+Simpel gezegd: Telnet is een onbeveiligde manier om verbinding te maken met een router of switch. 
+Alle gegevens (inclusief wachtwoorden) worden in leesbare tekst verzonden. 
+"Telnet is niet actief" betekent dat Telnet is uitgeschakeld en dat er geen Telnet-verbindingen kunnen worden gemaakt.
+
+Waarom moet Telnet niet actief zijn?
+
+Onversleuteld: Alle gegevens, inclusief wachtwoorden, worden in leesbare tekst verzonden
+Man-in-the-middle: Een aanvaller kan het verkeer onderscheppen en het wachtwoord lezen
+Geen authenticatie: Telnet biedt geen sterke authenticatie
+SSH is de veilige vervanger: SSH versleutelt alle communicatie en is de best practice
+
+Hoe schakel je Telnet uit?
+
+Op de VTY-lijnen: transport input ssh of transport input none
+Telnet uitschakelen op alle VTY-lijnen (0-4, 5-15, etc.)
+Als transport input ssh is geconfigureerd, is Telnet uitgeschakeld
+
+
+
+
+uitvoering
+
+cisco
+
+! Bekijk de VTY-configuratie
+Router# show running-config | section line vty
+
+! Bekijk of Telnet is ingeschakeld
+Router# show running-config | include transport input
+
+! Bekijk de SSH/Telnet-status
+Router# show ip ssh
+Router# show users
+
+Wat je moet controleren:
+
+    Staat transport input ssh in de VTY-configuratie? (Telnet uit)
+    Staat transport input telnet of transport input all in de VTY-configuratie? (Telnet aan = afwijking)
+    Is er een gebruikersaccount voor SSH? (niet verplicht maar aanbevolen)
+    Zijn er actieve Telnet-sessies? (zie show users)
+
+
+
+
+Als Telnet NIET actief is 
+
+In show running-config | section line vty:
+cisco
+
+Router# show running-config | section line vty
+line vty 0 4
+ transport input ssh
+ login local
+ exec-timeout 5 0
+line vty 5 15
+ transport input ssh
+ login local
+ exec-timeout 5 0
+
+Let op:
+
+transport input ssh betekent dat alleen SSH is toegestaan
+Geen telnet in de configuratie
+Telnet is uitgeschakeld
+
+
+
+In show running-config | include transport input:
+cisco
+
+Router# show running-config | include transport input
+ transport input ssh
+ transport input ssh
+
+Let op: Alleen ssh wordt getoond, geen telnet.
+
+
+
+In show ip ssh (SSH is actief):
+cisco
+
+Router# show ip ssh
+SSH Enabled - version 2.0
+Authentication timeout: 60 secs; Authentication retries: 3
+
+Let op: SSH is ingeschakeld, wat betekent dat Telnet is uitgeschakeld.
+
+
+
+Als je probeert in te loggen via Telnet:
+cisco
+
+PC> telnet 192.168.1.1
+Trying 192.168.1.1 ...
+% Connection refused by remote host
+
+Let op: De verbinding wordt geweigerd omdat Telnet is uitgeschakeld.
+
+
+
+In show users:
+cisco
+
+Router# show users
+    Line       User       Host(s)              Idle       Location
+* 0 con 0     admin      idle                 00:00:00
+  2 vty 0     admin      idle                 00:05:23  192.168.1.10
+
+Let op: Er zijn geen Telnet-sessies (vty met telnet). De actieve sessie is via SSH.
+
+
+
+Advies
+
+Telnet is een onbeveiligd protocol voor externe toegang tot netwerkapparaten. Het is goed dat Telnet niet actief is op alle routers en switches in dit netwerk.
+
+Waarom is dit belangrijk?
+- Geen versleuteling: Alle gegevens (inclusief wachtwoorden) worden in leesbare tekst verzonden
+- Man-in-the-middle: Een aanvaller kan het verkeer onderscheppen en het wachtwoord lezen
+- Onveilig: Telnet is al decennia bekend als onveilig en wordt niet meer aanbevolen
+- SSH is de standaard: SSH versleutelt alle communicatie en is de best practice
+
+In dit netwerk:
+- Alle apparaten gebruiken transport input ssh op hun VTY-lijnen.
+- Dit betekent dat alleen SSH-verbindingen worden geaccepteerd.
+- Telnet-verbindingen worden geweigerd (% Connection refused).
+- SSH is ingeschakeld met versie 2 (de veilige versie).
+- Er zijn geen actieve Telnet-sessies te zien in show users.
+
+Dit voorkomt dat een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) een Telnet-verbinding probeert te maken met R1 (192.168.1.1). 
+Zelfs als de aanvaller het verkeer onderschept, kan hij niets lezen omdat SSH alles versleutelt. Telnet is volledig uitgeschakeld.
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Telnet is correct uitgeschakeld op alle apparaten.
+
+
+
+Impact
+
+Geen impact. Alleen SSH is beschikbaar voor beheer, wat veilig is.
+
+
+
+
+Samenvatting
+
+Telnet is correct uitgeschakeld op alle routers en switches. 
+Alle apparaten gebruiken transport input ssh op hun VTY-lijnen, wat betekent dat alleen SSH is toegestaan voor externe toegang. 
+Telnet-verbindingen worden geweigerd. Het netwerk is beschermd tegen de risico's van onversleutelde Telnet-toegang.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als Telnet WEL actief is
+
+In show running-config | section line vty:
+cisco
+
+Router# show running-config | section line vty
+line vty 0 4
+ transport input telnet
+ password cisco
+ login
+ exec-timeout 5 0
+
+Let op:
+
+transport input telnet betekent dat alleen Telnet is toegestaan (onveilig)
+Of transport input all betekent dat zowel Telnet als SSH zijn toegestaan (Telnet is niet uitgeschakeld)
+
+
+
+In show running-config | include transport input:
+cisco
+
+Router# show running-config | include transport input
+ transport input telnet
+ transport input telnet
+
+Let op: telnet wordt getoond, wat betekent dat Telnet actief is.
+
+
+
+In show ip ssh (SSH niet ingeschakeld):
+cisco
+
+Router# show ip ssh
+%SSH is not enabled.
+
+Let op: SSH is niet ingeschakeld, dus Telnet is de enige beheermethode.
+
+
+
+Als je inlogt via Telnet:
+cisco
+
+PC> telnet 192.168.1.1
+Trying 192.168.1.1 ... Open
+User Access Verification
+Password:
+Router>
+
+Let op: De verbinding is succesvol via Telnet (onveilig).
+
+
+
+In show users:
+cisco
+
+Router# show users
+    Line       User       Host(s)              Idle       Location
+* 0 con 0     admin      idle                 00:00:00
+  2 vty 0     admin      idle                 00:05:23  192.168.1.10
+
+Let op: De vty-sessie is een Telnet-sessie (als SSH niet is ingeschakeld, is het altijd Telnet).
+
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat Telnet actief is op meerdere routers en switches.
+
+R1:
+- line vty 0 4: transport input telnet
+- Geen SSH geconfigureerd
+- show ip ssh: %SSH is not enabled.
+
+SW1:
+- line vty 0 4: transport input telnet
+- Geen SSH geconfigureerd
+- show ip ssh: %SSH is not enabled.
+
+Core-SW:
+- line vty 0 4: transport input telnet
+- Geen SSH geconfigureerd
+- show ip ssh: %SSH is not enabled.
+
+R2 en SW2:
+- Hebben transport input ssh (Telnet uit)
+
+Er zijn 3 apparaten (R1, SW1, Core-SW) waar Telnet actief is. Deze apparaten gebruiken Telnet voor beheer, wat onveilig is.
+
+
+
+
+Advies
+
+Telnet is een onbeveiligd protocol voor externe toegang tot netwerkapparaten. Het is niet goed dat Telnet actief is op meerdere routers en switches.
+
+Waarom is dit een probleem?
+- Geen versleuteling: Alle gegevens (inclusief wachtwoorden) worden in leesbare tekst verzonden
+- Man-in-the-middle: Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan het Telnet-verkeer onderscheppen en het wachtwoord lezen
+- Wachtwoorden worden gestolen: De aanvaller kan het privilege password van R1, SW1 of Core-SW stelen
+- Volledige overname: Met het gestolen wachtwoord kan de aanvaller de apparaten overnemen
+
+In dit netwerk:
+- R1 (192.168.1.1): De hoofdrouter tussen VLAN 10 (Productie), VLAN 20 (HR) en VLAN 30 (Gasten). Telnet is actief, dus een aanvaller kan het wachtwoord onderscheppen.
+- SW1 (192.168.1.10): De switch voor VLAN 10 en 20. Telnet is actief, dus een aanvaller kan de switch overnemen.
+- Core-SW (192.168.1.5): De centrale switch. Telnet is actief, dus een aanvaller kan de switch overnemen.
+
+Specifiek risico:
+- Een aanvaller in VLAN 30 (Gasten) heeft toegang tot het netwerk.
+- De beheerder maakt verbinding met R1 via Telnet (onveilig).
+- Het wachtwoord wordt in leesbare tekst verzonden.
+- De aanvaller onderschept het wachtwoord met een packet sniffer (bijv. Wireshark).
+- De aanvaller gebruikt het gestolen wachtwoord om zelf verbinding te maken met R1.
+- De aanvaller krijgt volledige controle over R1 en kan de configuratie wijzigen, ACL's verwijderen of het netwerk platleggen.
+
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Telnet is actief op meerdere apparaten:
+
+R1 (192.168.1.1):
+- transport input telnet op VTY-lijnen
+- Geen SSH geconfigureerd
+- %SSH is not enabled.
+
+SW1 (192.168.1.10):
+- transport input telnet op VTY-lijnen
+- Geen SSH geconfigureerd
+- %SSH is not enabled.
+
+Core-SW (192.168.1.5):
+- transport input telnet op VTY-lijnen
+- Geen SSH geconfigureerd
+- %SSH is not enabled.
+
+Deze apparaten gebruiken Telnet voor beheer, wat een ernstig beveiligingsrisico is.
+
+
+
+
+
+
+
+Impact
+
+Impact: Zeer Hoog
+
+Door Telnet actief op R1, SW1 en Core-SW:
+
+1. Wachtwoorden worden onderschept:
+- Een beheerder maakt verbinding met R1 via Telnet
+- Alle gegevens, inclusief het privilege password, worden in leesbare tekst verzonden
+- Een aanvaller in VLAN 30 (Gasten, 192.168.30.0/24) kan het verkeer onderscheppen met een packet sniffer
+- De aanvaller ziet het wachtwoord in leesbare tekst
+
+2. Volledige overname van R1 (192.168.1.1):
+- De aanvaller gebruikt het gestolen wachtwoord om zelf verbinding te maken met R1 via Telnet
+- De aanvaller krijgt volledige controle over R1
+- De aanvaller kan:
+- ACL's verwijderen die verkeer tussen VLAN's blokkeren
+- Routes aanpassen om al het verkeer via een eigen server te leiden (man-in-the-middle)
+- Wachtwoorden wijzigen zodat de echte beheerder geen toegang meer heeft
+- Interfaces uitschakelen waardoor het hele netwerk uitvalt
+- Configuratie opslaan zodat wijzigingen blijven bestaan
+
+3. Overname van SW1 en Core-SW:
+- Hetzelfde kan worden gedaan met SW1 en Core-SW
+- De aanvaller kan de switches overnemen en VLAN's wijzigen, port security uitschakelen, STP manipuleren
+
+4. Het hele netwerk wordt gecompromitteerd:
+- Met toegang tot R1, SW1 en Core-SW heeft de aanvaller volledige controle over het hele netwerk
+- De aanvaller kan:
+- Gevoelige gegevens stelen (productiegegevens, HR-gegevens)
+- Malware verspreiden
+- Het netwerk platleggen
+- Ransomware installeren op servers
+
+5. Compliance-risico:
+- AVG, ISO 27001 en PCI-DSS vereisen versleutelde communicatie
+- Telnet voldoet hier niet aan
+- Dit kan leiden tot boetes en reputatieschade
+
+De impact is zeer hoog omdat:
+- Wachtwoorden eenvoudig kunnen worden onderschept
+- De aanvaller de volledige controle kan krijgen over R1, SW1 en Core-SW
+- Het hele netwerk kan worden gecompromitteerd
+- Gevoelige gegevens kunnen worden gestolen
+- Compliance is in gevaar
+
+
+
+
+
+Samenvatting
+
+Telnet is actief op meerdere kritieke apparaten: R1 (192.168.1.1), SW1 (192.168.1.10) en Core-SW (192.168.1.5). 
+Deze apparaten gebruiken transport input telnet op hun VTY-lijnen en hebben geen SSH geconfigureerd.
+
+Gevolgen:
+- Wachtwoorden worden in leesbare tekst verzonden en kunnen worden onderschept
+- Een aanvaller kan de apparaten volledig overnemen
+- Het hele netwerk kan worden gecompromitteerd
+- Gevoelige gegevens kunnen worden gestolen
+- Compliance is in gevaar
+
+Advies:
+1. Schakel Telnet uit op alle apparaten:
+- R1: line vty 0 15, transport input ssh
+- SW1: line vty 0 15, transport input ssh
+- Core-SW: line vty 0 15, transport input ssh
+
+2. Configureer SSH op deze apparaten:
+- Hostname: hostname R1
+- Domain-name: ip domain-name example.com
+- RSA-sleutel: crypto key generate rsa modulus 2048
+- SSH versie: ip ssh version 2
+- Gebruikersaccount: username admin secret cisco123!
+- VTY: login local en transport input ssh
+
+3. Controleer na configuratie:
+- Gebruik show running-config | section line vty om te controleren dat transport input ssh staat
+- Gebruik show ip ssh om te controleren dat SSH Enabled verschijnt
+- Test verbinding via SSH: ssh -l admin 192.168.1.1
+- Test dat Telnet niet werkt: telnet 192.168.1.1 moet Connection refused geven
+
+Na configuratie controleer je met show running-config | section line vty dat transport input ssh staat en met show ip ssh dat SSH is ingeschakeld.
+
+
+
