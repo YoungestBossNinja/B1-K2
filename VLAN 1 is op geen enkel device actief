@@ -1,0 +1,341 @@
+omschrijving
+
+VLAN 1 is het standaard VLAN op elke Cisco-switch. Alle poorten zitten standaard in VLAN 1 totdat ze handmatig worden toegewezen aan een ander VLAN. 
+VLAN 1 wordt ook gebruikt voor beheerdoeleinden en control traffic zoals CDP, VTP en DTP.
+
+Simpel gezegd: VLAN 1 is als de "standaardkamer" op een switch. 
+Alle poorten beginnen in deze kamer totdat je ze naar een andere kamer verplaatst. 
+Het is een beveiligingsrisico om VLAN 1 te gebruiken omdat het overal aanwezig is en een aanvaller het kan gebruiken voor VLAN-hopping aanvallen.
+
+Waarom moet VLAN 1 niet actief zijn?
+
+Beveiligingsrisico: VLAN 1 wordt gebruikt voor control traffic en is overal aanwezig. Een aanvaller kan VLAN-hopping gebruiken om toegang te krijgen tot VLAN 1.
+Best practice: Gebruik VLAN 1 niet voor user traffic. Gebruik een ander VLAN voor beheer (bijv. VLAN 10, 20, 30, of een speciaal beheervlan).
+Native VLAN: De native VLAN op trunks is standaard VLAN 1. Dit moet worden gewijzigd naar een ongebruikt VLAN (bijv. VLAN 999).
+
+Hoe schakel je VLAN 1 uit?
+
+    Je kunt VLAN 1 niet verwijderen (het is het default VLAN)
+    Maar je kunt geen poorten in VLAN 1 plaatsen (alle poorten naar andere VLAN's verplaatsen)
+    Wijzig de native VLAN op trunks naar een ander VLAN (bijv. 999)
+    Gebruik VLAN 1 niet voor beheer (gebruik een beheervlan zoals VLAN 10)
+    Zet alle ongebruikte poorten in shutdown
+
+
+
+Uitvoering
+
+cisco
+
+! Bekijk welke VLAN's actief zijn
+Switch# show vlan brief
+
+! Bekijk of er poorten in VLAN 1 zitten
+Switch# show vlan brief | include 1
+
+! Bekijk de trunk-configuratie (native VLAN)
+Switch# show interfaces trunk
+
+! Bekijk de beheerinterface (SVI)
+Switch# show running-config | include interface Vlan1
+
+Wat je moet controleren:
+
+    Zijn er poorten in VLAN 1? (zie show vlan brief)
+    Is de native VLAN op trunks gewijzigd van 1? (zie show interfaces trunk)
+    Is VLAN 1 actief? (zie show vlan brief)
+    Wordt VLAN 1 gebruikt voor beheer? (zie interface Vlan1)
+
+
+
+
+Als VLAN 1 NIET actief is
+
+In show vlan brief:
+cisco
+
+Switch# show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Gi0/1, Gi0/2
+10   Productie                        active    Fa0/1, Fa0/2, Fa0/3, Fa0/4
+20   HR                               active    Fa0/5, Fa0/6, Fa0/7, Fa0/8
+30   Gasten                           active    Fa0/9, Fa0/10, Fa0/11, Fa0/12
+99   Management                       active    Fa0/13
+999  Native                           active
+
+Let op:
+
+VLAN 1 is active maar heeft geen access-poorten toegewezen!
+Alleen trunk-poorten (Gi0/1, Gi0/2) staan nog in VLAN 1 (dit is normaal, maar de native VLAN moet nog gewijzigd worden)
+Alle user-poorten zitten in VLAN 10, 20 of 30
+
+
+
+In show interfaces trunk (native VLAN gewijzigd):
+cisco
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       on           802.1q         trunking      999
+Gi0/2       on           802.1q         trunking      999
+
+Let op: Native VLAN is 999 (niet VLAN 1). Dit is een extra beveiligingsmaatregel.
+
+
+
+In show running-config | include interface Vlan1:
+cisco
+
+Switch# show running-config | include interface Vlan1
+(geen output - niets te zien)
+
+Let op: Er is geen interface Vlan1 geconfigureerd voor beheer.
+
+
+
+Advies
+
+VLAN 1 is het standaard VLAN op Cisco-switches. Het is goed dat VLAN 1 niet actief is op alle switches en routers in dit netwerk.
+
+Waarom is dit belangrijk?
+- Beveiliging: VLAN 1 wordt gebruikt voor control traffic (CDP, VTP, DTP). Een aanvaller kan VLAN-hopping gebruiken om toegang te krijgen tot VLAN 1. 
+Door VLAN 1 niet te gebruiken, wordt dit risico verminderd.
+- Best practice: Het is een best practice om VLAN 1 niet te gebruiken voor user traffic of beheer.
+- Native VLAN: De native VLAN is gewijzigd van 1 naar 999, waardoor VLAN 1 niet onbedoeld over trunks wordt gestuurd.
+
+In dit netwerk:
+- Geen user-poorten in VLAN 1. Alle user-poorten zitten in VLAN 10 (Productie, 192.168.10.0/24), VLAN 20 (HR, 192.168.20.0/24) of VLAN 30 (Gasten, 192.168.30.0/24).
+- Native VLAN op alle trunks is gewijzigd naar VLAN 999 (een ongebruikt VLAN). Hierdoor wordt VLAN 1 niet over trunks gestuurd.
+- Geen beheer via VLAN 1. Beheer gebeurt via VLAN 99 (Management) of via een specifieke beheerinterface.
+- Routers hebben geen VLAN 1 sub-interfaces. Alleen sub-interfaces voor VLAN 10, 20 en 30 zijn geconfigureerd.
+
+Dit voorkomt dat een aanvaller VLAN-hopping gebruikt om via VLAN 1 toegang te krijgen tot het netwerk. VLAN 1 is volledig uitgeschakeld voor alle traffic.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. VLAN 1 is niet actief op alle apparaten.
+
+
+
+Impact
+
+Geen impact. VLAN 1 wordt niet gebruikt, wat de beveiliging ten goede komt.
+
+
+
+Samenvatting
+
+VLAN 1 is niet actief op alle switches en routers in het netwerk. Geen enkele user-poort gebruikt VLAN 1. 
+De native VLAN op alle trunks is gewijzigd naar VLAN 999. 
+Geen enkel apparaat gebruikt VLAN 1 voor beheer. Het netwerk voldoet aan de best practice om VLAN 1 niet te gebruiken.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als VLAN 1 WEL actief is
+
+In show vlan brief (VLAN 1 heeft poorten):
+cisco
+
+Switch# show vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/1, Fa0/2, Fa0/3, Fa0/4
+10   Productie                        active    Fa0/5, Fa0/6, Fa0/7, Fa0/8
+20   HR                               active    Fa0/9, Fa0/10, Fa0/11, Fa0/12
+30   Gasten                           active    Fa0/13, Fa0/14, Fa0/15, Fa0/16
+
+Let op: VLAN 1 heeft user-poorten toegewezen (Fa0/1-0/4). Dit is een afwijking.
+
+
+
+In show interfaces trunk (native VLAN nog 1):
+cisco
+
+Switch# show interfaces trunk
+Port        Mode         Encapsulation  Status        Native vlan
+Gi0/1       on           802.1q         trunking      1
+Gi0/2       on           802.1q         trunking      1
+
+Let op: Native VLAN is nog 1 (niet gewijzigd). Dit is een beveiligingsrisico.
+
+
+
+In show running-config | include interface Vlan1:
+cisco
+
+Switch# show running-config | include interface Vlan1
+interface Vlan1
+ ip address 192.168.1.10 255.255.255.0
+
+Let op: VLAN 1 wordt gebruikt voor beheer (SVI met IP-adres). Dit is een afwijking.
+
+
+
+
+Bevinding
+
+Uit de configuratie blijkt dat VLAN 1 actief is op meerdere switches.
+
+SW1:
+- show vlan brief: VLAN 1 heeft Fa0/1, Fa0/2, Fa0/3, Fa0/4 (4 poorten)
+- Poorten staan in VLAN 1 (default)
+- Native VLAN op trunks: 1 (niet gewijzigd)
+- Beheer via interface Vlan1 (IP-adres 192.168.1.10/24)
+
+SW2:
+- show vlan brief: VLAN 1 heeft Fa0/1, Fa0/2 (2 poorten)
+- Poorten staan in VLAN 1 (default)
+- Native VLAN op trunks: 1 (niet gewijzigd)
+
+Core-SW:
+- show vlan brief: VLAN 1 heeft Fa0/1, Fa0/2 (serverpoorten)
+- Native VLAN op trunks: 1 (niet gewijzigd)
+
+R1:
+- show running-config: interface Vlan1 is geconfigureerd voor beheer
+
+VLAN 1 wordt actief gebruikt voor user traffic, beheer en native VLAN.
+
+
+
+
+Advies
+
+VLAN 1 is het standaard VLAN op Cisco-switches. Het is niet goed dat VLAN 1 actief is op meerdere switches.
+
+Waarom is dit een probleem?
+- Beveiligingsrisico: VLAN 1 wordt gebruikt voor control traffic (CDP, VTP, DTP). 
+Een aanvaller kan VLAN-hopping gebruiken om toegang te krijgen tot VLAN 1. Via VLAN 1 kan de aanvaller vervolgens toegang krijgen tot andere VLAN's (VLAN 10, 20, 30).
+- Native VLAN 1: De native VLAN op trunks is nog 1. Dit betekent dat ongetagd verkeer over de trunk in VLAN 1 terechtkomt. 
+Een aanvaller kan dit misbruiken voor VLAN-hopping.
+- Beheer via VLAN 1: R1 en SW1 gebruiken VLAN 1 voor beheer. Dit is onveilig omdat VLAN 1 makkelijker te compromitteren is.
+
+In dit netwerk:
+- SW1: 4 user-poorten zitten in VLAN 1 (default). Deze poorten zouden in VLAN 10 (Productie) of VLAN 20 (HR) moeten zitten.
+- SW2: 2 user-poorten zitten in VLAN 1.
+- Core-SW: Serverpoorten zitten in VLAN 1. Servers zouden in VLAN 10 (Productie) moeten zitten.
+- Native VLAN: Alle trunks gebruiken native VLAN 1, wat een beveiligingsrisico is.
+- Beheer: R1 en SW1 gebruiken VLAN 1 voor beheer (SSH/Telnet).
+
+Specifiek risico:
+- Een aanvaller verbindt een apparaat met Fa0/1 op SW1 (VLAN 1).
+- De aanvaller kan vervolgens VLAN-hopping uitvoeren. 
+Omdat de native VLAN 1 is en de trunk alle VLAN's toestaat, kan de aanvaller een pakket sturen met een VLAN-tag van VLAN 10 (Productie).
+- De aanvaller krijgt toegang tot VLAN 10 en kan productieservers compromitteren.
+- De aanvaller kan ook via VLAN 1 de beheerinterface van R1 en SW1 bereiken.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+VLAN 1 is actief op meerdere switches:
+
+SW1:
+- 4 poorten in VLAN 1 (Fa0/1-0/4)
+- Native VLAN op trunks: 1
+- Beheer via interface Vlan1
+
+SW2:
+- 2 poorten in VLAN 1 (Fa0/1-0/2)
+- Native VLAN op trunks: 1
+
+Core-SW:
+- 2 serverpoorten in VLAN 1 (Fa0/1-0/2)
+- Native VLAN op trunks: 1
+
+R1:
+- Beheer via interface Vlan1
+
+VLAN 1 wordt gebruikt voor user traffic, beheer en native VLAN. Dit is een groot beveiligingsrisico.
+
+
+
+
+Impact
+
+Impact: Hoog
+
+Door VLAN 1 actief op meerdere switches:
+
+1. VLAN-hopping:
+- Een aanvaller kan een apparaat aansluiten op een poort in VLAN 1 (bijv. Fa0/1 op SW1)
+- De aanvaller stuurt een pakket met een VLAN-tag van VLAN 10 (Productie)
+- Omdat de trunk alle VLAN's toestaat en native VLAN 1 is, accepteert de switch het pakket
+- De aanvaller krijgt toegang tot VLAN 10 en kan productieservers compromitteren
+
+2. Toegang tot beheerinterfaces:
+- R1 en SW1 gebruiken VLAN 1 voor beheer
+- Een aanvaller in VLAN 1 kan de beheerinterface van R1 (192.168.1.1) bereiken
+- De aanvaller kan proberen in te loggen op R1 via SSH/Telnet
+- Als het wachtwoord zwak is, kan de aanvaller R1 overnemen
+
+3. Native VLAN 1 risico:
+- Native VLAN 1 op trunks betekent dat ongetagd verkeer in VLAN 1 terechtkomt
+- Een aanvaller kan native VLAN-hopping gebruiken om toegang te krijgen tot VLAN 1
+- Dit is een bekende aanvalsvector
+
+4. Geen segregatie:
+- Servers op Core-SW zitten in VLAN 1 in plaats van VLAN 10 (Productie)
+- Dit betekent dat servers niet gescheiden zijn van het default VLAN
+- Een aanvaller in VLAN 1 kan direct servers bereiken
+
+De impact is hoog omdat:
+- VLAN-hopping een bekende aanvalsvector is
+- Gevoelige gegevens kunnen worden gestolen
+- Beheerinterfaces zijn toegankelijk via VLAN 1
+- De best practice wordt geschonden
+
+
+
+Samenvatting
+
+VLAN 1 is actief op meerdere switches. Er zijn user-poorten in VLAN 1 (SW1: 4 poorten, SW2: 2 poorten, Core-SW: 2 serverpoorten). 
+De native VLAN op alle trunks is nog 1 (onveilig). R1 en SW1 gebruiken VLAN 1 voor beheer.
+
+Gevolgen:
+- VLAN-hopping mogelijk (aanvaller krijgt toegang tot VLAN 10, 20, 30)
+- Beheerinterfaces toegankelijk via VLAN 1
+- Native VLAN 1 risico
+- Geen segregatie van servers
+
+Advies:
+1. Verplaats alle poorten uit VLAN 1:
+- SW1 (Fa0/1-0/4): interface range fastEthernet 0/1 - 4, switchport access vlan 10 (Productie)
+- SW2 (Fa0/1-0/2): switchport access vlan 20 (HR)
+- Core-SW (Fa0/1-0/2): switchport access vlan 10 (Productie)
+
+2. Wijzig de native VLAN op alle trunks:
+- switchport trunk native vlan 999 op alle trunks
+- Zorg dat VLAN 999 bestaat en niet wordt gebruikt
+
+3. Verplaats beheer naar een specifiek beheervlan:
+- Gebruik VLAN 99 (Management) voor beheer
+- R1: interface Vlan99 met IP-adres 192.168.99.1/24
+- SW1: interface Vlan99 met IP-adres 192.168.99.10/24
+- Verwijder interface Vlan1
+
+4. Controleer na configuratie:
+- show vlan brief om te controleren dat VLAN 1 geen user-poorten heeft
+- show interfaces trunk om te controleren dat Native VLAN 999 is
+- show running-config | include interface Vlan1 om te controleren dat Vlan1 is verwijderd
+
+Na configuratie controleer je met show vlan brief dat VLAN 1 geen poorten heeft en met show interfaces trunk dat native VLAN 999 is.
+
