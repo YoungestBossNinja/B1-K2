@@ -1,0 +1,403 @@
+Omschrijving
+
+NTP (Network Time Protocol) is een protocol dat wordt gebruikt om de tijd van computers en netwerkapparaten te synchroniseren met een betrouwbare tijdrekening, 
+zoals een atoomklok of een NTP-server op internet.
+    
+Simpel gezegd: NTP is als een "klokken-synchronisator" voor je netwerk. 
+Het zorgt ervoor dat alle routers, switches, servers en PC's dezelfde exacte tijd hebben. 
+Zonder NTP kunnen apparaten afwijkende tijden hebben, wat problemen geeft met logbestanden 
+(je kunt niet zien wat wanneer gebeurde) en beveiliging (certificaten en authenticatie werken niet correct).
+
+Hoe werkt het?
+    Een NTP-server heeft de exacte tijd (bijv. via GPS of internet)
+    NTP-clients (routers, switches, servers) vragen periodiek de tijd op bij de NTP-server
+    De apparaten passen hun eigen klok aan zodat deze synchroon loopt met de NTP-server
+    NTP gebruikt een hiërarchische structuur (stratum 0 = atoomklok, stratum 1 = primaire server, stratum 2 = client, etc.)
+
+Waarom is NTP belangrijk?
+
+    Logbestanden: Bij een beveiligingsincident is het cruciaal dat alle logs de zelfde tijd hebben. Zonder NTP kun je niet achterhalen wat er precies in welke volgorde is gebeurd.
+    Authenticatie: Protocollen zoals Kerberos (gebruikt in Active Directory) vereisen dat de tijd van clients en servers binnen 5 minuten van elkaar ligt. Anders werkt authenticatie niet.
+    Certificaten: SSL/TLS-certificaten hebben een geldigheidsperiode. Als de tijd van een apparaat afwijkt, kan een certificaat worden geweigerd.
+    Scheduling: Geplande taken (back-ups, updates) moeten op het juiste moment worden uitgevoerd.
+    Correlatie: Bij het analyseren van netwerkproblemen is het essentieel dat gebeurtenissen op verschillende apparaten in de juiste volgorde staan.
+
+
+
+Uitvoering
+
+Commando's voor de audit:
+cisco
+
+! Bekijk de NTP-configuratie
+Router# show running-config | include ntp
+
+! Bekijk de NTP-status en synchronisatie
+Router# show ntp status
+
+! Bekijk met welke NTP-servers het apparaat communiceert
+Router# show ntp associations
+
+! Bekijk de NTP-associaties in detail
+Router# show ntp associations detail
+
+! Bekijk de kloktijd van het apparaat
+Router# show clock
+
+
+
+Wat je moet controleren:
+
+    Is NTP ingeschakeld? (zie show ntp status)
+    Met welke NTP-servers is het apparaat verbonden? (zie show ntp associations)
+    Is de tijd gesynchroniseerd? (zie show ntp status en show clock)
+    Staan de NTP-servers in de configuratie? (zie show running-config | include ntp)
+
+
+
+
+
+✅ Als NTP WEL is geactiveerd - Wat zie je?
+In show running-config | include ntp:
+cisco
+
+Router# show running-config | include ntp
+ntp server 192.168.1.50
+ntp server 192.168.1.51
+ntp update-calendar
+clock timezone CET 1 0
+
+Let op: Er zijn NTP-servers geconfigureerd.
+
+
+
+
+In show ntp status:
+cisco
+
+Router# show ntp status
+Clock is synchronized, stratum 2, reference is 192.168.1.50
+nominal freq is 250.0000 Hz, actual freq is 250.0000 Hz, precision is 2**10
+reference time is D8B3E5A1.6C4B2A1E (10:23:45.123 CET Wed Jun 17 2026)
+clock offset is 0.0054 msec, root delay is 0.02 msec
+root dispersion is 0.03 msec, peer dispersion is 0.01 msec
+
+Let op: Clock is synchronized betekent dat NTP actief is en de tijd correct is.
+
+
+
+In show ntp associations:
+cisco
+
+Router# show ntp associations
+  address         ref clock       st  when  poll reach  delay  offset   disp
+*~192.168.1.50   83.100.1.2        2    45    64   377  0.003  0.005   0.012
++ 192.168.1.51   83.100.1.3        2    23    64   377  0.004  0.008   0.015
+ * sys.peer, # selected, + candidate, - outlyer, x falseticker, ~ configured
+
+Let op:
+
+* betekent dat de tijd van deze server wordt gebruikt (synchronisatie)
++ betekent dat deze server een kandidaat is voor synchronisatie
+st = stratum (hoe ver van de atoomklok)
+reach = 377 betekent dat alle 8 NTP-pakketten zijn ontvangen (goede verbinding)
+
+
+
+
+In show clock:
+cisco
+
+Router# show clock
+10:23:45.123 CET Wed Jun 17 2026
+
+Let op: De tijd komt overeen met de NTP-server.
+
+
+
+
+
+
+Advies:
+
+NTP (Network Time Protocol) is een protocol dat de tijd van netwerkapparaten synchroniseert met een betrouwbare tijdrekening, 
+zoals een atoomklok of een NTP-server op internet. Het is goed dat NTP is geactiveerd op alle apparaten in dit netwerk.
+
+Waarom is NTP belangrijk?
+
+Logbestanden: Bij een beveiligingsincident is het cruciaal dat alle logs dezelfde tijd hebben. 
+Zonder NTP kun je niet achterhalen wat er precies in welke volgorde is gebeurd. 
+Stel je voor: een hacker dringt binnen om 14:00, maar de log van de switch zegt 12:00 en de log van de router zegt 16:00. Je kunt dan nooit de exacte aanvalsvolgorde reconstrueren. 
+Dit is een groot probleem bij forensisch onderzoek.
+
+Authenticatie: Protocollen zoals Kerberos (gebruikt in Active Directory) vereisen dat de tijd van clients en servers binnen 5 minuten van elkaar ligt. 
+Als de tijd van R1 (192.168.1.1) afwijkt ten opzichte van de domeincontroller op 192.168.1.10, kunnen gebruikers niet inloggen. Dit leidt tot productiviteitsverlies.
+
+Certificaten: SSL/TLS-certificaten hebben een geldigheidsperiode. 
+Als de tijd van een webserver (bijv. op 192.168.10.10) afwijkt, kan het certificaat worden geweigerd door clients. 
+Bezoekers van de website krijgen dan een beveiligingswaarschuwing te zien.
+
+Scheduling: Geplande taken (back-ups, updates) moeten op het juiste moment worden uitgevoerd. 
+Als de tijd van Core-SW (192.168.1.5) afwijkt, kan een geplande back-up om 02:00 's nachts worden uitgevoerd om 04:00 of helemaal niet.
+
+Correlatie: Bij het analyseren van netwerkproblemen is het essentieel dat gebeurtenissen op verschillende apparaten in de juiste volgorde staan. 
+Met NTP kunnen we precies zien welke foutmelding eerst kwam en welke daarna.
+
+
+
+In dit netwerk:
+
+    Alle routers en switches zijn gesynchroniseerd met NTP-server op 192.168.1.50
+    Er is een backup NTP-server op 192.168.1.51 voor redundantie (als de primaire server uitvalt, blijft de tijd correct)
+    De tijdzone is correct ingesteld op CET (Central European Time)
+    De synchronisatiestatus op alle apparaten is gesynchroniseerd (te zien aan Clock is synchronized in show ntp status en de * in show ntp associations)
+    De reach waarde is 377 op alle apparaten, wat betekent dat alle NTP-pakketten succesvol worden ontvangen
+
+Dit betekent dat:
+
+    Alle logbestanden van R1, R2, SW1, SW2 en Core-SW dezelfde tijd hebben, wat essentieel is voor het analyseren van beveiligingsincidenten en het oplossen van netwerkproblemen.
+    Authenticatie met bijvoorbeeld Active Directory of RADIUS werkt correct omdat de tijd van alle apparaten synchroon loopt.
+    Certificaten op de webserver (bijv. 192.168.10.10) worden correct geaccepteerd door clients.
+    Geplande taken (back-ups, updates) worden uitgevoerd op het geplande tijdstip, omdat alle apparaten dezelfde tijd hanteren.
+
+
+
+Afwijking: Geen afwijking geconstateerd. NTP is correct geactiveerd op alle apparaten met de juiste NTP-servers en tijdzone.
+
+
+
+Impact: Geen impact. Alle apparaten hebben een correcte en gesynchroniseerde tijd.
+
+
+
+Samenvatting: NTP is correct geactiveerd op alle netwerkapparaten. 
+Alle routers en switches zijn gesynchroniseerd met NTP-server 192.168.1.50 en backup-server 192.168.1.51. 
+De tijdzone is correct ingesteld op CET. 
+Hierdoor zijn logbestanden consistent, authenticatie werkt correct, certificaten worden geaccepteerd en geplande taken worden op het juiste moment uitgevoerd. 
+Het netwerk voldoet aan de best practice voor tijdsynchronisatie.
+
+
+
+
+
+
+
+
+
+
+
+
+❌ Als NTP NIET is geactiveerd - Wat zie je?
+In show running-config | include ntp:
+cisco
+
+Router# show running-config | include ntp
+(geen output - niets te zien)
+
+Let op: Er zijn geen NTP-servers geconfigureerd.
+
+
+
+
+In show ntp status:
+cisco
+
+Router# show ntp status
+Clock is unsynchronized, stratum 16, no reference clock
+nominal freq is 250.0000 Hz, actual freq is 250.0000 Hz, precision is 2**10
+reference time is 00000000.00000000 (00:00:00.000 UTC Mon Jan 1 1900)
+clock offset is 0.0000 msec, root delay is 0.00 msec
+root dispersion is 0.00 msec, peer dispersion is 0.00 msec
+
+Let op: Clock is unsynchronized en stratum 16 betekent dat NTP niet actief is.
+
+
+
+
+In show ntp associations:
+cisco
+
+Router# show ntp associations
+No associations configured.
+
+Let op: Er zijn geen NTP-associaties geconfigureerd.
+
+
+
+
+In show clock (tijd kan afwijken):
+cisco
+
+Router# show clock
+03:45:12.456 UTC Mon Jan 12 2015
+
+Let op: De tijd is niet correct (in dit voorbeeld is het 2015 terwijl het 2026 is).
+
+
+
+
+
+📊 Ingevuld auditformulier - NTP NIET geactiveerd
+
+Te controleren: NTP-Clients is geactiveerd
+
+
+Bevinding:
+
+Uit de configuratie en status blijkt dat NTP niet is ingeschakeld op meerdere netwerkapparaten.
+Apparaat	NTP Server(s)	Status	Synchronisatie	Tijd
+R1	Geen	Niet gesynchroniseerd	Nee	03:45:12 UTC 12-01-2015
+R2	192.168.1.50	Gesynchroniseerd	Ja	10:23:46 CET 17-06-2026
+Core-SW	Geen	Niet gesynchroniseerd	Nee	12:10:05 UTC 05-03-2020
+SW1	Geen	Niet gesynchroniseerd	Nee	08:30:20 UTC 01-01-2010
+SW2	192.168.1.50	Gesynchroniseerd	Ja	10:23:45 CET 17-06-2026
+
+Configuratie:
+
+    R1: Geen NTP-servers geconfigureerd
+
+    R2: NTP-server 192.168.1.50 geconfigureerd
+
+    Core-SW: Geen NTP-servers geconfigureerd
+
+    SW1: Geen NTP-servers geconfigureerd
+
+    SW2: NTP-server 192.168.1.50 geconfigureerd
+
+
+
+
+Afwijking
+Afwijking geconstateerd:
+
+NTP is niet consistent ingeschakeld op alle apparaten. Drie apparaten (R1, Core-SW en SW1) hebben geen NTP-configuratie.
+
+
+
+
+Advies:
+
+NTP (Network Time Protocol) is een protocol dat de tijd van netwerkapparaten synchroniseert met een betrouwbare tijdrekening, 
+zoals een atoomklok of een NTP-server op internet. Het is niet goed dat NTP niet consistent is geactiveerd op alle apparaten in dit netwerk.
+
+
+
+
+Waarom is NTP belangrijk?
+
+Logbestanden: Bij een beveiligingsincident is het cruciaal dat alle logs dezelfde tijd hebben. 
+Zonder NTP kun je niet achterhalen wat er precies in welke volgorde is gebeurd. 
+In dit netwerk hebben R1, Core-SW en SW1 geen NTP. Als er een hackpoging plaatsvindt, heeft elk apparaat een andere tijd in de logs. 
+Je kunt dan nooit de exacte aanvalsvolgorde reconstrueren. Dit is een groot probleem bij forensisch onderzoek.
+
+Authenticatie: Protocollen zoals Kerberos (gebruikt in Active Directory) vereisen dat de tijd van clients en servers binnen 5 minuten van elkaar ligt. 
+Op R1 staat de tijd op 2015, terwijl R2 op 2026 staat. 
+Een gebruiker die via R1 (192.168.1.1) verbinding maakt met een server op 192.168.10.10 zal worden geweigerd omdat de tijd te veel afwijkt. Dit leidt tot productiviteitsverlies.
+
+Certificaten: SSL/TLS-certificaten hebben een geldigheidsperiode. 
+Op SW1 staat de tijd op 2010. 
+Een client die verbinding maakt met de webserver op 192.168.10.10 krijgt een foutmelding dat het certificaat niet geldig is 
+omdat de tijd van de client (2010) buiten de geldigheidsperiode van het certificaat valt.
+
+Scheduling: Geplande taken (back-ups, updates) op Core-SW worden niet op het juiste moment uitgevoerd omdat de tijd afwijkt.
+
+Correlatie: Bij het analyseren van netwerkproblemen is het essentieel dat gebeurtenissen op verschillende apparaten in de juiste volgorde staan. 
+Met NTP kunnen we precies zien welke foutmelding eerst kwam en welke daarna. Zonder NTP is het onmogelijk om de volgorde van gebeurtenissen te bepalen.
+
+
+
+
+Impact: Hoog
+
+Door het ontbreken van NTP op R1, Core-SW en SW1:
+
+Logbestanden zijn onbruikbaar voor forensisch onderzoek:
+
+R1 logt met tijd 2015
+Core-SW logt met tijd 2020
+SW1 logt met tijd 2010
+Bij een beveiligingsincident kun je niet meer achterhalen wat wanneer is gebeurd. 
+Een hacker die op 17 juni 2026 om 14:00 het netwerk binnendringt, kan niet worden getraceerd omdat de logs van R1 zeggen dat het 2015 is, die van Core-SW 2020 en die van SW1 2010.
+
+
+Authenticatie en toegangscontrole werkt niet:
+
+R1 (192.168.1.1) heeft tijd 2015, terwijl de RADIUS-server op 192.168.10.20 tijd 2026 heeft. 
+Gebruikers die via R1 inloggen, worden geweigerd omdat de tijd te veel afwijkt (meer dan 5 minuten).
+Kerberos-tickets voor Active Directory worden geweigerd.
+
+
+Certificaatfouten:
+
+SW1 (tijd 2010) kan geen SSL-verbinding maken met een webserver op 192.168.10.10 omdat het certificaat van de webserver niet geldig is in 2010.
+Gebruikers krijgen beveiligingswaarschuwingen te zien bij het bezoeken van bedrijfswebsites.
+
+
+Geplande taken worden niet correct uitgevoerd:
+
+Core-SW heeft tijd 2020, terwijl het nu 2026 is. Geplande back-ups om 02:00 worden niet uitgevoerd omdat de tijd afwijkt.
+Updates worden niet geïnstalleerd omdat de geplande tijd niet overeenkomt.
+
+
+Probleemoplossing is onmogelijk:
+
+Bij een netwerkstoring op 17 juni 2026 om 14:00 kun je niet bepalen wat er eerst gebeurde: 
+viel R1 uit of viel SW1 uit? De logs hebben verschillende tijden, dus je kunt de volgorde niet vaststellen. Dit verlengt de uitvaltijd aanzienlijk.
+
+
+Compatibiliteitsproblemen:
+
+Nieuwe apparaten (bijv. een nieuwe switch) hebben een correcte tijd. 
+Oudere apparaten (SW1) hebben een verkeerde tijd. Dit kan leiden tot onvoorspelbaar gedrag bij netwerkprotocollen zoals OSPF of EIGRP die afhankelijk zijn van timers.
+
+
+Samenvatting:
+
+NTP is niet consistent geactiveerd op alle netwerkapparaten. 
+De apparaten R1 (192.168.1.1), Core-SW (192.168.1.5) en SW1 (192.168.1.10) hebben geen NTP-configuratie en lopen daardoor verkeerd 
+(de tijden variëren van 2010 tot 2020 terwijl het nu 2026 is). Alleen R2 en SW2 hebben een correcte NTP-configuratie met server 192.168.1.50.
+
+
+Gevolgen:
+
+    Logbestanden zijn inconsistent en onbruikbaar voor forensisch onderzoek
+    Authenticatie werkt niet (Kerberos, RADIUS)
+    Certificaatfouten bij SSL/TLS-verbindingen
+    Geplande taken worden niet correct uitgevoerd
+    Probleemoplossing is vertraagd omdat de volgorde van gebeurtenissen niet kan worden bepaald
+    Verhoogde kans op beveiligingsincidenten die niet kunnen worden opgespoord
+
+
+Advies:
+
+Configureer NTP op alle apparaten consistent:
+Gebruik dezelfde NTP-servers op alle apparaten (bijv. 192.168.1.50 en 192.168.1.51)
+
+R1: ntp server 192.168.1.50 en ntp server 192.168.1.51
+Core-SW: ntp server 192.168.1.50 en ntp server 192.168.1.51
+
+SW1: ntp server 192.168.1.50 en ntp server 192.168.1.51
+Stel de juiste tijdzone in op alle apparaten:
+Gebruik clock timezone CET 1 0 voor Central European Time
+Of clock timezone UTC 0 0 voor UTC (aanbevolen voor consistentie)
+
+Controleer of er voldoende NTP-servers zijn:
+
+Configureer minimaal 2 NTP-servers voor redundantie (als er één uitvalt, blijft de tijd correct)
+Gebruik een betrouwbare NTP-bron (bijv. pool.ntp.org of een interne NTP-server)
+
+Controleer de synchronisatie na configuratie:
+Gebruik show ntp status om te controleren of Clock is synchronized
+Gebruik show ntp associations om te controleren of de apparaten verbinding maken met de NTP-servers
+
+Stel NTP-authenticatie in (optioneel maar aanbevolen):
+Dit voorkomt dat een aanvaller de tijd manipuleert door valse NTP-berichten te sturen
+Gebruik ntp authentication-key en ntp trusted-key voor beveiliging
+
+Controleer de firewall/ACL's:
+
+Zorg dat NTP-verkeer (UDP poort 123) is toegestaan tussen de NTP-clients en de NTP-server
+Na configuratie controleer je met show ntp status of alle apparaten synchronized zijn en met show clock of de tijd overeenkomt.
+
+
+
