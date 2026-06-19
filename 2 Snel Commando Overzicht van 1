@@ -1,0 +1,18 @@
+Beheertaak	        Commando	                            Wat je zoekt	                                    Afwijking
+
+AAA	                show run | incl aaa	                  aaa new-model, radius-server	                    Geen AAA
+Local users	        show run | incl username	            username admin secret	                            Geen username
+Banner	            show run | incl banner	              banner motd ^C...^C	                              Geen banner
+Exec-timeout	      show run | section line con/vty	      exec-timeout 5 0	                                exec-timeout 0 0 of geen
+Mgmt VLAN	          show vlan brief	                      Beheer via VLAN 99, niet VLAN 1	                  Beheer via VLAN 1
+CDP uit	            show run | incl no cdp enable	        no cdp enable op edge-poorten	                    CDP aan op edge
+NTP auth	          show run | incl ntp authentication	  ntp authentication-key, ntp trusted-key	          Geen auth
+DHCP correct	      show run | section ip dhcp	          Exclusions, lease, default-router	                Geen exclusions, foute lease
+DNS	                nslookup www.company.com	            Address: [IP]	                                    Non-existent domain
+Uptime	            show version | incl uptime	          uptime is 2 weeks	                                uptime is 1 day of minder
+Interface errors	  show int [poort] | incl errors|CRC	  0 input errors, 0 CRC	                            Errors > 0
+Default gateway	    ipconfig + ping [gw]	                Default Gateway: [IP] + Reply from	              Geen gateway of ping mislukt
+EtherChannel	      show etherchannel summary	            Port-channel is up, (P)	                          Port-channel down of 1 poort
+VLAN naming	        show vlan brief	                      10 Productie	                                    VLAN0010 (geen naam)
+Voldoende geheugen	show flash	                          bytes available > 10MB	                          Flash bijna vol
+Config back-ups	    Controleer FTP/TFTP server	          R1-startup-config.cfg aanwezig	                  Geen back-up bestanden
