@@ -1,0 +1,299 @@
+Omschrijving
+
+Een bottleneck (of flessenhals) in een netwerk ontstaat wanneer een interface (poort) niet snel genoeg is om het verkeer te verwerken, 
+waardoor er vertraging (latency) en pakketverlies (packet loss) ontstaat .
+
+
+Bij deze audit controleer je of er geen snelheidsverschillen zijn tussen verbonden apparaten. Dit controleer je aan de hand van drie dingen:
+
+Portsnelheid (Speed): Een 100Mbps poort die is aangesloten op een 1Gbps poort creëert een bottleneck. 
+De 1Gbps poort moet terugschakelen (auto-negotiate) naar 100Mbps, maar als dat niet werkt, krijg je verbindingsproblemen .
+
+Duplex Mode: Dit moet aan beide kanten van de kabel identiek zijn (beide Full of beide Half). 
+Als de ene kant Full-duplex en de andere Half-duplex is, ontstaan er collisies en CRC-fouten, wat het netwerk dramatisch kan vertragen .
+
+Bekabeling (Cable Type): Voor snelheden boven 100Mbps is een cross-over kabel of (vaker) een straight-through kabel nodig, 
+maar tegenwoordig ondersteunen de meeste switches Auto-MDIX, waardoor de kabelkeuze minder kritiek is, maar het moet wel werken .
+
+Waarom is dit belangrijk?
+Zelfs als alles "groen" lijkt, kan een verkeerde duplex-instelling ervoor zorgen dat een 1Gbps-verbinding maar met 10Mbps werkt. 
+Het identificeren hiervan voorkomt onverklaarbare trage netwerkprestaties voor gebruikers.
+
+
+
+
+Uitvoering 
+
+cisco
+
+! Bekijk de status en snelheid van alle poorten
+Switch# show interfaces status
+
+! Bekijk de gedetailleerde instellingen van een specifieke poort
+Switch# show interfaces gigabitEthernet 0/1
+
+! Bekijk de snelheid en duplex configuratie van een poort
+Switch# show interfaces gigabitEthernet 0/1 | include Speed|Duplex|Auto-negotiation
+
+! Bekijk fouten op een interface (CRC errors, collisions)
+Switch# show interfaces gigabitEthernet 0/1 | include CRC|collisions|input errors
+
+! Bekijk de configuratie (of deze handmatig of auto is ingesteld)
+Switch# show running-config interface gigabitEthernet 0/1
+
+Wat je moet controleren:
+
+    Speed: Komt de snelheid overeen met wat de andere kant kan? (bijv. beide 1000Mbps)
+    Duplex: Staat beide kanten op Full (of allebei op Half)?
+    Errors: Zijn er veel CRC-fouten of collisions? (dit wijst op duplex-mismatch)
+    Auto-MDIX: Is de kabel correct of ondersteunt de switch Auto-MDIX?
+
+
+
+
+
+Als er GEEN bottlenecks zijn (Alles is optimaal)
+
+
+In show interfaces status:
+cisco
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Fa0/1     PC-Productie-1     connected    10         a-full   a-100 10/100BaseTX
+Fa0/2     PC-Productie-2     connected    10         a-full   a-100 10/100BaseTX
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/3     Server-1          connected    10         a-full   a-1000 1000BaseTX
+
+Let op:
+
+    Speed toont a-1000 (auto-onderhandeld naar 1Gbps) of a-100 (100Mbps).
+    Duplex toont a-full (Full-duplex).
+    Er zijn geen disabled of err-disabled poorten.
+
+
+In show interfaces gigabitEthernet 0/1 | include Speed|Duplex|Auto-negotiation:
+cisco
+
+Switch# show interfaces gigabitEthernet 0/1 | include Speed|Duplex|Auto-negotiation
+  Auto-negotiation is on
+  Speed: 1000Mb/s
+  Duplex: Full
+
+Let op: Snelheid en duplex zijn correct onderhandeld en er is geen mismatch.
+
+
+
+
+Advies
+
+Een bottleneck ontstaat wanneer een interface niet snel genoeg is of verkeerd is geconfigureerd (bijv. duplex-mismatch), wat leidt tot pakketverlies en vertraging . 
+Het is goed dat er geen bottlenecks zijn gevonden op de MLS-switch en de access-switches.
+
+Waarom is dit belangrijk?
+- Optimale doorvoer: De trunk-verbindingen werken op 1Gbps (Full-duplex), wat voldoende is voor alle inter-VLAN-verkeer tussen de switches.
+- Geen pakketverlies: De afwezigheid van CRC-fouten en collisions betekent dat de bekabeling en duplex-instellingen correct zijn.
+- Stabiele verbinding: Geen err-disabled poorten, wat betekent dat alle bekabeling goed is aangesloten.
+
+In dit netwerk:
+- Trunks: Alle trunks tussen Core-SW, SW1 en SW2 draaien op 1Gbps Full-duplex .
+- Access-poorten: PC's hebben 100Mbps Full-duplex, wat voor eindgebruikers voldoende is.
+- Servers: Serverpoorten draaien op 1Gbps Full-duplex, wat zorgt voor snelle datatoegang.
+
+Dit betekent dat gebruikers geen trage netwerkervaring zullen hebben door verkeerde snelheids- of duplex-instellingen.
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. De portsnelheden, duplex mode en bekabeling zijn correct geconfigureerd.
+
+
+
+Impact
+
+Geen impact. Het netwerk draait op optimale snelheid zonder bottlenecks.
+
+
+
+Samenvatting
+
+Er zijn geen bottlenecks gevonden op de MLS-switch en de aangesloten switches. 
+Alle trunks en serverpoorten draaien op 1000Mbps Full-duplex. Access-poorten draaien op 100Mbps Full-duplex. 
+Er zijn geen CRC-fouten, collisions of err-disabled poorten. Het netwerk is correct geconfigureerd voor optimale prestaties.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als er WEL bottlenecks zijn (Afwijking)
+
+
+In show interfaces status (Snelheids- en duplex-mismatch):
+cisco
+
+Switch# show interfaces status
+
+Port      Name               Status       Vlan       Duplex  Speed Type
+Gi0/1     Trunk-Core        connected    trunk      a-full   a-1000 1000BaseTX
+Gi0/2     Trunk-Core2       connected    trunk      half     10    1000BaseTX   <-- AFWIJKING!
+Gi0/3     Server-1          connected    10         full     100   1000BaseTX   <-- AFWIJKING!
+
+    Let op:
+
+        Gi0/2: Duplex: half en Speed: 10 op een 1000BaseTX poort. Dit is een gigantische bottleneck! De verbinding is handmatig verkeerd ingesteld of de kabel is defect.
+        Gi0/3: Speed: 100 terwijl de poort 1000Mbps aan kan. De auto-negotiation heeft gefaald (vaak door een verkeerde kabel of verkeerde instellingen).
+
+
+
+In show interfaces gigabitEthernet 0/2 | include CRC|collisions|input errors:
+cisco
+
+Switch# show interfaces gigabitEthernet 0/2 | include CRC|collisions|input errors
+  Input errors: 1523, CRC: 1500, Frame: 23
+  collisions: 145
+
+    Let op: Veel CRC-fouten en collisions wijzen op een duplex-mismatch. De switch verzendt full-duplex, maar de ontvanger (bijv. een oude server) werkt half-duplex.
+
+
+
+
+Bevinding
+
+Uit de tests blijkt dat er wel bottlenecks zijn gevonden op de MLS-switch en access-switches.
+
+MLS-Switch (Core-SW):
+- Gi0/1 (Trunk naar SW1): Speed: 1000Mbps, Duplex: Half ⚠️
+- Gi0/2 (Trunk naar SW2): Speed: 100Mbps, Duplex: Full ⚠️
+- Gi0/3 (Server): Speed: 1000Mbps, Duplex: Full (Correct)
+- Interface errors: Gi0/1 heeft 1500 CRC-fouten en 200 collisions.
+
+SW1 (Access Switch):
+- Gi0/1 (Trunk naar Core): Speed: 1000Mbps, Duplex: Full (Correct)
+- Fa0/1 (PC): Speed: 10Mbps, Duplex: Half ⚠️
+
+SW2 (Access Switch):
+- Gi0/1 (Trunk naar Core): Speed: 100Mbps, Duplex: Full ⚠️
+
+Er zijn meerdere afwijkingen gevonden die bottlenecks veroorzaken.
+
+
+
+
+Advies
+
+Een bottleneck ontstaat wanneer een interface niet snel genoeg is of verkeerd is geconfigureerd (bijv. duplex-mismatch), wat leidt tot pakketverlies en vertraging . 
+Het is niet goed dat er bottlenecks zijn gevonden op de MLS-switch en access-switches.
+
+Waarom is dit een probleem?
+- Duplex-mismatch (Gi0/1 op Core-SW): De trunk naar SW1 staat op Half-duplex, terwijl de andere kant Full-duplex is. 
+Dit zorgt voor veel collisions en CRC-fouten, waardoor de effectieve doorvoer dramatisch daalt (vaak tot onder 10Mbps).
+- Snelheidsverlaging (Gi0/2 op Core-SW en Gi0/1 op SW2): De trunks die 1000Mbps zouden moeten zijn, draaien op 100Mbps. Dit is een serieuze bottleneck voor inter-VLAN-verkeer.
+- Trage PC-poort (Fa0/1 op SW1): Een PC draait op 10Mbps Half-duplex. Dit is extreem traag voor een moderne werkplek.
+
+In dit netwerk:
+- Gi0/1 (Core-SW): Half-duplex op een trunk zorgt voor collisions, waardoor pakketten opnieuw worden verzonden. Dit vertraagt al het verkeer tussen Core-SW en SW1.
+- Gi0/2 (Core-SW & SW2): 100Mbps in plaats van 1000Mbps is onvoldoende voor de hoeveelheid data die tussen de switches moet stromen.
+- Fa0/1 (SW1): Een PC met 10Mbps Half-duplex kan nauwelijks een moderne website laden.
+
+Specifiek risico:
+- Gebruikers op SW1 ervaren extreem trage netwerkprestaties (door de Half-duplex trunk en de trage PC-poort).
+- Het verkeer van SW2 naar de Core-SW is beperkt tot 100Mbps, wat een grote bottleneck is voor gebruikers op SW2.
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Er zijn meerdere bottlenecks gevonden:
+
+Core-SW (MLS):
+- Gi0/1 (Trunk naar SW1): Duplex staat op Half (moet Full zijn) ⚠️
+- Gi0/2 (Trunk naar SW2): Speed is 100Mbps (moet 1000Mbps zijn) ⚠️
+- Interface heeft 1500 CRC-fouten en 200 collisions
+
+SW1:
+- Fa0/1 (PC): Speed is 10Mbps (moet 100Mbps zijn), Duplex is Half (moet Full zijn) ⚠️
+
+SW2:
+- Gi0/1 (Trunk naar Core): Speed is 100Mbps (moet 1000Mbps zijn) ⚠️
+
+
+
+Impact
+
+Door de gevonden bottlenecks:
+
+1. Extreem trage netwerkprestaties op SW1:
+- De trunk van SW1 naar Core-SW draait op Half-duplex. Dit veroorzaakt collisions en CRC-fouten, waardoor de effectieve snelheid daalt tot onder de 10Mbps.
+- Alle gebruikers op SW1 (VLAN 10 en 20) hebben extreem traag internet en trage toegang tot servers (192.168.1.50).
+- Dit leidt tot productiviteitsverlies en frustratie.
+
+2. Trage prestaties op SW2:
+- De trunk van SW2 naar Core-SW draait op 100Mbps in plaats van 1000Mbps.
+- Bij piekbelasting raakt deze verbinding verzadigd, waardoor gebruikers op SW2 (VLAN 30) geen verbinding meer kunnen maken.
+
+3. Individuele gebruiker kan niet werken:
+- De PC op Fa0/1 draait op 10Mbps Half-duplex.
+- Deze gebruiker kan geen moderne webapplicaties gebruiken en ervaart extreme vertraging.
+
+4. Verhoogde helpdesk-belasting:
+- Gebruikers zullen klagen over trage netwerkprestaties.
+- De helpdesk moet tijd besteden aan het traceren van deze fysieke laag-problemen.
+
+De impact is zeer hoog omdat:
+- De prestaties van het hele netwerk worden beïnvloed door de trunk-bottlenecks.
+- Gebruikers kunnen hun werk niet goed doen.
+- Productiviteitsverlies is direct merkbaar.
+
+
+
+Samenvatting
+
+Er zijn meerdere bottlenecks gevonden op de MLS-switch en access-switches.
+
+Afwijkingen:
+- Core-SW Gi0/1 (Trunk naar SW1): Duplex is Half in plaats van Full. Dit veroorzaakt CRC-fouten en collisions.
+- Core-SW Gi0/2 (Trunk naar SW2): Speed is 100Mbps in plaats van 1000Mbps.
+- SW2 Gi0/1 (Trunk naar Core): Speed is 100Mbps in plaats van 1000Mbps.
+- SW1 Fa0/1 (PC): Speed is 10Mbps en Duplex is Half in plaats van 100Mbps Full.
+
+Gevolgen:
+- Extreem trage netwerkprestaties voor alle gebruikers
+- Collisions en CRC-fouten op de trunk-verbindingen
+- Productiviteitsverlies
+
+Advies:
+1. Herstel de duplex-mismatch (Core-SW Gi0/1):
+- Zet de poort handmatig op Full-duplex: interface gigabitEthernet 0/1 → duplex full
+- Of zet beide kanten op speed auto en duplex auto
+
+2. Herstel de snelheid van de trunks (Core-SW Gi0/2 & SW2 Gi0/1):
+- Controleer de bekabeling (gebruik Cat5e of hoger voor 1Gbps).
+- Zet de poorten op speed auto en duplex auto.
+- Controleer of de switch aan de andere kant ook 1Gbps ondersteunt.
+
+3. Herstel de PC-poort (SW1 Fa0/1):
+- Zet de poort op speed 100 en duplex full.
+- Controleer of de netwerkkaart van de PC ook op 100Mbps Full staat.
+
+4. Controleer de bekabeling:
+- Vervang kabels die beschadigd zijn of niet de juiste categorie hebben.
+- Zorg dat Auto-MDIX is ingeschakeld (meestal standaard aan).
+
+5. Controleer na configuratie:
+- Gebruik show interfaces status om te controleren dat Speed en Duplex correct zijn.
+- Gebruik show interfaces [poort] | include CRC|collisions om te controleren of de fouten niet meer toenemen.
+
