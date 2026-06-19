@@ -1,0 +1,147 @@
+🔐 Beveiliging & Toegang
+1. AAA (Authentication, Authorization, Accounting) is geconfigureerd
+Onderdeel	Invulling
+Wat is het?	Centrale authenticatie voor beheerders via RADIUS- of TACACS+ server.
+Commando	show running-config | include aaa
+Wat moet je zien?	aaa new-model, aaa authentication login default group radius local, radius-server host 192.168.1.100
+Advies	AAA zorgt voor gecentraliseerd gebruikersbeheer en logging van beheerdersacties.
+Afwijking	Geen aaa new-model of geen RADIUS/TACACS server geconfigureerd.
+
+
+2. Local database voor authenticatie is geconfigureerd
+Onderdeel	Invulling
+Wat is het?	Lokale gebruikersaccounts op het apparaat voor als AAA-server uitvalt (fallback).
+Commando	show running-config | include username
+Wat moet je zien?	username admin secret 5 $1$... of username admin password cisco
+Advies	Zorg dat er minimaal 1 lokaal account is met secret (versleuteld).
+Afwijking	Geen username commando's in de configuratie.
+
+
+3. Login-banner (banner motd) is ingesteld
+Onderdeel	Invulling
+Wat is het?	Een waarschuwingsbanner die wordt getoond bij het inloggen (juridische afscherming).
+Commando	show running-config | include banner
+Wat moet je zien?	banner motd ^C Alleen geautoriseerde gebruikers ^C
+Advies	Banner is een waarschuwing dat ongeautoriseerde toegang niet is toegestaan.
+Afwijking	Geen banner motd in de configuratie.
+
+
+4. Exec-timeout is ingesteld op console en VTY
+Onderdeel	Invulling
+Wat is het?	Automatische uitloggen bij inactiviteit (beveiliging tegen open sessies).
+Commando	show running-config | section line con 0 en show running-config | section line vty
+Wat moet je zien?	exec-timeout 5 0 (5 minuten) of exec-timeout 10 0
+Advies	Een timeout voorkomt dat een sessie blijft staan als een beheerder wegloopt.
+Afwijking	Geen exec-timeout of exec-timeout 0 0 (nooit uitloggen).
+
+
+5. Management VLAN is gescheiden van user VLAN's
+Onderdeel	Invulling
+Wat is het?	Beheer van switches gebeurt via een apart VLAN (bijv. VLAN 99) en niet via VLAN 1.
+Commando	show vlan brief en show running-config | include interface Vlan
+Wat moet je zien?	interface Vlan99 met IP-adres. Geen interface Vlan1 met IP-adres.
+Advies	Beheer via een apart VLAN verhoogt de beveiliging (scheiding van verkeer).
+Afwijking	interface Vlan1 wordt gebruikt voor beheer of VLAN 1 heeft user-poorten.
+🌐 Netwerkdiensten (Services)
+
+
+6. CDP (Cisco Discovery Protocol) is uitgeschakeld op ongebruikte/edge poorten
+Onderdeel	Invulling
+Wat is het?	CDP geeft informatie over het apparaat vrij. Moet uit op poorten die naar buiten gaan of naar niet-Cisco apparaten.
+Commando	show running-config | include no cdp enable
+Wat moet je zien?	no cdp enable op interfaces die naar niet-Cisco apparaten of de internetkant gaan.
+Advies	CDP uitschakelen op edge-poorten voorkomt dat een aanvaller netwerkinformatie kan verzamelen.
+Afwijking	CDP staat aan op poorten waar het niet nodig of onveilig is (bijv. internetkant).
+
+
+7. NTP-authenticatie is ingeschakeld
+Onderdeel	Invulling
+Wat is het?	Voorkomt dat een aanvaller de tijd kan manipuleren door zich voor te doen als NTP-server.
+Commando	show running-config | include ntp authentication
+Wat moet je zien?	ntp authentication-key 1 md5 [hash] en ntp trusted-key 1
+Advies	NTP-authenticatie voorkomt dat een aanvaller valse tijd kan injecteren.
+Afwijking	Geen ntp authentication commando's in de configuratie.
+
+
+8. DHCP-server is correct geconfigureerd (exclusions, lease time, default gateway)
+Onderdeel	Invulling
+Wat is het?	DHCP-server moet de juiste exclusions hebben (vaste IP's), lease time en default gateway doorgeven.
+Commando	show running-config | section ip dhcp
+Wat moet je zien?	ip dhcp excluded-address 192.168.10.1 192.168.10.10, lease 0 8 0, default-router 192.168.10.1
+Advies	Exclusions voorkomen dat vaste IP's worden uitgedeeld. Lease time moet lang genoeg zijn (bijv. 8 uur).
+Afwijking	Geen exclusions voor vaste IP's, lease time te lang (7 dagen) of te kort, geen default gateway.
+
+
+9. DNS-server is correct geconfigureerd op de PC's/netwerkapparaten
+Onderdeel	Invulling
+Wat is het?	Kan een werkplek-pc een domeinnaam omzetten naar een IP-adres?
+Commando	Op PC: ipconfig /all of nslookup www.company.com. Op router: show running-config | include ip name-server
+Wat moet je zien?	DNS-server IP is ingevuld op de PC. nslookup geeft een IP-adres terug (geen foutmelding). Router heeft ip name-server [IP].
+Advies	DNS is nodig om domeinnamen te kunnen gebruiken in plaats van IP-adressen.
+Afwijking	Geen DNS-server op PC, of nslookup geeft Non-existent domain.
+🛠️ Netwerkprestaties & Foutopsporing
+
+
+10. Uptime van kritieke apparaten is acceptabel
+Onderdeel	Invulling
+Wat is het?	Een korte uptime (bijv. minder dan 1 dag) kan duiden op instabiliteit, crash of stroomstoring.
+Commando	show version | include uptime
+Wat moet je zien?	uptime is 2 weeks, 3 days, 4 hours (lange uptime = stabiel).
+Advies	Een uptime van minimaal enkele weken is normaal voor stabiele netwerkapparaten.
+Afwijking	Uptime van minder dan 24 uur (apparaat is recent herstart, mogelijk door crash of stroomstoring).
+
+
+11. Er zijn geen interface errors op kritieke poorten
+Onderdeel	Invulling
+Wat is het?	CRC-fouten, collisions en input errors wijzen op duplex-mismatch of bekabelingsproblemen.
+Commando	show interfaces [poort] | include errors|CRC|collisions
+Wat moet je zien?	0 input errors, 0 CRC, 0 collisions
+Advies	Errors op trunks of serverpoorten zijn kritiek en moeten worden opgelost.
+Afwijking	CRC-fouten, collisions of input errors > 0.
+
+
+12. Default gateway is correct geconfigureerd op werkplek-pc's
+Onderdeel	Invulling
+Wat is het?	De default gateway is het IP-adres van de router waar de PC verkeer naartoe stuurt.
+Commando	Op PC: ipconfig en ping [default-gateway]
+Wat moet je zien?	Default Gateway: 192.168.10.1. ping 192.168.10.1 geeft Reply from (0% loss).
+Advies	De PC moet de gateway kunnen pingen, anders kan hij geen verkeer naar andere netwerken sturen.
+Afwijking	Geen default gateway, verkeerde gateway, of ping mislukt.
+
+
+13. EtherChannel / Port-channel is correct geconfigureerd en actief
+Onderdeel	Invulling
+Wat is het?	Meerdere fysieke poorten samengevoegd voor meer bandbreedte en redundantie.
+Commando	show etherchannel summary
+Wat moet je zien?	Port-channel 1 (Po1) is up en Gi0/1(P), Gi0/2(P) (P = in port-channel).
+Advies	Een actieve EtherChannel zorgt voor load balancing en redundantie.
+Afwijking	Port-channel is down, of alleen 1 van de poorten is actief (niet gebundeld).
+
+
+14. VLAN's zijn correct benoemd (description)
+Onderdeel	Invulling
+Wat is het?	VLAN's hebben een beschrijving zodat duidelijk is waarvoor ze dienen.
+Commando	show vlan brief
+Wat moet je zien?	10 Productie active, 20 HR active, 30 Gasten active
+Advies	Duidelijke namen maken het beheer overzichtelijker.
+Afwijking	VLAN's hebben geen beschrijving of een onduidelijke naam (bijv. VLAN0010).
+📁 Configuratiebeheer & Logging
+
+
+15. Er is voldoende geheugen (RAM/Flash) beschikbaar
+Onderdeel	Invulling
+Wat is het?	Kan de router een nieuwe IOS laden? Is de flash niet vol?
+Commando	show version en show flash
+Wat moet je zien?	show version: voldoende RAM (bijv. 512K/256K bytes of memory). show flash: bytes available groter dan de grootte van de nieuwe IOS.
+Advies	Zorg dat er minimaal 10-20% vrije ruimte is in de flash.
+Afwijking	Flash is bijna vol (bytes available < 10MB) of RAM is onvoldoende voor nieuwe IOS.
+
+
+16. Configuratieback-ups zijn aanwezig op een TFTP/FTP-server
+Onderdeel	Invulling
+Wat is het?	Back-ups van configuraties zijn opgeslagen op een centrale server voor disaster recovery.
+Commando	Controleer op server (FTP/TFTP) of gebruik show flash voor lokale back-ups.
+Wat moet je zien?	Bestanden zoals R1-startup-config.cfg, Core-SW-startup-config.cfg op de server.
+Advies	Back-ups zorgen dat een apparaat snel kan worden hersteld na een defect.
+Afwijking	Geen configuratieback-ups aanwezig op de server.
+
