@@ -1,5 +1,5 @@
 omschrijving
-
+ 
 Syslog is een standaardprotocol voor het loggen van gebeurtenissen op netwerkapparaten zoals routers, switches en servers. 
 Het stuurt logberichten naar een centrale syslog-server waar alle logs worden verzameld en opgeslagen.
 
