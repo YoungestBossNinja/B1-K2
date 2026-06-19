@@ -1,0 +1,407 @@
+omschrijving
+
+Een intranet-webpagina is een website die alleen toegankelijk is binnen het interne netwerk van een organisatie . 
+Werkplek-pc's zouden deze pagina moeten kunnen bereiken via een webbrowser, meestal door het IP-adres van de webserver of een domeinnaam (zoals http://www.company.com) in te typen . 
+Dit is onderdeel van de interne communicatie in een bedrijfsnetwerk en wordt vaak getest in Packet Tracer .
+
+Waarom wordt dit gecontroleerd in een audit?
+
+    Toegankelijkheid: De intranet-webpagina moet beschikbaar zijn voor alle medewerkers op de werkvloer.
+    Netwerkfunctionaliteit: Het succesvol laden van de pagina bewijst dat basisnetwerkdiensten zoals routing, switching en webserver-functionaliteit correct werken .
+    DNS-functionaliteit: Als een domeinnaam wordt gebruikt, moet de DNS-server de naam correct kunnen vertalen naar het IP-adres .
+
+
+
+
+Uitvoering
+
+cisco
+
+! Test vanuit de werkplek-pc of de webserver bereikbaar is (ICMP)
+PC> ping <IP-adres van de webserver>
+
+! Test of de webservice daadwerkelijk werkt (HTTP)
+PC> http://<IP-adres van de webserver>
+
+! Als een domeinnaam wordt gebruikt, test dan eerst DNS-omzetting
+PC> nslookup <domeinnaam>
+
+! Test via de browser of de intranetpagina wordt geladen
+PC> Open webbrowser en ga naar http://<IP-adres of domeinnaam>
+
+Wat je moet controleren:
+
+    Is de webserver correct geconfigureerd? (HTTP-service is ingeschakeld op de server)
+    Is de webserver bereikbaar vanuit het subnet van de werkplek-pc? (ping-test)
+    Kan de pc de webpagina laden in een browser? (HTTP-test)
+    Werkt de DNS-omzetting als er een domeinnaam wordt gebruikt? (nslookup)
+
+
+
+
+
+
+
+Als werkplek-pc's WEL op de intranet-webpagina kunnen
+
+Vanuit de werkplek-pc (PC0):
+
+1. Ping-test naar webserver:
+cisco
+
+PC> ping 192.168.1.50
+
+Pinging 192.168.1.50 with 32 bytes of data:
+Reply from 192.168.1.50: bytes=32 time<1ms TTL=128
+Reply from 192.168.1.50: bytes=32 time<1ms TTL=128
+Reply from 192.168.1.50: bytes=32 time<1ms TTL=128
+Reply from 192.168.1.50: bytes=32 time<1ms TTL=128
+
+Ping statistics for 192.168.1.50:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss),
+Approximate round trip times in milli-seconds:
+    Minimum = 0ms, Maximum = 0ms, Average = 0ms
+
+    Let op: Reply from met 0% loss betekent dat de webserver bereikbaar is via het netwerk .
+
+
+
+2. HTTP-toegang tot de webpagina:
+cisco
+
+PC> http://192.168.1.50
+
+Connecting to 192.168.1.50... connected.
+HTTP/1.1 200 OK
+Date: Wed, 17 Jun 2026 10:23:45 GMT
+Server: Apache/2.4.54 (Unix)
+Last-Modified: Wed, 17 Jun 2026 10:00:00 GMT
+Content-Type: text/html
+Content-Length: 1024
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intranet - Company Portal</title>
+</head>
+<body>
+    <h1>Welkom op het Intranet</h1>
+    <p>Dit is de interne bedrijfswebsite.</p>
+    <ul>
+        <li><a href="/hr">HR-pagina</a></li>
+        <li><a href="/it">IT-pagina</a></li>
+    </ul>
+</body>
+</html>
+
+    Let op: HTTP/1.1 200 OK betekent dat de webserver de pagina succesvol heeft geleverd . De inhoud van de webpagina wordt getoond.
+
+
+
+3. DNS-omzetting (als domeinnaam wordt gebruikt):
+cisco
+
+PC> nslookup www.company.com
+
+Server:  DNS Server
+Address:  192.168.1.60
+
+Name:    www.company.com
+Address:  192.168.1.50
+
+    Let op: De domeinnaam wordt correct omgezet naar het IP-adres van de webserver .
+
+4. In webbrowser:
+text
+
+
+
+PC> Open browser en ga naar: http://www.company.com
+
+[De intranet-webpagina wordt geladen en weergegeven in de browser]
+
+Op de webserver (Server0):
+
+Controleer of HTTP-service actief is:
+cisco
+
+Server0> Klik op Server0 -> Services -> HTTP
+HTTP Service: On
+
+    Let op: De HTTP-service moet On staan .
+
+
+
+
+Advies
+
+Een intranet-webpagina is een interne website die alleen toegankelijk is binnen het bedrijfsnetwerk . Het is goed dat werkplek-pc's de intranet-webpagina kunnen bereiken en laden.
+
+Waarom is dit belangrijk?
+- Toegankelijkheid: Medewerkers hebben toegang tot bedrijfsinformatie, nieuws, formulieren en interne applicaties via het intranet.
+- Netwerkfunctionaliteit: Het succesvol laden van de pagina bewijst dat basisnetwerkdiensten zoals routing, switching en webserver-functionaliteit correct werken .
+- DNS-functionaliteit: Als een domeinnaam wordt gebruikt, werkt de DNS-omzetting correct .
+
+In dit netwerk:
+- Webserver (192.168.1.50): De HTTP-service is actief en het index-bestand bevat de juiste inhoud .
+- Routing: Het verkeer van VLAN 10 (192.168.10.0/24) naar de webserver (192.168.1.50) wordt correct gerouteerd via de router.
+- DNS: De domeinnaam www.company.com wordt correct omgezet naar 192.168.1.50 .
+- Beide pc's (PC0 en PC1): Kunnen de webpagina laden via zowel IP-adres als domeinnaam.
+
+Dit betekent dat medewerkers op de werkvloer:
+- Intranet-toegang hebben voor interne communicatie en bedrijfsinformatie
+- Geen problemen ervaren met het laden van de webpagina
+- De Dienstverlening van de IT-afdeling is correct ingericht
+
+
+
+
+
+Afwijking
+
+Geen afwijking geconstateerd. Werkplek-pc's kunnen de intranet-webpagina correct bereiken en laden.
+
+
+
+Impact
+
+Geen impact. De intranet-webpagina is beschikbaar voor alle werkplek-pc's. Medewerkers kunnen interne informatie raadplegen.
+
+
+
+Samenvatting
+
+Werkplek-pc's kunnen correct de intranet-webpagina bereiken en laden. De webserver (192.168.1.50) heeft de HTTP-service actief. 
+Beide pc's (PC0 en PC1) kunnen de webpagina laden via IP-adres en via de domeinnaam www.company.com (DNS werkt correct). Het intranet is beschikbaar voor alle medewerkers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Als werkplek-pc's NIET op de intranet-webpagina kunnen
+
+Vanuit de werkplek-pc (PC0):
+
+1. Ping-test mislukt (webserver niet bereikbaar):
+cisco
+
+PC> ping 192.168.1.50
+
+Pinging 192.168.1.50 with 32 bytes of data:
+Request timed out.
+Request timed out.
+Request timed out.
+Request timed out.
+
+Ping statistics for 192.168.1.50:
+    Packets: Sent = 4, Received = 0, Lost = 4 (100% loss),
+
+    Let op: Request timed out of 100% loss betekent dat de webserver niet bereikbaar is . Dit kan komen door routingproblemen, een verkeerd IP-adres, of een switchpoort die niet goed staat.
+
+
+
+2. HTTP-toegang mislukt:
+cisco
+
+PC> http://192.168.1.50
+
+Connecting to 192.168.1.50... failed.
+%Connection timed out
+
+    Let op: De verbinding naar de webserver mislukt omdat de server niet bereikbaar is.
+
+
+
+3. DNS-omzetting mislukt (als domeinnaam wordt gebruikt):
+cisco
+
+PC> nslookup www.company.com
+
+Server:  DNS Server
+Address:  192.168.1.60
+
+*** 192.168.1.60 can't find www.company.com: Non-existent domain
+
+    Let op: De domeinnaam kan niet worden omgezet naar een IP-adres .
+
+
+
+4. In webbrowser (statusmeldingen):
+text
+
+PC> Open browser en ga naar: http://www.company.com
+
+[De browser geeft een foutmelding:]
+- "This site can't be reached"
+- "DNS_PROBE_FINISHED_NXDOMAIN"
+- "Connection timed out"
+
+    Let op: De webpagina wordt niet geladen. De foutmelding geeft aan wat het probleem is (DNS-fout, verbindingstimeout, etc.).
+
+
+
+
+
+
+Bevinding
+
+Uit de tests blijkt dat werkplek-pc's de intranet-webpagina niet kunnen bereiken of laden.
+
+PC0 (VLAN 10, 192.168.10.10):
+- ping 192.168.1.50: Mislukt (100% loss, Request timed out)
+- http://192.168.1.50: Mislukt (%Connection timed out)
+- Browser: Foutmelding "This site can't be reached"
+
+PC1 (VLAN 10, 192.168.10.11):
+- ping 192.168.1.50: Mislukt (100% loss)
+- http://192.168.1.50: Mislukt (%Connection timed out)
+- Browser: Foutmelding "Connection timed out"
+
+DNS-test (indien domeinnaam gebruikt):
+- nslookup www.company.com: Mislukt (Non-existent domain)
+
+Webserver (192.168.1.50):
+- HTTP-service: Uitgeschakeld of niet geconfigureerd
+- Server is mogelijk niet bereikbaar
+
+Er is een afwijking omdat werkplek-pc's de intranet-webpagina niet kunnen laden.
+
+
+
+
+
+Advies
+
+Een intranet-webpagina is een interne website die alleen toegankelijk is binnen het bedrijfsnetwerk . Het is niet goed dat werkplek-pc's de intranet-webpagina niet kunnen bereiken of laden.
+
+Waarom is dit een probleem?
+- Geen toegang tot bedrijfsinformatie: Medewerkers kunnen geen interne documenten, nieuws, formulieren of applicaties bereiken die op het intranet worden gehost.
+- Productiviteitsverlies: Veel bedrijfsprocessen zijn afhankelijk van het intranet. Zonder toegang kunnen medewerkers hun werk niet goed doen.
+- Netwerkproblemen: Het feit dat de webpagina niet kan worden geladen, wijst op een onderliggend netwerkprobleem:
+- De webserver is mogelijk uitgeschakeld of verkeerd geconfigureerd .
+- Er is een routingprobleem tussen de werkplek-pc's en de webserver.
+- Firewall- of ACL-regels blokkeren het HTTP-verkeer.
+- De DNS-server is niet correct geconfigureerd (als een domeinnaam wordt gebruikt) .
+- Helpdesk-meldingen: Gebruikers zullen melden dat ze geen toegang hebben tot het intranet, wat de helpdesk belast.
+
+In dit netwerk:
+- PC0 en PC1 kunnen de webserver (192.168.1.50) niet pingen (100% loss). Dit wijst op een netwerkbereikbaarheidsprobleem.
+- De HTTP-service op de webserver is mogelijk uitgeschakeld of de server heeft een verkeerd IP-adres .
+- DNS-omzetting werkt niet, dus gebruikers kunnen de webpagina niet via de domeinnaam bereiken .
+
+Specifiek risico:
+- Nieuwe medewerkers kunnen geen toegang krijgen tot belangrijke informatie die op het intranet staat, zoals het personeelshandboek, IT-richtlijnen of HR-formulieren.
+- Interne communicatie via het intranet is niet mogelijk.
+- Dit kan leiden tot vertragingen in bedrijfsprocessen en frustratie bij medewerkers.
+
+
+
+
+
+Afwijking
+
+Afwijking geconstateerd:
+
+Werkplek-pc's kunnen niet op de intranet-webpagina.
+
+PC0:
+- ping 192.168.1.50: 100% loss
+- http://192.168.1.50: Connection timed out
+
+PC1:
+- ping 192.168.1.50: 100% loss
+- http://192.168.1.50: Connection timed out
+
+DNS-test:
+- nslookup www.company.com: Non-existent domain
+
+Webserver:
+- HTTP-service: Uitgeschakeld of niet correct geconfigureerd
+- Server is mogelijk niet bereikbaar via het netwerk
+
+
+
+Impact
+
+Impact: Hoog
+
+Door het ontbreken van intranet-toegang voor werkplek-pc's:
+
+1. Geen toegang tot bedrijfsinformatie:
+- Medewerkers kunnen geen interne documenten raadplegen.
+- HR-formulieren, IT-richtlijnen, bedrijfsnieuws zijn niet beschikbaar.
+- Dit leidt tot productiviteitsverlies en vertraging in bedrijfsprocessen.
+
+2. Interne communicatie verstoord:
+- Veel bedrijven gebruiken het intranet voor interne communicatie en aankondigingen.
+- Medewerkers missen belangrijke informatie over het bedrijf.
+
+3. Verhoogde helpdesk-belasting:
+- Gebruikers zullen meldingen maken dat ze geen toegang hebben tot het intranet.
+- De helpdesk moet tijd besteden aan het oplossen van het probleem, wat ten koste gaat van andere werkzaamheden.
+
+4. Onderliggende netwerkproblemen:
+- De oorzaak van het probleem kan liggen bij:
+- Routing: Er is geen route van VLAN 10 naar het subnet van de webserver .
+- ACL's: Er is een ACL die HTTP-verkeer blokkeert.
+- Serverconfiguratie: De webserver is uitgeschakeld of heeft een verkeerd IP-adres .
+- DNS: De DNS-server is niet correct geconfigureerd .
+
+De impact is hoog omdat:
+- Medewerkers niet kunnen werken zonder toegang tot het intranet.
+- Productiviteitsverlies direct merkbaar is.
+- Het probleem wijst op een onderliggend netwerkprobleem dat ook andere diensten kan beïnvloeden.
+
+
+
+
+Samenvatting
+
+Werkplek-pc's kunnen niet op de intranet-webpagina. PC0 en PC1 kunnen de webserver (192.168.1.50) niet pingen en de HTTP-verbinding mislukt. 
+DNS-omzetting werkt niet (als domeinnaam wordt gebruikt). De HTTP-service op de webserver is mogelijk uitgeschakeld of er is een routing-/ACL-probleem .
+
+Gevolgen:
+- Medewerkers hebben geen toegang tot bedrijfsinformatie
+- Productiviteitsverlies
+- Verhoogde helpdesk-belasting
+- Onderliggend netwerkprobleem moet worden opgelost
+
+Advies:
+1. Controleer de webserver:
+- Open Server0 → Services → HTTP
+- Zet HTTP Service: On
+- Controleer of het index-bestand de juiste inhoud heeft
+
+2. Controleer het IP-adres van de webserver:
+- ipconfig op Server0 om te controleren of het IP-adres 192.168.1.50 is
+- Zo niet, wijzig het IP-adres naar 192.168.1.50/24
+
+3. Controleer de routing:
+- Gebruik traceroute 192.168.1.50 vanaf PC0 om te zien waar het verkeer blijft steken
+- Controleer de routingtabellen op de routers (show ip route)
+
+4. Controleer ACL's:
+- Gebruik show access-lists om te controleren of er een ACL is die HTTP-verkeer blokkeert
+- Zo ja, pas de ACL aan om verkeer naar 192.168.1.50 toe te staan
+
+5. Controleer DNS (als domeinnaam wordt gebruikt):
+- Open DNS Server → Services → DNS
+- Controleer of het A-record voor www.company.com naar 192.168.1.50 wijst
+- Zo niet, voeg het record toe
+
+Na het oplossen controleer je opnieuw met ping en een webbrowser of de webpagina wordt geladen.
+
+
+
