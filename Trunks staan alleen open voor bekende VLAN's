@@ -1,5 +1,5 @@
 omschrijving
-
+ 
 Een trunk is een verbinding tussen twee switches die meerdere VLAN's tegelijkertijd transporteert. 
 Standaard staan alle VLAN's op een trunk, maar dit kan een beveiligingsrisico zijn. Daarom is het een best practice om alleen de noodzakelijke VLAN's toe te staan op een trunk.
 
