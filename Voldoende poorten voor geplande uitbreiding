@@ -1,3 +1,6 @@
+Betekenis van de pooort statusen benenden <---------------------- ! ! ! ! ! ! !
+
+
 omschrijving
 
 Een netwerk wordt vaak uitgebreid: er komen nieuwe medewerkers, nieuwe afdelingen of nieuwe apparaten bij. 
@@ -397,3 +400,22 @@ Advies:
 
 Na het toevoegen van de nieuwe switches controleer je met show interfaces status dat er voldoende vrije poorten zijn voor de geplande uitbreiding.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Betekenis van de poortstatussen
+Status	Betekenis	Kun je hem gebruiken?
+connected	Er zit een apparaat (PC, server, etc.) op de poort aangesloten en de link is actief.	❌ Nee (bezet)
+notconnect	Er zit geen kabel in de poort, of het apparaat aan de andere kant staat uit.	✅ Ja (vrij)
+disabled	De poort is handmatig uitgeschakeld met het shutdown commando.	❌ Nee (moet eerst geactiveerd worden)
+err-disabled	De poort is automatisch uitgeschakeld door een fout (bv. port-security violation).	❌ Nee (moet eerst hersteld worden)
