@@ -1,3 +1,7 @@
+HELEMAAL BENEDEN MEER OVER DE UITVOER <-------------------------------------------
+
+
+
 omschrijving
  
 Een trunk is een verbinding tussen twee switches die meerdere VLAN's tegelijkertijd transporteert. 
@@ -368,3 +372,28 @@ Advies:
 
 Na configuratie controleer je met show interfaces trunk dat alleen VLAN 10, 20, 30 zijn toegestaan en dat de native VLAN 999 is.
 
+
+
+
+
+
+
+
+
+
+Perfect! Je hebt de juiste output van show interfaces trunk. 
+Op basis hiervan kan ik je vertellen dat trunks alleen open staan voor bekende VLAN's en dat dit correct is geconfigureerd.
+Wat zien we in de output?
+text
+
+Port        Mode         Encapsulation  Status        Native vlan
+Gig0/1      on           802.1q         trunking      1
+
+Port        Vlans allowed on trunk
+Gig0/1      20-23,30 <---------------------------------------------------------------------------
+
+Port        Vlans allowed and active in management domain
+Gig0/1      20,21,22,23,30
+
+Port        Vlans in spanning tree forwarding state and not pruned
+Gig0/1      20,21,22,23,30
