@@ -1,3 +1,6 @@
+HElemaal benedend UITLEGGGG <----------------------------------
+
+
 omschrijving
 
 De console is een fysieke poort op een router of switch waarmee een beheerder lokale toegang krijgt tot 
@@ -376,3 +379,59 @@ om te controleren dat password en login aanwezig zijn
 <br> Na configuratie controleer je met 
 show running-config	section line con 0
 dat password en login` aanwezig zijn. |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Op basis van de output die je hebt gedeeld, kan ik je vertellen dat het wachtwoord op de console is geconfigureerd, maar dat de configuratie niet volledig waterdicht is.
+
+Hier is de precieze analyse:
+Wat zien we in de configuratie?
+bash
+
+line con 0
+ login local
+
+Wat betekent login local?
+Configuratie	Betekenis
+login local	De console gebruikt lokale gebruikersaccounts voor authenticatie.
+Gevolg	Je moet bij console-toegang een gebruikersnaam EN wachtwoord invoeren die zijn aangemaakt met username ... password ....
+Dus... is het wachtwoord geconfigureerd?
+Check	Resultaat	Betekenis
+login local aanwezig?	✅ Ja	De console vraagt om authenticatie
+Lokale gebruikers aanwezig?	❓ Niet getoond	We moeten controleren of username-accounts bestaan
+Ander wachtwoord?	❌ Nee	Er staat geen password 7 ... of password cisco op de console-lijn
+Wat is het verschil?
+Configuratie	Hoe werkt het?
+login + password cisco	Vraagt alleen een wachtwoord bij console-toegang
+login local	Vraagt een gebruikersnaam EN wachtwoord (van de lokale database)
+Jouw situatie:
+
+Jij hebt login local staan. Dat betekent:
+
+    ✅ De console is beveiligd (er wordt om authenticatie gevraagd)
+
+    ✅ Er wordt een gebruikersnaam en wachtwoord gevraagd
+
+    ❓ Er moeten lokale gebruikers bestaan (username ...)
+
+
+
+
+als ik inlog op de cli is wachtwoord en gebruiekrsnaam. dat is lokaal
