@@ -1,3 +1,6 @@
+CHECK ONDERAAN VOOR MEER UITLEG VOOR DE UITVOER <--------------------------------------------------
+
+
 omschrijving 
 Telnet is een protocol dat wordt gebruikt voor externe toegang tot netwerkapparaten zoals routers en switches. 
 Het is een van de oudste protocollen voor netwerkbeheer.
@@ -404,3 +407,50 @@ Na configuratie controleer je met show running-config | section line vty dat tra
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perfect! Je hebt de juiste configuratie gevonden. Op basis van deze output kan ik je vertellen dat Telnet inderdaad niet actief is op SW2.
+Wat zien we in de configuratie?
+text
+
+line vty 0 4
+ login local
+ transport input ssh
+line vty 5 15
+ login
+ transport input ssh
+
+Analyse:
+Configuratieregel	Betekenis	Goed?
+transport input ssh	Alleen SSH is toegestaan op deze VTY-lijnen	✅ Goed!
+login local	Gebruikt lokale gebruikers voor authenticatie	✅ Goed
+login	Gebruikt de standaard login-methode	✅ Goed
+Wat zou er staan als Telnet wél actief was?
+Configuratie	Betekenis
+transport input telnet	Alleen Telnet is toegestaan (onveilig)
+transport input all	Zowel Telnet als SSH zijn toegestaan
+transport input telnet ssh	Zowel Telnet als SSH zijn toegestaan
+transport input none	Geen remote toegang mogelijk
+Vergelijking:
+Configuratie	Telnet actief?	SSH actief?
+transport input ssh	❌ Nee	✅ Ja
+transport input telnet	✅ Ja	❌ Nee
+transport input all	✅ Ja	✅ Ja
+transport input telnet ssh	✅ Ja	✅ Ja
