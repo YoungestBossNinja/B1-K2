@@ -38,6 +38,9 @@ Router# show ip dhcp pool [naam]
 Router# show ip arp | include 192.168.10.
 
 
+Je kan ook gewoon de dhcp pool in services checken -----------------------
+
+
 
 Als er voldoende IP-adressen gereserveerd zijn zie je
 
