@@ -1,3 +1,6 @@
+ONDERAAN STAAT NOG UITLEG VOOR DE UITVOERING !!! <--------------- <--------------------- <---------------- <--------------- <-----------------
+
+
 Omschrijving
 
 De IOS (Internetwork Operating System) is het besturingssysteem dat op Cisco-routers en -switches draait. 
@@ -248,5 +251,92 @@ Advies:
 
 
 
+
+
+CHECK DIT
+
+
+
+Waar moet je naar kijken in show version:
+1️⃣ IOS Versie (belangrijkste!)
+
+Zoek naar deze regel:
+text
+
+Cisco IOS Software, C2960 Software (C2960-LANBASE-M), Version 12.2(25)FX, RELEASE SOFTWARE (fc1)
+
+Wat	Waarde
+IOS Version	12.2(25)FX
+Image	C2960-LANBASE-M
+
+✅ Dit is de IOS-versie die op de switch draait.
+2️⃣ Model van de switch
+
+Zoek naar:
+text
+
+Model number    : WS-C2960-24TT
+
+Wat	Waarde
+Model	WS-C2960-24TT
+Poorten	24 FastEthernet + 2 GigabitEthernet
+
+✅ Dit vertelt je welk type switch het is.
+3️⃣ Geheugen
+
+Zoek naar:
+text
+
+with 21039K bytes of memory
+
+Wat	Waarde
+DRAM	21039K (ongeveer 21 MB)
+4️⃣ Flash-geheugen
+
+Zoek naar:
+text
+
+63488K bytes of flash-simulated non-volatile configuration memory
+
+Wat	Waarde
+Flash	63488K (ongeveer 64 MB)
+5️⃣ Configuration Register
+
+Zoek naar:
+text
+
+Configuration register is 0xF
+
+Wat	Waarde
+Config Register	0xF (0x2102 = normaal opstarten)
+
+✅ Dit is de juiste waarde voor normaal opstarten.
+6️⃣ MAC-adres (niet verplicht, maar handig)
+
+Zoek naar:
+text
+
+Base ethernet MAC Address    : 0060.47BB.9C2D
+
+Samenvatting: Wat moet je noteren?
+Onderdeel	Waarde
+IOS Versie	12.2(25)FX
+IOS Image	C2960-LANBASE-M
+Model	WS-C2960-24TT
+Poorten	24 FastEthernet + 2 GigabitEthernet
+DRAM	21039K (21 MB)
+Flash	63488K (64 MB)
+Config Register	0xF
+Wat moet je in je antwoord zetten?
+
+    "De switch draait IOS versie 12.2(25)FX met image C2960-LANBASE-M. Het model is een WS-C2960-24TT met 24 FastEthernet-poorten en 2 GigabitEthernet-poorten. 
+De switch heeft 21 MB DRAM en 64 MB flash-geheugen."
+
+Extra: Waarom is dit belangrijk?
+Onderdeel	Waarom checken?
+IOS Versie	Moet compatibel zijn met andere switches
+Model	Bepaalt welke features ondersteund worden
+Geheugen	Bepaalt of je een nieuwe IOS kan laden
+Config Register	Bepaalt hoe de switch opstart
 
 
