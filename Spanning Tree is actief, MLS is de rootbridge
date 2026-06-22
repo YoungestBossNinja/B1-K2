@@ -1,3 +1,36 @@
+Main_L3# show spanning-tree
+
+VLAN0001
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    1
+             Address     0002.4A40.2976
+             This bridge is the root
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    1  (priority 0 sys-id-ext 1)
+             Address     0002.4A40.2976
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+             Aging Time  20
+
+Interface        Role Sts Cost      Prio.Nbr Type
+---------------- ---- --- --------- -------- --------------------------------
+Gi1/0/2          Desg FWD 4         128.2    P2p
+
+VLAN0020
+  Spanning tree enabled protocol ieee
+  Root ID    Priority    20
+             Address     0002.4A40.2976
+             This bridge is the root <-------------------------------------------------------------------------
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+  Bridge ID  Priority    20  (priority 0 sys-id-ext 20)
+             Address     0002.4A40.2976
+             Hello Time  2 sec  Max Age 20 sec  Forward Delay 15 sec
+
+
+
+
+
 omschrijving
 
 Spanning Tree Protocol (STP) is een protocol dat lussen in een netwerk voorkomt door bepaalde poorten in een blocking-stand te zetten, 
