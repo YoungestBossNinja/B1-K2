@@ -1,3 +1,6 @@
+SW2#show running-config <----------- en gewoon handmatig kijken of portfast is enabled! ! ! ! <-------------------------------- <------- <------- <--------
+
+
 Omschrijving
 
 Portfast is een STP-functie op switches die een poort direct in de forwarding-stand zet, in plaats van de normale STP-procedure (listening → learning → forwarding) te doorlopen.
