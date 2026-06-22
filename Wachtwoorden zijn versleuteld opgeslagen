@@ -1,3 +1,6 @@
+HELEMAAL ONDERAAN STAAT NOG INFORMATIE <------------------------------------------------------------------
+
+
 Omschrijving
 
 Op Cisco-apparaten kunnen wachtwoorden op twee manieren worden opgeslagen in de configuratie:
@@ -369,3 +372,63 @@ Advies:
 - Zoek naar password 7 of secret 5 in plaats van password cisco
 
 Na configuratie controleer je met show running-config | include password dat alle wachtwoorden versleuteld zijn (type 5 of type 7).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perfect! Je hebt de juiste output. Op basis van deze show running-config output kan ik je vertellen dat wachtwoorden versleuteld zijn opgeslagen op SW2.
+Wat zien we in de output?
+text
+
+service password-encryption
+ip ftp username ftp-admin
+ip ftp password B@ckup-cnfg          ← Let op! Dit is NIET versleuteld
+username admin privilege 1 password 7 081669620216083743
+username c privilege 1 password 7 0822
+
+Analyse per regel:
+Configuratieregel	Versleuteld?	Hoe weet je dat?
+service password-encryption	✅ Ja	Deze regel activeert wachtwoordversleuteling voor alle wachtwoorden
+username admin password 7 ...	✅ Ja	Het 7 betekent: versleuteld met Cisco type 7 (Vigenère cipher)
+username c password 7 ...	✅ Ja	Het 7 betekent: versleuteld met Cisco type 7
+ip ftp password B@ckup-cnfg	❌ Niet versleuteld	Het wachtwoord staat in plain text in de configuratie
+Wat is het verschil tussen type 7 en type 5?
+Type	Betekenis	Beveiliging
+Type 7	Cisco type 7 (Vigenère cipher)	⚠️ Zwak (kan eenvoudig worden gekraakt)
+Type 5	Cisco type 5 (MD5 hash)	✅ Sterk (niet omkeerbaar)
+Plain text	Geen versleuteling	❌ Zeer onveilig
+Conclusie:
+Vraag	Antwoord
+Zijn wachtwoorden versleuteld?	✅ Ja, de meeste
+service password-encryption aanwezig?	✅ Ja
+Lokale gebruikers versleuteld?	✅ Ja (type 7)
+FTP-wachtwoord versleuteld?	❌ Nee (staat in plain text)
+Wat moet je in je antwoord zetten?
+
+    "Ja, wachtwoorden zijn versleuteld opgeslagen op SW2. Dit blijkt uit:
+
+        service password-encryption staat in de configuratie
+
+        password 7 bij de gebruikers admin en c (type 7 encryptie)
+
+    Let op: Het FTP-wachtwoord (B@ckup-cnfg) staat nog in plain text en is dus niet versleuteld. Dit is een aandachtspunt."
