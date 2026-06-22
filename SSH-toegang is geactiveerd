@@ -35,7 +35,7 @@ Vereisten voor SSH op een Cisco-apparaat:
 uivoering
 
 ! Bekijk de SSH-configuratie
-Router# show running-config | include ssh
+Router# show running-config | include ssh <------------------------------------
 Router# show running-config | section line vty
 
 ! Bekijk de SSH-server status
@@ -48,7 +48,7 @@ Router# show ssh
 Router# show ip ssh | include version
 
 ! Bekijk de RSA-sleutels
-Router# show crypto key mypubkey rsa
+Router# show crypto key mypubkey rsa <---------------------------------
 
 
 Wat je moet controleren:
