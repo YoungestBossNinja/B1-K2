@@ -65,6 +65,27 @@ In show flash zie je het volgende
 
 
 
+show boot <--------- command
+
+SW2#
+SW2#show boot
+BOOT path-list      : 
+Config file         : flash:/config.text <------------- dit is de config file btw die in show flash ook staat genaamd config.text
+Private Config file : flash:/private-config.text 
+Enable Break        : no
+Manual Boot         : no
+HELPER path-list    : 
+Auto upgrade        : yes
+NVRAM/Config file
+      buffer size:   65536
+
+
+
+
+
+
+
+
 
 
 
