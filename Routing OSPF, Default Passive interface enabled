@@ -1,3 +1,6 @@
+HELEMAAL ONDERAAN STAAT NOG UITLEG <---------------------------------------------------
+
+
 omschrijving
 
 OSPF (Open Shortest Path First) is een link-state routing protocol dat wordt gebruikt om routes tussen routers in een netwerk uit te wisselen. 
@@ -380,6 +383,64 @@ Advies:
 
 Na configuratie controleer je met show ip ospf interface dat alleen de juiste interfaces OSPF-berichten sturen 
 en met show ip ospf neighbor dat de OSPF-adjacencies nog bestaan.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Wat zien we in de configuratie?
+text
+
+router ospf 1
+ log-adjacency-changes
+ passive-interface default
+ no passive-interface GigabitEthernet1/0/1
+ network 10.20.0.0 0.0.255.255 area 0
+ network 10.21.0.0 0.0.255.255 area 0
+ network 10.22.0.0 0.0.255.255 area 0
+ network 10.23.0.0 0.0.255.255 area 0
+ network 10.30.0.0 0.0.255.255 area 0
+ network 10.10.0.0 0.0.255.255 area 0
+ network 172.16.0.0 0.0.0.3 area 0
+
+Analyse per regel:
+Configuratieregel	Betekenis	Goed?
+router ospf 1	OSPF-proces 1 is gestart	✅
+log-adjacency-changes	Logt wanneer OSPF-buren veranderen	✅
+passive-interface default	Alle interfaces zijn passief (sturen geen hello's)	✅
+no passive-interface GigabitEthernet1/0/1	Alleen Gi1/0/1 is actief (stuurt hello's)	⚠️ Let op!
+network 10.20.0.0 0.0.255.255 area 0	VLAN 20 (Logistiek) in area 0	✅
+network 10.21.0.0 0.0.255.255 area 0	VLAN 21 (Verkoop) in area 0	✅
+network 10.22.0.0 0.0.255.255 area 0	VLAN 22 (HRM) in area 0	✅
+network 10.23.0.0 0.0.255.255 area 0	VLAN 23 (Administratie) in area 0	✅
+network 10.30.0.0 0.0.255.255 area 0	VLAN 30 (Servers) in area 0	✅
+network 10.10.0.0 0.0.255.255 area 0	VLAN 10 (Productie) in area 0	✅
+network 172.16.0.0 0.0.0.3 area 0	Punt-naar-punt verbinding (/30) in area 0	✅
+Wat betekent passive-interface default?
+Instelling	Effect
+passive-interface default	Alle interfaces sturen geen OSPF hello's (dus ze vormen geen OSPF-buren)
+no passive-interface GigabitEthernet1/0/1	Alleen Gi1/0/1 stuurt wel hello's en kan OSPF-buren vormen
+
+
 
 
 
