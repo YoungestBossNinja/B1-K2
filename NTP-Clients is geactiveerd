@@ -54,7 +54,7 @@ Wat je moet controleren:
     Staan de NTP-servers in de configuratie? (zie show running-config | include ntp)
 
 
-
+NOTE: HET IS WEL GEACTIVEERD EN HET TELT. OOK AL STAAT DE TIJD VERKEERD DE NTP CLIENT IS ACTIVE
 
 
 ✅ Als NTP WEL is geactiveerd - Wat zie je?
